@@ -1,0 +1,82 @@
+{
+    "semester_total_credits": {
+        "S1": 17,
+        "S2": 21,
+        "S3": 22,
+        "S4": 22,
+        "S5": 23,
+        "S6": 24,
+        "S7": 15,
+        "S8": 17
+    },
+    "curricula": [
+        {
+            "department": "CS",
+            "semesters": [
+                {
+                    "id": "S1",
+                    "courses": [
+                        {
+                            "code": "MAT101",
+                            "credits": 4
+                        },
+                        {
+                            "code": "PHT100",
+                            "credits": 4
+                        },
+                        {
+                            "code": "EST130",
+                            "credits": 3
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department": "Common",
+            "semesters": [
+                {
+                    "id": "All",
+                    "courses": [
+                        {
+                            "code": "MAT101",
+                            "credits": 4
+                        },
+                        {
+                            "code": "CYT100",
+                            "credits": 4
+                        },
+                        {
+                            "code": "PHT100",
+                            "credits": 4
+                        },
+                        {
+                            "code": "EST100",
+                            "credits": 3
+                        },
+                        {
+                            "code": "EST110",
+                            "credits": 3
+                        },
+                        {
+                            "code": "EST120",
+                            "credits": 3
+                        },
+                        {
+                            "code": "EST130",
+                            "credits": 3
+                        },
+                        {
+                            "code": "HUN101",
+                            "credits": 0
+                        },
+                        {
+                            "code": "HUN102",
+                            "credits": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

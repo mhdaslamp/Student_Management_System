@@ -1,0 +1,50 @@
+{
+    "semester_total_credits": {
+        "S1": 20,
+        "S2": 20
+    },
+    "curricula": [
+        {
+            "department": "Common",
+            "semesters": [
+                {
+                    "id": "All",
+                    "courses": [
+                        {
+                            "code": "GMAT101",
+                            "credits": 4
+                        },
+                        {
+                            "code": "GPHY101",
+                            "credits": 4
+                        },
+                        {
+                            "code": "GCHE101",
+                            "credits": 4
+                        },
+                        {
+                            "code": "GEST101",
+                            "credits": 3
+                        },
+                        {
+                            "code": "GCIV101",
+                            "credits": 3
+                        },
+                        {
+                            "code": "GMECH101",
+                            "credits": 3
+                        },
+                        {
+                            "code": "GELE101",
+                            "credits": 3
+                        },
+                        {
+                            "code": "GECE101",
+                            "credits": 3
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -35,10 +35,26 @@ const connectDB = async () => {
         // Check if we should use embedded DB (if no MONGO_URI or explicit override)
         if (!mongoUri || mongoUri.includes('memory-server')) {
             try {
+                // Ensure dbPath exists
+                if (!fs.existsSync(path.join(dataDir, 'db'))) {
+                    fs.mkdirSync(path.join(dataDir, 'db'), { recursive: true });
+                }
+
+                // Remove lock file if it exists (fixes restart issues on Windows)
+                const lockFile = path.join(dataDir, 'db', 'mongod.lock');
+                if (fs.existsSync(lockFile)) {
+                    try {
+                        fs.unlinkSync(lockFile);
+                    } catch (e) {
+                        console.warn('Could not remove lock file, might be in use:', e.message);
+                    }
+                }
+
                 mongod = await MongoMemoryServer.create({
                     instance: {
                         dbPath: path.join(dataDir, 'db'),
                         storageEngine: 'wiredTiger',
+                        // port: 27017 // Optional: Force a port to avoid random ones
                     },
                     binary: {
                         version: '6.0.4',
@@ -70,13 +86,27 @@ const connectDB = async () => {
 };
 
 // Handle cleanup
-process.on('SIGINT', async () => {
+const gracefulShutdown = async () => {
+    if (mongod) {
+        console.log('Stopping MongoDB...');
+        await mongoose.disconnect();
+        await mongod.stop();
+        console.log('MongoDB stopped.');
+    }
+    process.exit(0);
+};
+
+// Nodemon restart signal
+process.once('SIGUSR2', async () => {
     if (mongod) {
         await mongoose.disconnect();
         await mongod.stop();
     }
-    process.exit(0);
+    process.kill(process.pid, 'SIGUSR2');
 });
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 connectDB();
 

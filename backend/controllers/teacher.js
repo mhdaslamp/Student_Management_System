@@ -5,8 +5,12 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 exports.createBatch = async (req, res) => {
-    const { name, branch } = req.body;
+    const { name } = req.body; // Branch is auto-assigned
     try {
+        // Fetch the teacher to get their department
+        const teacher = await User.findById(req.user.userId);
+        if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
+
         const existingBatch = await Batch.findOne({ name });
         if (existingBatch) {
             return res.status(400).json({ message: 'Batch with this name already exists' });
@@ -14,12 +18,52 @@ exports.createBatch = async (req, res) => {
 
         const newBatch = new Batch({
             name,
-            branch,
+            branch: teacher.department, // Auto-assign department
             createdBy: req.user.userId
         });
 
         await newBatch.save();
         res.status(201).json(newBatch);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.updateStudent = async (req, res) => {
+    const { name, admissionNo, registerId } = req.body;
+    try {
+        let student = await User.findById(req.params.studentId);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        student.name = name || student.name;
+        student.admissionNo = admissionNo || student.admissionNo;
+        student.registerId = registerId || student.registerId;
+
+        await student.save();
+        res.json({ message: 'Student updated', student });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.deleteStudent = async (req, res) => {
+    try {
+        const studentId = req.params.studentId;
+        const student = await User.findById(studentId);
+
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        // Remove student from their batch's student list
+        if (student.batch) {
+            await Batch.findByIdAndUpdate(student.batch, { $pull: { students: studentId } });
+        }
+
+        // Delete the student user account
+        await User.deleteOne({ _id: studentId });
+
+        res.json({ message: 'Student deleted successfully' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

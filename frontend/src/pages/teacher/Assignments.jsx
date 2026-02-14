@@ -10,11 +10,6 @@ const TeacherAssignments = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    useEffect(() => {
-        fetchAssignments();
-        fetchBatches();
-    }, []);
-
     const fetchAssignments = async () => {
         try {
             const res = await axios.get('/academic/assignment');
@@ -28,6 +23,13 @@ const TeacherAssignments = () => {
             setBatches(res.data);
         } catch (error) { console.error(error); }
     };
+
+    useEffect(() => {
+        fetchAssignments();
+        fetchBatches();
+    }, []);
+
+
 
     const handleCreate = async (e) => {
         e.preventDefault();

@@ -17,7 +17,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Custom empty field validation
+       
         let hasError = false;
         const newErrors = { identifier: false, password: false };
 
@@ -50,7 +50,7 @@ const Login = () => {
         if (result.success) {
             navigate('/');
         } else {
-            // Provide a more descriptive error if the backend just returns "Login failed"
+           
             setError(result.message === 'Login failed' ? 'Incorrect email or password' : result.message);
         }
     };

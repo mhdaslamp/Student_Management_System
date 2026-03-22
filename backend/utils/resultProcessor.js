@@ -132,17 +132,20 @@ const processedData = async (buffer) => {
 
         // FIX: Match ALL register number prefixes used in KTU PDFs:
         //   - PKD21IT068   (regular)
-        //   - LPKD20IT065  (lateral entry — LP prefix)
-        //   - IDK19IT017   (other college — IDK prefix)
-        // We always normalise to the PKD... core for storage.
-        const regNoPattern = /(?:LP|IDK)?(PKD\d{2}[A-Z]{2,3}\d{3})/g;
+        //   - LPKD20IT065  (lateral entry)
+        //   - IDK19IT017   (other college)
+        const regNoPattern = /([A-Z]+\d{2}[A-Z]{2,3}\d{3})/gi;
 
         let match;
         const studentIndices = [];
         while ((match = regNoPattern.exec(fullText)) !== null) {
+            const fullRegNo = match[1].toUpperCase();
+            const deptMatch = fullRegNo.match(/\d{2}([A-Z]{2,3})\d{3}/);
+            const deptCode = deptMatch ? deptMatch[1] : 'XX';
+
             studentIndices.push({
-                regNo: match[1],           // normalised: PKD21IT068
-                dept: match[1].substring(5, 7), // e.g. IT
+                regNo: fullRegNo,            // exact original register number
+                dept: deptCode,              // safely extracted dept code
                 start: match.index,
                 end: 0
             });
@@ -264,6 +267,28 @@ const generateExcel = async (processedData) => {
     const { rawStudents, metadata } = processedData;
     const { examName, semester, scheme } = metadata;
 
+    // Calculate majority year to determine regular vs supply for this exam
+    const yearCounts = {};
+    rawStudents.forEach(s => {
+        const yearMatch = (s.registerId || '').match(/\d{2}/);
+        const year = yearMatch ? yearMatch[0] : '00';
+        s.admissionYear = year;
+        yearCounts[year] = (yearCounts[year] || 0) + 1;
+    });
+
+    let majorityYear = null;
+    let maxCount = 0;
+    for (const year in yearCounts) {
+        if (yearCounts[year] > maxCount) {
+            maxCount = yearCounts[year];
+            majorityYear = year;
+        }
+    }
+    
+    rawStudents.forEach(s => {
+        s.studentType = (s.admissionYear === majorityYear) ? 'Regular' : 'Supply';
+    });
+
     const workbook = new ExcelJS.Workbook();
 
     // Group by Dept
@@ -293,19 +318,27 @@ const generateExcel = async (processedData) => {
         worksheet.getCell('A3').value = `DEPARTMENT: ${dept}`;
         worksheet.getCell('A3').font = { bold: true, size: 11 };
 
-        // Statistics
-        const totalS = studentList.length;
-        const passS = studentList.filter(s => s.isPass).length;
+        // Statistics (Based ONLY on Regular Students)
+        const regularStudents = studentList.filter(s => s.studentType === 'Regular');
+
+        const totalS = regularStudents.length;
+        const passS = regularStudents.filter(s => s.isPass).length;
         const failS = totalS - passS;
         const passPerc = totalS > 0 ? ((passS / totalS) * 100).toFixed(2) : 0;
 
         worksheet.mergeCells('A5:E5');
-        worksheet.getCell('A5').value = "OVERALL PERFORMANCE ANALYSIS";
+        worksheet.getCell('A5').value = "OVERALL PERFORMANCE ANALYSIS (REGULAR STUDENTS)";
         worksheet.getCell('A5').font = { bold: true, color: { argb: 'FF000000' } };
 
         worksheet.mergeCells('A6:E6');
         worksheet.getCell('A6').value = `Total Students: ${totalS} | Pass: ${passS} | Fail: ${failS} | Pass%: ${passPerc}%`;
         worksheet.getCell('A6').font = { bold: true };
+
+        const regularCount = studentList.filter(s => s.studentType === 'Regular').length;
+        const supplyCount = studentList.filter(s => s.studentType === 'Supply').length;
+        worksheet.mergeCells('A7:E7');
+        worksheet.getCell('A7').value = `Regular Students: ${regularCount} | Supply Students: ${supplyCount}`;
+        worksheet.getCell('A7').font = { bold: true, color: { argb: 'FF0000FF' } };
 
         // Collect all distinct courses for this dept + build code→name map for headers
         const allCourses = new Set();
@@ -322,6 +355,7 @@ const generateExcel = async (processedData) => {
         const headerRow = [
             'Register No',
             'Student Name',
+            'Student Type',
             ...deptCourses.map(c => codeToName[c] ? `${c} – ${codeToName[c]}` : c),
             'Total Credits', 'SGPA', 'Result'
         ];
@@ -335,6 +369,7 @@ const generateExcel = async (processedData) => {
             const rowData = [
                 s.registerId,
                 s.name || '-',   // Student Name (from DB lookup if available)
+                s.studentType,   // Student Type (Regular/Supply)
             ];
             deptCourses.forEach(c => {
                 rowData.push(s.grades[c] || '-');
@@ -360,10 +395,10 @@ const generateExcel = async (processedData) => {
 
         // --- Toppers Analysis ---
         let currentRow = lastRow + 3;
-        worksheet.getCell(`A${currentRow}`).value = "TOP 10 PERFORMERS";
+        worksheet.getCell(`A${currentRow}`).value = "TOP 10 PERFORMERS (REGULAR)";
         worksheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: 'FF0000FF' } }; // Blue
 
-        const toppers = studentList.filter(s => s.isPass).sort((a, b) => b.sgpa - a.sgpa).slice(0, 10);
+        const toppers = regularStudents.filter(s => s.isPass).sort((a, b) => b.sgpa - a.sgpa).slice(0, 10);
         toppers.forEach((t, i) => {
             currentRow++;
             worksheet.getCell(`A${currentRow}`).value = `${i + 1}. ${t.registerId}`;
@@ -373,12 +408,12 @@ const generateExcel = async (processedData) => {
 
         // --- Subject Failure Analysis ---
         currentRow += 2;
-        worksheet.getCell(`A${currentRow}`).value = "SUBJECT-WISE FAILURE ANALYSIS";
+        worksheet.getCell(`A${currentRow}`).value = "SUBJECT-WISE FAILURE ANALYSIS (REGULAR)";
         worksheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: 'FFFF0000' } }; // Red
 
         deptCourses.forEach((code, i) => {
             currentRow++;
-            const failCount = studentList.filter(s => {
+            const failCount = regularStudents.filter(s => {
                 const g = s.grades[code];
                 return g && ['F', 'FE', 'I', 'ABSENT'].includes(g);
             }).length;

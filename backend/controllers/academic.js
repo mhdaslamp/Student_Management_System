@@ -138,46 +138,60 @@ const uploadResultPDF = async (req, res) => {
         const { rawStudents, metadata } = await processedData(req.file.buffer);
         console.log(`Parsed ${rawStudents.length} students from PDF.`);
 
-        // 2. Generate Excel
+        // 2. Pre-fetch all student accounts in ONE bulk query and attach names to rawStudents
+        const allRegIds = rawStudents.map(s => s.registerId.trim());
+        const foundUsers = await User.find({ registerId: { $in: allRegIds } })
+                                     .select('name registerId batch _id');
+        // Build lookup map: UPPERCASE registerId → User doc
+        const userMap = {};
+        foundUsers.forEach(u => { userMap[u.registerId.trim().toUpperCase()] = u; });
+        // Attach name to each rawStudent so generateExcel can include it
+        rawStudents.forEach(s => {
+            const user = userMap[s.registerId.trim().toUpperCase()];
+            if (user) s.name = user.name;
+        });
+
+        // 3. Generate Excel (Student Name column now populated where available)
         const excelBuffer = await generateExcel({ rawStudents, metadata });
 
-        // 3. Save ALL students to DB, keyed ONLY on registerId ─ no batch/account required
+        // 4. Save ALL students to DB, keyed ONLY on registerId — no batch/account required
         const bulkOperations = [];
 
         for (const studentData of rawStudents) {
-            // Try to find an existing User account by registerId (optional link, never a blocker)
-            const student = await User.findOne({
-                registerId: { $regex: new RegExp(`^\\s*${studentData.registerId.trim()}\\s*$`, 'i') }
-            });
+            const student = userMap[studentData.registerId.trim().toUpperCase()]; // reuse pre-fetched
 
             const resultPayload = {
                 registerId: studentData.registerId.trim(),
                 type: examType || 'university',
                 title: metadata.examTitle || `${semester || metadata.semester} Result`,
-                subjects: Object.entries(studentData.grades).map(([code, grade]) => ({
-                    subCode: code,
-                    name: code,
-                    grade
-                })),
+                subjects: studentData.subjects
+                    ? studentData.subjects.map(s => ({
+                        subCode: s.code,
+                        name:    s.name,
+                        grade:   s.grade
+                    }))
+                    : Object.entries(studentData.grades).map(([code, grade]) => ({
+                        subCode: code,
+                        name:    code,
+                        grade
+                    })),
                 sgpa: studentData.sgpa,
                 totalCredits: studentData.totalCredits,
                 published: false,
                 date: new Date()
             };
 
-            // Link student account + batch if they already exist (bonus, not required)
             if (student) {
                 resultPayload.student = student._id;
                 if (student.batch) resultPayload.batch = student.batch;
             }
 
-            // Always upsert — keyed on registerId + title + type
             bulkOperations.push({
                 updateOne: {
                     filter: {
                         registerId: resultPayload.registerId,
-                        type: resultPayload.type,
-                        title: resultPayload.title
+                        type:       resultPayload.type,
+                        title:      resultPayload.title
                     },
                     update: { $set: resultPayload },
                     upsert: true
@@ -190,7 +204,7 @@ const uploadResultPDF = async (req, res) => {
             console.log(`Saved ${bulkOperations.length} results. Upserted: ${bulkResult.upsertedCount}, Modified: ${bulkResult.modifiedCount}`);
         }
 
-        // 4. Return Excel file
+        // 5. Return Excel file
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=university_results.xlsx');
         res.send(excelBuffer);
@@ -214,8 +228,8 @@ exports.downloadBatchResult = async (req, res) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
+        const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
 
-        // Fetch Results
         const results = await Result.find({
             batch: batchId,
             title: title,
@@ -226,33 +240,35 @@ exports.downloadBatchResult = async (req, res) => {
             return res.status(404).send('No results found for this batch and title.');
         }
 
-        // Transform to "rawStudents" format expected by generateExcel
-        // rawStudents object: { registerId, name, sgpa, totalCredits, grades: { subCode: grade } }
         const rawStudents = results.map(r => {
+            const regId = (r.registerId || r.student?.registerId || '').trim();
+            // Extract dept from registerId e.g. PKD24CE001 → CE (chars index 5-6)
+            const dept = regId.length >= 7 ? regId.substring(5, 7).toUpperCase() : 'XX';
             const grades = {};
-            r.subjects.forEach(sub => {
-                grades[sub.subCode] = sub.grade;
-            });
+            r.subjects.forEach(sub => { grades[sub.subCode] = sub.grade; });
+            const isPass = !r.subjects.some(sub => failedGrades.includes(sub.grade));
             return {
-                registerId: r.registerId || r.student?.registerId,
+                registerId: regId,
                 name: r.student?.name,
+                dept,
                 sgpa: r.sgpa,
                 totalCredits: r.totalCredits,
-                grades: grades // This format is slightly different from processedData output but generateExcel should adapt or we match it.
+                isPass,
+                grades
             };
         });
 
-        // Mock Metadata (since we don't store it all, but we have title)
         const metadata = {
-            college: "Musaliar College of Engineering & Technology", // Hardcoded or from DB
+            college: "Musaliar College of Engineering & Technology",
+            examName: title,
             semester: title,
-            batch: results[0].batch // ID
+            scheme: '2024',
+            batch: results[0].batch
         };
 
         const excelBuffer = await generateExcel({ rawStudents, metadata });
-
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=results.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename="${title}.xlsx"`);
         res.send(excelBuffer);
 
     } catch (err) {
@@ -261,10 +277,11 @@ exports.downloadBatchResult = async (req, res) => {
     }
 };
 
-// Download Excel for all students across all batches for a given exam title (for EC)
+// Download Excel for all students across all batches for a given exam title (for EC + Teachers)
 exports.downloadResultExcelGlobal = async (req, res) => {
     try {
         const { title, type } = req.query;
+        const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
 
         const results = await Result.find({
             title: title,
@@ -276,25 +293,43 @@ exports.downloadResultExcelGlobal = async (req, res) => {
         }
 
         const rawStudents = results.map(r => {
+            const regId = (r.registerId || r.student?.registerId || '').trim();
+            // Extract dept from registerId e.g. PKD24CE001 → CE (chars index 5-6)
+            const dept = regId.length >= 7 ? regId.substring(5, 7).toUpperCase() : 'XX';
+            // Build grades map for backward-compat AND pass full subjects (with course names)
             const grades = {};
             r.subjects.forEach(sub => { grades[sub.subCode] = sub.grade; });
+            const isPass = !r.subjects.some(sub => failedGrades.includes(sub.grade));
             return {
-                registerId: r.registerId || r.student?.registerId,
+                registerId: regId,
                 name: r.student?.name,
+                dept,
                 sgpa: r.sgpa,
                 totalCredits: r.totalCredits,
-                grades
+                isPass,
+                grades,
+                // Pass full subjects so generateExcel can use course names in headers
+                subjects: r.subjects.map(sub => ({
+                    code:        sub.subCode,
+                    name:        sub.name || sub.subCode,
+                    grade:       sub.grade,
+                    credit:      0,
+                    gradePoints: 0
+                }))
             };
         });
 
+        // Detect scheme from title (e.g. "...2019 Scheme..." → '2019')
+        const schemeMatch = title && title.match(/\b(2019|2024|2021)\b/);
         const metadata = {
             college: "Musaliar College of Engineering & Technology",
+            examName: title,
             semester: title,
+            scheme: schemeMatch ? schemeMatch[1] : '2019',
             batch: null
         };
 
         const excelBuffer = await generateExcel({ rawStudents, metadata });
-
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${title}.xlsx"`);
         res.send(excelBuffer);
@@ -643,14 +678,21 @@ exports.getCollegeResultAnalysis = async (req, res) => {
 
 exports.getDepartmentResultAnalysis = async (req, res) => {
     try {
-        const { title, type } = req.query;
+        const { title, type, dept: deptQuery } = req.query;
         const user = await User.findById(req.user.userId);
 
         let department = null;
         let batchIds = [];
 
-        if (user && user.department) {
-            department = user.department.trim(); // e.g. "IT", "CS", "CE"
+        // Priority: query param > user profile (lets EC pass ?dept=IT explicitly)
+        if (deptQuery) {
+            department = deptQuery.trim().toUpperCase();
+        } else if (user && user.department) {
+            department = user.department.trim().toUpperCase();
+        }
+
+        if (!department) {
+            return res.status(400).json({ message: 'No department assigned. Pass ?dept=IT in the URL.' });
         }
 
         if (department) {
@@ -659,31 +701,20 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
             console.log(`[Dept Analysis] Dept: ${department}, Batches found: ${batchIds.length}`);
         }
 
-        if (!department) {
-            return res.status(400).json({ message: 'No department assigned to this user.' });
-        }
-
-        // Dual query strategy:
-        // 1. Results linked to the department's batches (for students already assigned to a batch)
-        // 2. Results where registerId contains the dept code (for universally-stored results)
-        //    RegId format: PKD24IT001 → dept code at positions 5-7 (2 chars)
-
         const baseQuery = { title, type: type || 'university' };
 
         const [batchResults, regIdResults] = await Promise.all([
-            // Strategy 1: By batch
             batchIds.length
                 ? Result.find({ ...baseQuery, batch: { $in: batchIds } }).populate('student', 'name registerId').populate('batch', 'name')
                 : Promise.resolve([]),
 
-            // Strategy 2: By registerId pattern (dept code, case-insensitive, at chars 5-6 of regId)
+            // Strategy 2: By registerId pattern — PKD21IT068, LPKD20IT065 both normalised to PKD prefix
             Result.find({
                 ...baseQuery,
                 registerId: { $regex: new RegExp(`^PKD\\d{2}${department}\\d+`, 'i') }
             }).populate('student', 'name registerId').populate('batch', 'name')
         ]);
 
-        // Merge and deduplicate by _id
         const seen = new Set();
         const results = [...batchResults, ...regIdResults].filter(r => {
             const id = r._id.toString();
@@ -715,7 +746,12 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
             let isStudentFailed = false;
             r.subjects.forEach(sub => {
                 if (!subjectStats[sub.subCode]) {
-                    subjectStats[sub.subCode] = { code: sub.subCode, pass: 0, fail: 0 };
+                    subjectStats[sub.subCode] = {
+                        code: sub.subCode,
+                        name: sub.name && sub.name !== sub.subCode ? sub.name : sub.subCode,
+                        pass: 0,
+                        fail: 0
+                    };
                 }
                 if (failedGrades.includes(sub.grade)) {
                     subjectStats[sub.subCode].fail++;

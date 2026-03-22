@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import ResultAnalysis from './ResultAnalysis';
+import { useAuth } from '../../context/AuthContext';
 import { Upload, FileText, Eye, CheckCircle, Trash2, X, BarChart2, Globe, Download, GraduationCap } from 'lucide-react';
 
 const TeacherResults = ({ batches }) => {
+    const { user } = useAuth();
+    const isExamController = user?.role === 'exam_controller';
+
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -164,15 +168,17 @@ const TeacherResults = ({ batches }) => {
     const BatchActions = ({ item }) => (
         <div className="flex items-center gap-2 flex-wrap justify-end">
             <button onClick={() => handleViewDetails(item, 'batch')} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Details"><Eye className="h-4 w-4" /></button>
-            <button onClick={() => handleDownload(item, false)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download Excel"><Download className="h-4 w-4" /></button>
+            <button onClick={() => handleDownload(item, item.type === 'university')} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download Excel"><Download className="h-4 w-4" /></button>
             <button onClick={() => handleAnalysis(item, 'department')} className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors" title="Dept Analysis"><BarChart2 className="h-4 w-4" /></button>
             <button onClick={() => handleAnalysis(item, 'college')} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="College Analysis"><Globe className="h-4 w-4" /></button>
-            {!item.published && (
+            {isExamController && !item.published && (
                 <button onClick={() => handlePublish(item)} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" /> Publish
                 </button>
             )}
-            <button onClick={() => handleDelete(item)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+            {isExamController && (
+                <button onClick={() => handleDelete(item)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+            )}
         </div>
     );
 
@@ -230,65 +236,67 @@ const TeacherResults = ({ batches }) => {
 
             <hr className="border-gray-100" />
 
-            {/* ─── INTERNAL MARKS SECTION ─── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Upload */}
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-fit">
-                    <div className="flex items-center mb-6">
-                        <div className="h-10 w-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center mr-4">
-                            <Upload className="h-5 w-5" />
+            {/* ─── UPLOAD + BATCH RESULTS SECTION ─── */}
+            <div className={`grid grid-cols-1 gap-8 ${isExamController ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
+                {/* Upload — Exam Controller only */}
+                {isExamController && (
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-fit">
+                        <div className="flex items-center mb-6">
+                            <div className="h-10 w-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center mr-4">
+                                <Upload className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg">Upload University Results</h3>
+                                <p className="text-gray-500 text-sm">Upload & publish university exam results.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 text-lg">Upload Internal Marks</h3>
-                            <p className="text-gray-500 text-sm">Upload internal assessment results.</p>
-                        </div>
-                    </div>
 
-                    <form onSubmit={handleUpload} className="space-y-4">
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Target Batch</label>
-                            <select
-                                value={selectedBatch}
-                                onChange={(e) => setSelectedBatch(e.target.value)}
-                                required
-                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:ring-2 focus:ring-violet-100 outline-none cursor-pointer"
+                        <form onSubmit={handleUpload} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Target Batch</label>
+                                <select
+                                    value={selectedBatch}
+                                    onChange={(e) => setSelectedBatch(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:ring-2 focus:ring-violet-100 outline-none cursor-pointer"
+                                >
+                                    <option value="">Select a batch...</option>
+                                    {batches?.map(batch => (
+                                        <option key={batch._id} value={batch._id}>{batch.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors relative cursor-pointer group">
+                                <input
+                                    type="file"
+                                    accept=".pdf,.xlsx,.csv"
+                                    onChange={(e) => setFile(e.target.files[0])}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="flex flex-col items-center">
+                                    <FileText className="h-8 w-8 text-gray-300 mb-2 group-hover:text-violet-400 transition-colors" />
+                                    <span className="font-medium text-gray-700 text-sm">
+                                        {file ? file.name : 'Click to upload file'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {message && (
+                                <div className={`p-3 rounded-xl text-xs font-bold text-center ${message.includes('SUCCESS') ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                    {message}
+                                </div>
+                            )}
+
+                            <button
+                                disabled={!file || loading}
+                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 disabled:opacity-50 text-sm"
                             >
-                                <option value="">Select a batch...</option>
-                                {batches?.map(batch => (
-                                    <option key={batch._id} value={batch._id}>{batch.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors relative cursor-pointer group">
-                            <input
-                                type="file"
-                                accept=".pdf,.xlsx,.csv"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            />
-                            <div className="flex flex-col items-center">
-                                <FileText className="h-8 w-8 text-gray-300 mb-2 group-hover:text-violet-400 transition-colors" />
-                                <span className="font-medium text-gray-700 text-sm">
-                                    {file ? file.name : 'Click to upload file'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {message && (
-                            <div className={`p-3 rounded-xl text-xs font-bold text-center ${message.includes('SUCCESS') ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                                {message}
-                            </div>
-                        )}
-
-                        <button
-                            disabled={!file || loading}
-                            className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 disabled:opacity-50 text-sm"
-                        >
-                            {loading ? 'Processing...' : 'Upload Draft'}
-                        </button>
-                    </form>
-                </div>
+                                {loading ? 'Processing...' : 'Upload Draft'}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
                 {/* Batch Results History */}
                 <div className="space-y-4">
@@ -371,7 +379,7 @@ const TeacherResults = ({ batches }) => {
                             )}
                         </div>
 
-                        {detailSource === 'batch' && !viewingResult.published && (
+                        {isExamController && detailSource === 'batch' && !viewingResult.published && (
                             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
                                 <button
                                     onClick={() => { handlePublish(viewingResult); setViewingResult(null); }}

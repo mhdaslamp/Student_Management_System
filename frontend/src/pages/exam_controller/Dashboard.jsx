@@ -23,6 +23,8 @@ const ExamControllerDashboard = () => {
 
     // Analysis
     const [viewingAnalysis, setViewingAnalysis] = useState(null);
+    const [deptPickerFor, setDeptPickerFor] = useState(null); // item for which dept picker is open
+    const DEPTS = ['IT', 'CS', 'EC', 'EE', 'CE', 'ME'];
 
     useEffect(() => {
         fetchDrafts();
@@ -144,41 +146,48 @@ const ExamControllerDashboard = () => {
         setViewingAnalysis({ ...item, mode: 'college' });
     };
 
-    const handleDeptAnalysis = (item) => {
-        setViewingAnalysis({ ...item, mode: 'department' });
+    const handleDeptAnalysis = (item, dept) => {
+        // Pass the chosen dept as extra prop so ResultAnalysis can add ?dept=XX to URL
+        setDeptPickerFor(null);
+        setViewingAnalysis({ ...item, mode: 'department', deptOverride: dept });
     };
 
     // Reusable result card action buttons
     const ResultActions = ({ item, isDraft }) => (
         <div className="flex items-center gap-2 flex-wrap justify-end">
-            <button
-                onClick={() => handleViewDetails(item)}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="View Student Details"
-            >
-                <Eye className="h-4 w-4" />
-            </button>
+
             <button
                 onClick={() => handleDownload(item)}
                 className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                 title="Download Excel"
-            >
-                <Download className="h-4 w-4" />
-            </button>
-            <button
-                onClick={() => handleDeptAnalysis(item)}
-                className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
-                title="Department Analysis"
-            >
-                <BarChart2 className="h-4 w-4" />
-            </button>
+            ><Download className="h-4 w-4" /></button>
+
+            {/* Dept Analysis — shows a dept picker for EC users */}
+            <div className="relative">
+                <button
+                    onClick={() => setDeptPickerFor(deptPickerFor === item.title ? null : item.title)}
+                    className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                    title="Department Analysis"
+                ><BarChart2 className="h-4 w-4" /></button>
+                {deptPickerFor === item.title && (
+                    <div className="absolute right-0 top-9 z-50 bg-white border border-gray-200 rounded-xl shadow-xl p-2 flex flex-wrap gap-1 w-44">
+                        <p className="w-full text-xs text-gray-500 font-semibold px-1 mb-1">Select Department</p>
+                        {DEPTS.map(d => (
+                            <button
+                                key={d}
+                                onClick={() => handleDeptAnalysis(item, d)}
+                                className="px-3 py-1 text-xs font-bold bg-violet-50 hover:bg-violet-600 hover:text-white text-violet-700 rounded-lg transition-colors"
+                            >{d}</button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             <button
                 onClick={() => handleCollegeAnalysis(item)}
                 className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 title="College Analysis"
-            >
-                <Globe className="h-4 w-4" />
-            </button>
+            ><Globe className="h-4 w-4" /></button>
             {isDraft && (
                 <button
                     onClick={() => handlePublish(item)}
@@ -407,6 +416,7 @@ const ExamControllerDashboard = () => {
                     title={viewingAnalysis.title}
                     type={viewingAnalysis.type}
                     mode={viewingAnalysis.mode}
+                    deptOverride={viewingAnalysis.deptOverride || null}
                     onClose={() => setViewingAnalysis(null)}
                 />
             )}

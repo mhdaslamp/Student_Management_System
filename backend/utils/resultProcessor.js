@@ -25,9 +25,12 @@ const detectMetadata = (text) => {
         }
     }
 
-    // Detect Scheme
-    let scheme = "2019";
-    if (text.includes("2024")) {
+    // Detect Scheme — look for explicit "(YYYY Scheme)" pattern first
+    let scheme = "2019"; // default
+    const schemeMatch = text.match(/\((\d{4})\s*Scheme\)/i);
+    if (schemeMatch) {
+        scheme = schemeMatch[1]; // e.g. "2019" or "2024"
+    } else if (text.includes("2024 Scheme") || text.includes("Scheme 2024")) {
         scheme = "2024";
     }
 
@@ -96,39 +99,30 @@ const processedData = async (buffer) => {
         // --- Build Semester Totals Map ---
         let semesterTotals = fullJsonData.semester_total_credits || {};
 
-        // 2019 Scheme does not have a global semester_total_credits map
-        // We need to extract it from the first available department if missing
+        // 2019 Scheme: build semesterTotals from first dept as a generic fallback
         if (Object.keys(semesterTotals).length === 0 && fullJsonData.departments) {
             const firstDept = fullJsonData.departments[0];
             if (firstDept && firstDept.semesters) {
                 firstDept.semesters.forEach(s => {
-                    // Convert integer semester to "S1", "S2" format
-                    const semKey = `S${s.semester}`;
-                    semesterTotals[semKey] = s.total_credit;
+                    semesterTotals[`S${s.semester}`] = s.total_credit;
                 });
             }
         }
 
-        // Also ensure 2024 integer keys (if any) are mapped to S-prefix if needed, 
-        // though 2024 file seems to use "S1" keys in global map.
-
-
-        // --- Build Credit Lookup ---
+        // --- Build Credit + Name Lookups (all depts, all semesters) ---
         const creditLookup = {};
-
-        // Handle 2024 "curricula" vs 2019 "departments"
+        const nameLookup = {}; // code (no spaces) → course name
         const curriculaList = fullJsonData.curricula || fullJsonData.departments || [];
-
         curriculaList.forEach(dept => {
             (dept.semesters || []).forEach(sem => {
                 (sem.courses || []).forEach(course => {
-                    // Normalize keys: 2024 uses "code"/"credits", 2019 uses "course_code"/"credit"
                     const code = course.code || course.course_code;
                     const credit = course.credits || course.credit;
-
+                    const name = course.course_name || null;
                     if (code) {
-                        const cleanCode = code.replace(/\s/g, "");
-                        creditLookup[cleanCode] = credit;
+                        const clean = code.replace(/\s/g, '');
+                        creditLookup[clean] = credit;
+                        if (name) nameLookup[clean] = name;
                     }
                 });
             });
@@ -136,35 +130,50 @@ const processedData = async (buffer) => {
 
         const rawStudents = [];
 
-        // Matches "PKD24CE001" or "PKD19CS001" etc.
-        const regNoPattern = /(PKD\d{2}([A-Z]{2})\d{3})/g; // Modified to standard regex object for exec loop
-
-        // Matches "CODE(GRADE)" e.g. "MAT101(A+)" or "EST 130(B)"
+        // FIX: Match ALL register number prefixes used in KTU PDFs:
+        //   - PKD21IT068   (regular)
+        //   - LPKD20IT065  (lateral entry — LP prefix)
+        //   - IDK19IT017   (other college — IDK prefix)
+        // We always normalise to the PKD... core for storage.
+        const regNoPattern = /(?:LP|IDK)?(PKD\d{2}[A-Z]{2,3}\d{3})/g;
 
         let match;
         const studentIndices = [];
         while ((match = regNoPattern.exec(fullText)) !== null) {
             studentIndices.push({
-                regNo: match[1],
-                dept: match[1].substring(5, 7), // e.g. CS from PKD19CS001
+                regNo: match[1],           // normalised: PKD21IT068
+                dept: match[1].substring(5, 7), // e.g. IT
                 start: match.index,
                 end: 0
             });
         }
 
-        // Determine end indices
+        // Determine end indices — each block ends where the next register number starts
         for (let i = 0; i < studentIndices.length; i++) {
-            if (i < studentIndices.length - 1) {
-                studentIndices[i].end = studentIndices[i + 1].start;
-            } else {
-                studentIndices[i].end = fullText.length;
-            }
+            studentIndices[i].end = i < studentIndices.length - 1
+                ? studentIndices[i + 1].start
+                : fullText.length;
         }
 
-        for (const student of studentIndices) {
-            const block = fullText.substring(student.start, student.end).replace(/\n/g, ' ');
+        // Dept section header pattern — appears at the top of each department page in the PDF
+        // e.g. "COMPUTER SCIENCE & ENGINEERING[Full Time]" or "Course CodeCourse"
+        const deptSectionHeaderPattern = /([A-Z][A-Z &]+(?:ENGINEERING|TECHNOLOGY|SCIENCE)[^\n]*\[|\bCourse\s*Code\s*Course\b)/i;
 
-            // Extract Grades
+        for (const student of studentIndices) {
+            let rawBlock = fullText.substring(student.start, student.end);
+
+            // FIX: Truncate the block at the next department section header.
+            // The last student in a dept section (e.g. IT) will have their block extend into
+            // the next dept's header (e.g. CS) before any CS register number appears.
+            // We cut the block there to avoid capturing CS course grades.
+            const headerMatch = deptSectionHeaderPattern.exec(rawBlock);
+            if (headerMatch) {
+                rawBlock = rawBlock.substring(0, headerMatch.index);
+            }
+
+            const block = rawBlock.replace(/\n/g, ' ');
+
+            // Extract subject grades from this student's block only
             const courseGradePattern = /([A-Z]{3,}\d{3})\s*\(([^)]+)\)/g;
             const grades = {};
             let gMatch;
@@ -173,50 +182,67 @@ const processedData = async (buffer) => {
             }
 
             if (Object.keys(grades).length > 0) {
-                // --- SGPA CALCULATION (Fixed Denominator) ---
-                let totalWeightedPoints = 0;
-                let totalCreds = 0; // Earned Credits
+                // --- CORRECT DENOMINATOR: match by student's actual subject codes ---
+                // Look through all depts to find the one whose courses match this student's codes
+                let officialDenom = 0;
+                if (fullJsonData.departments || fullJsonData.curricula) {
+                    const deptList = fullJsonData.departments || fullJsonData.curricula;
+                    const semNum = parseInt(semester.replace('S', ''), 10);
+                    const studentCodes = new Set(Object.keys(grades).map(c => c.replace(/\s/g, '')));
 
-                // Denominator Logic: Use fixed value from JSON
-                let officialDenom = semesterTotals[semester] || 0;
+                    for (const deptData of deptList) {
+                        const semData = deptData.semesters?.find(s => s.semester === semNum);
+                        if (!semData) continue;
 
-                // Fallback / Validation
-                if (officialDenom === 0) {
-                    // Try to guess or warn? For now, we stick to the user instruction: "i have given fixed credit in json"
-                    // If 0, SGPA will be 0/NaN potentially.
-                    if (scheme === "2024" && semester === "S2") officialDenom = 24; // Hardcoded fallback if JSON fails/is missing
-                    else officialDenom = 21; // Robust fallback
+                        const deptCodes = (semData.courses || []).map(c => (c.code || c.course_code || '').replace(/\s/g, ''));
+                        const overlap = deptCodes.filter(dc => studentCodes.has(dc)).length;
+                        if (overlap > 0) {
+                            officialDenom = semData.total_credit;
+                            break; // Use first matching dept
+                        }
+                    }
                 }
 
+                // Fallback chain
+                if (!officialDenom) officialDenom = semesterTotals[semester] || 0;
+                if (!officialDenom) officialDenom = (scheme === '2024' && semester === 'S2') ? 24 : 21;
 
                 const failGrades = ['F', 'FE', 'I', 'ABSENT', 'WITHHELD'];
                 const isPass = !Object.values(grades).some(g => failGrades.includes(g));
 
+                let totalWeightedPoints = 0;
+                let totalCreds = 0;
+
+                // Build enriched subjects array with course names
+                const subjects = [];
                 for (const [code, grade] of Object.entries(grades)) {
-                    const creds = getCourseCredits(code, creditLookup);
+                    const cleanCode = code.replace(/\s/g, '');
+                    const creds = getCourseCredits(cleanCode, creditLookup);
                     const gp = GRADE_POINTS[grade] || 0;
-
-                    totalWeightedPoints += (creds * gp);
-
-                    if (gp > 0) {
-                        totalCreds += creds;
-                    }
+                    const name = nameLookup[cleanCode] || code; // fallback to code if no name
+                    totalWeightedPoints += creds * gp;
+                    if (gp > 0) totalCreds += creds;
+                    subjects.push({ code, name, grade, credit: creds, gradePoints: gp });
                 }
 
+                let sgpa = officialDenom > 0
+                    ? parseFloat((totalWeightedPoints / officialDenom).toFixed(2))
+                    : 0.0;
 
-                let sgpa = 0.0;
-                if (officialDenom > 0) {
-                    sgpa = parseFloat((totalWeightedPoints / officialDenom).toFixed(2));
+                // Sanity cap — SGPA can never exceed 10
+                if (sgpa > 10) {
+                    console.warn(`[WARN] SGPA ${sgpa} capped for ${student.regNo} (denom=${officialDenom}, pts=${totalWeightedPoints})`);
+                    sgpa = 10.0;
                 }
-
 
                 rawStudents.push({
                     registerId: student.regNo,
                     dept: student.dept,
-                    grades: grades,
-                    sgpa: sgpa,
+                    grades,     // kept for backward compatibility
+                    subjects,   // enriched: [{code, name, grade, credit, gradePoints}]
+                    sgpa,
                     totalCredits: totalCreds,
-                    isPass: isPass
+                    isPass
                 });
             }
         }
@@ -281,13 +307,24 @@ const generateExcel = async (processedData) => {
         worksheet.getCell('A6').value = `Total Students: ${totalS} | Pass: ${passS} | Fail: ${failS} | Pass%: ${passPerc}%`;
         worksheet.getCell('A6').font = { bold: true };
 
-        // Collect all distinct courses for this department
+        // Collect all distinct courses for this dept + build code→name map for headers
         const allCourses = new Set();
-        studentList.forEach(s => Object.keys(s.grades).forEach(c => allCourses.add(c)));
+        const codeToName = {};
+        studentList.forEach(s => {
+            (s.subjects || []).forEach(sub => {
+                allCourses.add(sub.code);
+                if (sub.name && sub.name !== sub.code) codeToName[sub.code] = sub.name;
+            });
+        });
         const deptCourses = Array.from(allCourses).sort();
 
-        // Table Header
-        const headerRow = ['Register No', ...deptCourses, 'Total Credits', 'SGPA', 'Result'];
+        // Table Header — show "CODE – Course Name" if name is available
+        const headerRow = [
+            'Register No',
+            'Student Name',
+            ...deptCourses.map(c => codeToName[c] ? `${c} – ${codeToName[c]}` : c),
+            'Total Credits', 'SGPA', 'Result'
+        ];
         const tableStartRow = 9;
         const headerCellRow = worksheet.getRow(tableStartRow);
         headerCellRow.values = headerRow;
@@ -295,7 +332,10 @@ const generateExcel = async (processedData) => {
 
         // Data Rows
         studentList.forEach((s, idx) => {
-            const rowData = [s.registerId];
+            const rowData = [
+                s.registerId,
+                s.name || '-',   // Student Name (from DB lookup if available)
+            ];
             deptCourses.forEach(c => {
                 rowData.push(s.grades[c] || '-');
             });
@@ -328,6 +368,7 @@ const generateExcel = async (processedData) => {
             currentRow++;
             worksheet.getCell(`A${currentRow}`).value = `${i + 1}. ${t.registerId}`;
             worksheet.getCell(`B${currentRow}`).value = `SGPA: ${t.sgpa}`;
+            worksheet.getCell(`C${currentRow}`).value = t.name || '';
         });
 
         // --- Subject Failure Analysis ---
@@ -342,7 +383,9 @@ const generateExcel = async (processedData) => {
                 return g && ['F', 'FE', 'I', 'ABSENT'].includes(g);
             }).length;
 
-            worksheet.getCell(`A${currentRow}`).value = code;
+            // Show "CODE – Course Name" in failure analysis too
+            const label = codeToName[code] ? `${code} – ${codeToName[code]}` : code;
+            worksheet.getCell(`A${currentRow}`).value = label;
             worksheet.getCell(`B${currentRow}`).value = `${failCount} Failed`;
         });
     }

@@ -9,7 +9,7 @@ const upload = multer(); // Added for file uploads
 // Results
 // Results
 router.post('/result', auth('teacher'), academicController.addResult);
-router.post('/result/upload', auth(['teacher', 'admin', 'exam_controller']), upload.single('file'), academicController.uploadResultPDF);
+router.post('/result/upload', auth('exam_controller'), upload.single('file'), academicController.uploadResultPDF);
 router.get('/result/student', auth('student'), academicController.getResultsByStudent);
 router.get('/result/batch', auth(['teacher', 'admin', 'exam_controller']), academicController.getResultsByBatch);
 
@@ -21,8 +21,8 @@ router.get('/result/details/all', auth(['teacher', 'admin', 'exam_controller']),
 router.get('/result/details/:batchId', auth(['teacher', 'admin', 'exam_controller']), academicController.getBatchResultDetails);
 router.get('/result/download/all', auth(['teacher', 'admin', 'exam_controller']), academicController.downloadResultExcelGlobal);
 router.get('/result/download/:batchId', auth(['teacher', 'admin', 'exam_controller']), academicController.downloadBatchResult);
-router.post('/result/publish', auth(['teacher', 'admin', 'exam_controller']), academicController.publishResult);
-router.post('/result/delete', auth(['teacher', 'admin', 'exam_controller']), academicController.deleteResult);
+router.post('/result/publish', auth('exam_controller'), academicController.publishResult);
+router.post('/result/delete', auth('exam_controller'), academicController.deleteResult);
 router.get('/result/analysis/college', auth(['teacher', 'admin', 'exam_controller']), academicController.getCollegeResultAnalysis);
 router.get('/result/analysis/department', auth(['teacher', 'admin', 'exam_controller']), academicController.getDepartmentResultAnalysis);
 router.get('/result/analysis/:batchId', auth(['teacher', 'admin', 'exam_controller']), academicController.getBatchResultAnalysis);

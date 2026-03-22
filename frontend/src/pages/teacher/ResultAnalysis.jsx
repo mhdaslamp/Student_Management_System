@@ -3,7 +3,7 @@ import axios from '../../api/axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { X, Trophy, AlertCircle, BookOpen, Building2 } from 'lucide-react';
 
-const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch' }) => {
+const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOverride = null }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -15,6 +15,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch' }) => {
                     url = `/academic/result/analysis/college?title=${encodeURIComponent(title)}&type=${type}`;
                 } else if (mode === 'department') {
                     url = `/academic/result/analysis/department?title=${encodeURIComponent(title)}&type=${type}`;
+                    if (deptOverride) url += `&dept=${encodeURIComponent(deptOverride)}`;
                 } else {
                     url = `/academic/result/analysis/${batchId}?title=${encodeURIComponent(title)}&type=${type}`;
                 }
@@ -27,7 +28,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch' }) => {
             }
         };
         fetchAnalysis();
-    }, [batchId, title, type, mode]);
+    }, [batchId, title, type, mode, deptOverride]);
 
     if (loading) return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -61,8 +62,8 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch' }) => {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${isCollege ? 'bg-blue-500/20 text-blue-300' :
-                                    mode === 'department' ? 'bg-violet-500/20 text-violet-300' :
-                                        'bg-gray-500/20 text-gray-300'
+                                mode === 'department' ? 'bg-violet-500/20 text-violet-300' :
+                                    'bg-gray-500/20 text-gray-300'
                                 }`}>
                                 {isCollege ? '🌐 College-Wide' :
                                     mode === 'department' ? `🏢 ${data.department || ''} Department` :
@@ -193,11 +194,18 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch' }) => {
                         </div>
                         <div className="h-[400px]">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data.subjectAnalysis} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                <BarChart data={data.subjectAnalysis} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
-                                    <XAxis dataKey="code" stroke="#9CA3AF" tick={{ fontSize: 11 }} />
+                                    <XAxis dataKey="code" stroke="#9CA3AF" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
                                     <YAxis stroke="#9CA3AF" />
-                                    <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }} cursor={{ fill: '#374151' }} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
+                                        cursor={{ fill: '#374151' }}
+                                        labelFormatter={(code) => {
+                                            const subj = data.subjectAnalysis?.find(s => s.code === code);
+                                            return subj?.name && subj.name !== code ? `${code} – ${subj.name}` : code;
+                                        }}
+                                    />
                                     <Legend iconType="circle" />
                                     <Bar dataKey="pass" name="Passed" stackId="a" fill="#10B981" radius={[0, 0, 4, 4]} />
                                     <Bar dataKey="fail" name="Failed" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} />

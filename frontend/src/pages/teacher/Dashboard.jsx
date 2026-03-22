@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { Upload, Plus, Users, LogOut, FileText, ChevronRight, GraduationCap, LayoutDashboard, Calculator, CheckSquare, X, Trash2, Edit2 } from 'lucide-react';
+import { Upload, Plus, Users, LogOut, FileText, ChevronRight, GraduationCap, LayoutDashboard, CheckSquare, X, Trash2, Edit2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import TeacherAssignments from './Assignments';
 import TeacherResults from './Results';
 
 const TeacherDashboard = () => {
@@ -377,9 +376,7 @@ const TeacherDashboard = () => {
         switch (activeTab) {
             case 'manage-batches':
                 return renderDashboard();
-            case 'assignments':
-                return <TeacherAssignments />;
-            case 'results':
+            case 'university-results':
                 return <TeacherResults batches={batches} />;
             default:
                 return renderDashboard();
@@ -402,10 +399,7 @@ const TeacherDashboard = () => {
                 <nav className="flex-1 px-4 space-y-[16px] py-2">
                     {[
                         { id: 'manage-batches', label: 'Manage Batches', icon: LayoutDashboard },
-                        { id: 'assignments', label: 'Assignments', icon: Calculator },
-                        { id: 'results', label: 'Results', icon: CheckSquare },
-                        { id: 'dashboard', label: 'Manage Batches', icon: LayoutDashboard },
-                        { id: 'assignments', label: 'Assignments', icon: Calculator },
+                        { id: 'university-results', label: 'University Results', icon: CheckSquare },
                     ].map(item => (
                         <button
                             key={item.id}
@@ -443,7 +437,7 @@ const TeacherDashboard = () => {
                 <header className="sticky top-0 z-10 bg-[#F5F7FA]/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-extrabold text-gray-900 capitalize text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600">
-                            {activeTab === 'manage-batches' ? 'Manage Batches' : activeTab}
+                            {activeTab === 'manage-batches' ? 'Manage Batches' : 'University Results'}
                         </h1>
                         <p className="text-sm text-gray-500 font-medium mt-0.5">Welcome back, Professor</p>
                     </div>

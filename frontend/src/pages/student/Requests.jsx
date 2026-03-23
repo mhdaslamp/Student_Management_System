@@ -94,16 +94,16 @@ const RequestDetailModal = ({ req, onClose }) => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                <div>
+                <div className="pr-4">
                     <p className="text-xs text-gray-400 font-mono">{req.reqId}</p>
-                    <h2 className="text-lg font-bold text-gray-800">{req.subject}</h2>
+                    <h2 className="text-lg font-bold text-gray-800 break-words">{req.subject}</h2>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
                     <X className="h-5 w-5 text-gray-500" />
                 </button>
             </div>
             <div className="p-6 space-y-4">
-                <div className="bg-gray-50 rounded-2xl p-4 font-[serif] text-sm leading-relaxed whitespace-pre-wrap text-gray-700">
+                <div className="bg-gray-50 rounded-2xl p-4 font-[serif] text-sm leading-relaxed whitespace-pre-wrap text-gray-700 break-words max-h-96 overflow-y-auto pr-2">
                     {req.body}
                 </div>
                 <div>
@@ -171,82 +171,60 @@ const StudentRequests = () => {
     const formattedDate = today.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
 
     return (
-        <div className="min-h-screen bg-[#1a2744] font-sans flex flex-col pt-10 pb-0">
-            {/* Dark Blue Header */}
-            <div className="px-6 flex flex-col flex-shrink-0">
-                <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white leading-none">ReQu.</h1>
-                        <p className="text-[10px] text-blue-200 mt-1 uppercase tracking-widest font-semibold">Approvals Simplified</p>
-                    </div>
-                </div>
-
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-3xl font-bold text-white">Hello, {user?.name?.split(' ')[0] || 'Student'}</h2>
-                    <div className="h-10 w-10 rounded-full border-2 border-white flex items-center justify-center overflow-hidden">
-                        <User className="h-6 w-6 text-white" />
-                    </div>
-                </div>
-                
-                <p className="text-blue-100 text-sm text-center mb-8">{formattedDate}</p>
+        <div className="min-h-screen bg-gray-50 p-4 pb-24">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">My Requests</h1>
+                <p className="text-gray-500 text-sm mt-1">Manage all your official requests</p>
             </div>
 
-            {/* Light Blue Content Area */}
-            <div className="flex-1 bg-[#eaf4fc] rounded-t-[2.5rem] px-6 pt-10 pb-28 flex flex-col shadow-inner">
-                
-                {/* Tabs */}
-                {/* The UI shows a column of large cards for the tabs */}
-                <div className="space-y-4 mb-8">
-                    {tiles.map(t => {
-                        const isActive = tab === t.key;
-                        return (
-                            <button
-                                key={t.key}
-                                onClick={() => setTab(t.key)}
-                                className={`w-full flex flex-col items-center justify-center p-6 rounded-3xl transition-all duration-300 shadow-sm ${
-                                    isActive
-                                        ? 'bg-[#1a2744] text-white shadow-[#1a2744]/30 shadow-lg scale-[1.02]'
-                                        : 'bg-white text-[#1a2744] hover:shadow-md'
-                                }`}
-                            >
-                                <t.icon className={`h-8 w-8 mb-3 ${isActive ? 'text-white' : 'text-[#1a2744]'}`} />
-                                <span className={`text-lg font-bold ${isActive ? 'text-white' : 'text-[#1a2744]'}`}>
-                                    {t.label}
-                                </span>
-                                {t.count > 0 && (
-                                    <span className={`absolute top-4 right-4 text-xs font-bold px-2 py-0.5 rounded-full ${
-                                        isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-500'
-                                    }`}>
-                                        {t.count}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+            {/* Horizontal Tabs */}
+            <div className="flex space-x-2 bg-white rounded-xl p-1 mb-6 shadow-sm border border-gray-100 max-w-lg">
+                {[
+                    { id: 'status',   label: 'Status',   count: pending.length },
+                    { id: 'reverted', label: 'Reverted', count: reverted.length },
+                    { id: 'history',  label: 'History',  count: history.length }
+                ].map(t => (
+                    <button
+                        key={t.id}
+                        onClick={() => setTab(t.id)}
+                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                            tab === t.id ? 'bg-[#1a2744] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                    >
+                        {t.label}
+                        {t.count > 0 && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                                tab === t.id ? 'bg-blue-500/30' : 'bg-gray-100'
+                            }`}>
+                                {t.count}
+                            </span>
+                        )}
+                    </button>
+                ))}
+            </div>
 
-                {/* Cards rendering for selected tab */}
-                <div className="space-y-4 flex-1">
-                    {loading && <p className="text-[#1a2744] text-center font-bold py-8 animate-pulse">Loading...</p>}
-                    {!loading && displayed.length === 0 && (
-                        <div className="text-center py-12 text-[#1a2744]">
-                            <FileText className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                            <p className="font-semibold">No requests here</p>
-                        </div>
-                    )}
-                    {displayed.map(r => (
-                        <RequestCard key={r._id} req={r} onDownload={handleDownload} onExpand={setExpanded} />
-                    ))}
-                </div>
+            {/* Cards rendering for selected tab */}
+            <div className="space-y-4 max-w-2xl">
+                {loading && <p className="text-gray-400 text-center font-bold py-8 animate-pulse">Loading...</p>}
+                {!loading && displayed.length === 0 && (
+                    <div className="text-center py-12 text-gray-400">
+                        <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p className="font-semibold">No requests here</p>
+                    </div>
+                )}
+                {displayed.map(r => (
+                    <RequestCard key={r._id} req={r} onDownload={handleDownload} onExpand={setExpanded} />
+                ))}
             </div>
 
             {/* Sticky Write Request Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#eaf4fc] via-[#eaf4fc] to-transparent pointer-events-none">
+            <div className="fixed bottom-6 right-6">
                 <button
                     onClick={() => navigate('/student/requests/new')}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#1a2744] text-white font-bold text-lg rounded-2xl shadow-xl hover:bg-[#243566] transition-transform active:scale-95 pointer-events-auto"
+                    className="flex items-center justify-center gap-2 px-6 py-4 bg-[#1a2744] text-white font-bold rounded-full shadow-2xl hover:bg-[#243566] transition-transform active:scale-95"
                 >
-                    <FileText className="h-5 w-5" />
+                    <Plus className="h-5 w-5" />
                     Write Request
                 </button>
             </div>

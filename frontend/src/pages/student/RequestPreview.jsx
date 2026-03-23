@@ -80,11 +80,11 @@ const RequestPreview = ({ draft, onEdit, onSubmitted }) => {
                     </p>
                     <p className="text-gray-600">GEC Palakkad</p>
                     <br />
-                    <p><span className="font-bold">Subject :</span> {draft.subject}</p>
+                    <p><span className="font-bold">Subject :</span> <span className="break-words inline-block align-top max-w-[80%]">{draft.subject}</span></p>
                     <br />
                     <p>Respected Sir/Ma'am,</p>
                     <br />
-                    <p className="whitespace-pre-wrap">{draft.body}</p>
+                    <p className="whitespace-pre-wrap break-words max-h-72 overflow-y-auto pr-2">{draft.body}</p>
                     <br />
                     <p>Sincerely,</p>
                     <p className="font-bold">{user?.name}</p>

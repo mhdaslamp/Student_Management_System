@@ -89,11 +89,11 @@ const RequestDetailModal = ({ req, onApprove, onReject, onClose, acting, readonl
                         </div>
                         <div>
                             <p className="font-bold">Subject:</p>
-                            <p>{req.subject}</p>
+                            <p className="break-words">{req.subject}</p>
                         </div>
                         <div>
                             <p>Respected Sir/Ma'am,</p>
-                            <p className="whitespace-pre-wrap mt-2">{req.body}</p>
+                            <p className="whitespace-pre-wrap mt-2 break-words max-h-96 overflow-y-auto pr-2">{req.body}</p>
                         </div>
                         <div>
                             <p>Sincerely,</p>
@@ -189,7 +189,7 @@ const PendingRequests = () => {
         setActing(false);
     };
 
-    const myId = user?.userId || user?._id;
+    const myId = user?.userId || user?._id || user?.id;
     const myApproved = history.filter(req => 
         req.flow.some(step => step.assignedTo?._id == myId && step.status === 'approved')
     );

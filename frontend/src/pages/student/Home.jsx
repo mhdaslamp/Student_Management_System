@@ -3,11 +3,17 @@ import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, User, Book, CreditCard, Bell, ChevronRight, GraduationCap, Trophy, FileText, ClipboardList, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
 
 const StudentHome = () => {
     const { logout } = useAuth();
     const [profile, setProfile] = useState(null);
     const navigate = useNavigate();
+    const detailsRef = useRef(null);
+
+    const scrollToDetails = () => {
+        detailsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -46,7 +52,10 @@ const StudentHome = () => {
 
             {/* ID Card - Floating */}
             <div className="px-6 -mt-16 relative z-20">
-                <div className="bg-white rounded-3xl p-5 shadow-xl shadow-primary-900/10 border border-white/50 backdrop-blur-sm">
+                <div 
+                    onClick={scrollToDetails}
+                    className="bg-white rounded-3xl p-5 shadow-xl shadow-primary-900/10 border border-white/50 backdrop-blur-sm cursor-pointer active:scale-[0.98] transition-all"
+                >
                     <div className="flex items-center space-x-4">
                         <div className="h-16 w-16 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 font-bold text-2xl shadow-inner">
                             {profile.name[0]}
@@ -54,6 +63,9 @@ const StudentHome = () => {
                         <div className="flex-1">
                             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Student ID / Adm No</p>
                             <p className="text-xl font-bold text-gray-800 font-mono tracking-wide">{profile.admissionNo}</p>
+                            {profile.batch && (
+                                <p className="text-xs font-bold text-primary-600 mt-1">{profile.batch.branch}</p>
+                            )}
                         </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
@@ -68,12 +80,9 @@ const StudentHome = () => {
                 <h3 className="text-lg font-bold text-gray-800 mb-4 px-1">Quick Access</h3>
                 <div className="grid grid-cols-2 gap-4">
                     {[
-                        { icon: User, label: 'Profile', color: 'text-violet-600', bg: 'bg-violet-50', path: '/student' },
-                        { icon: Book, label: 'Courses', color: 'text-pink-600', bg: 'bg-pink-50', path: '/student' },
                         { icon: Trophy, label: 'Results', color: 'text-emerald-600', bg: 'bg-emerald-50', path: '/student/results' },
                         { icon: ClipboardList, label: 'Requests', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/requests' },
                         { icon: CheckCircle, label: 'Internals', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/internals' },
-                        { icon: FileText, label: 'Assign.', color: 'text-amber-600', bg: 'bg-amber-50', path: '/student/assignments' },
                     ].map((item, idx) => (
                         <div key={idx} onClick={() => navigate(item.path)} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center aspect-square active:scale-95 transition-transform cursor-pointer">
                             <div className={`h-14 w-14 ${item.bg} ${item.color} rounded-full flex items-center justify-center mb-3`}>
@@ -86,7 +95,7 @@ const StudentHome = () => {
             </div>
 
             {/* Detail List */}
-            <div className="px-6 mt-8">
+            <div className="px-6 mt-8" ref={detailsRef}>
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-5">
                     <div className="flex items-center justify-between group cursor-pointer">
                         <div>

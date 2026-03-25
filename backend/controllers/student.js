@@ -2,7 +2,9 @@ const User = require('../models/User');
 
 exports.getMe = async (req, res) => {
     try {
-        const student = await User.findById(req.user.userId).select('-password');
+        const student = await User.findById(req.user.userId)
+            .select('-password')
+            .populate('batch', 'name branch scheme');
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }

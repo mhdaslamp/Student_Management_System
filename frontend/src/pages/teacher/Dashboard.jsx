@@ -9,7 +9,8 @@ import TeacherInternalResults from './InternalResults';
 const TeacherDashboard = () => {
     const { user, logout } = useAuth();
     const isTeacher = user?.role === 'teacher';
-    const [activeTab, setActiveTab] = useState('manage-batches');
+    const isPrincipal = user?.role === 'principal';
+    const [activeTab, setActiveTab] = useState(isPrincipal ? 'university-results' : 'manage-batches');
     const [batches, setBatches] = useState([]);
     const [newBatch, setNewBatch] = useState({ name: '', scheme: '2024' });
     const [selectedBatch, setSelectedBatch] = useState(null);
@@ -409,11 +410,11 @@ const TeacherDashboard = () => {
 
                 <nav className="flex-1 px-4 space-y-[16px] py-2">
                     {[
-                        { id: 'manage-batches', label: 'Manage Batches', icon: LayoutDashboard },
+                        { id: 'manage-batches', label: 'Manage Batches', icon: LayoutDashboard, hideFor: ['principal'] },
                         { id: 'university-results', label: 'University Results', icon: CheckSquare },
                         { id: 'requests', label: 'Requests', icon: FileText },
                         { id: 'internal-results', label: 'Internal Results', icon: FileText },
-                    ].map(item => (
+                    ].filter(item => !item.hideFor?.includes(user?.role)).map(item => (
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}

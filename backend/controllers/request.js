@@ -41,7 +41,8 @@ const generatePDF = async (request) => {
     const reqId = request.reqId;
 
     // Public verification URL (update domain when deployed)
-    const verifyUrl = `http://localhost:5173/verify/${reqId}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyUrl = `${frontendUrl}/verify/${reqId}`;
 
     // QR code as data URL (then convert to Buffer)
     const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 100, margin: 1 });

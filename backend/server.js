@@ -12,6 +12,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+if (!process.env.JWT_SECRET) {
+    console.warn('⚠️ WARNING: JWT_SECRET is not set. Token generation may fail.');
+}
+
 // Middleware
 app.use(express.json());
 
@@ -91,8 +95,15 @@ const connectDB = async () => {
             }
         }
 
+        if (isEmbedded) {
+            console.log('🚀 Using Embedded Persistent Database (Local to Render - Data will be lost on restart)');
+        } else {
+            const maskedUri = mongoUri.replace(/\/\/.*@/, '//****:****@');
+            console.log(`📡 Connecting to External MongoDB: ${maskedUri}`);
+        }
+
         await mongoose.connect(mongoUri);
-        console.log(`MongoDB Connected: ${isEmbedded ? 'Embedded (Persistent)' : 'External URI'}`);
+        console.log(`✅ MongoDB Connected successfully!`);
 
         // Seed Admin only if it doesn't exist
         await seedAdmin();

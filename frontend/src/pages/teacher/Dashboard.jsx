@@ -4,6 +4,7 @@ import { Upload, Plus, Users, LogOut, FileText, ChevronRight, GraduationCap, Lay
 import { useAuth } from '../../context/AuthContext';
 import TeacherResults from './Results';
 import PendingRequests from './PendingRequests';
+import TeacherInternalResults from './InternalResults';
 
 const TeacherDashboard = () => {
     const { user, logout } = useAuth();
@@ -386,6 +387,8 @@ const TeacherDashboard = () => {
                 return <TeacherResults batches={batches} />;
             case 'requests':
                 return <PendingRequests />;
+            case 'internal-results':
+                return <TeacherInternalResults batches={batches} />;
             default:
                 return renderDashboard();
         }
@@ -409,6 +412,7 @@ const TeacherDashboard = () => {
                         { id: 'manage-batches', label: 'Manage Batches', icon: LayoutDashboard },
                         { id: 'university-results', label: 'University Results', icon: CheckSquare },
                         { id: 'requests', label: 'Requests', icon: FileText },
+                        { id: 'internal-results', label: 'Internal Results', icon: FileText },
                     ].map(item => (
                         <button
                             key={item.id}

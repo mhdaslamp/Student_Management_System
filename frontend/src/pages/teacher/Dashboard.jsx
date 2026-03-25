@@ -6,10 +6,10 @@ import TeacherResults from './Results';
 import TeacherInternalResults from './InternalResults';
 
 const TeacherDashboard = () => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const [activeTab, setActiveTab] = useState('manage-batches');
     const [batches, setBatches] = useState([]);
-    const [newBatch, setNewBatch] = useState({ name: '', scheme: '2024' });
+    const [newBatch, setNewBatch] = useState({ name: '', scheme: '2024', branch: '' });
     const [selectedBatch, setSelectedBatch] = useState(null);
     const [file, setFile] = useState(null);
     const [uploadMessage, setUploadMessage] = useState('');
@@ -47,7 +47,7 @@ const TeacherDashboard = () => {
         setLoading(true);
         try {
             await axios.post('/teacher/batch', newBatch);
-            setNewBatch({ name: '', scheme: '2024' });
+            setNewBatch({ name: '', scheme: '2024', branch: '' });
             fetchBatches();
         } catch (error) { console.error(error); }
         setLoading(false);
@@ -155,6 +155,25 @@ const TeacherDashboard = () => {
                                     <option value="2019">2019</option>
                                 </select>
                             </div>
+                            {user?.role === 'admin' && (
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Branch / Department</label>
+                                    <select
+                                        className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-[#1A8AE5] focus:ring-4 focus:ring-[#1A8AE5]/10 transition-all font-medium"
+                                        value={newBatch.branch}
+                                        onChange={(e) => setNewBatch({ ...newBatch, branch: e.target.value })}
+                                        required
+                                    >
+                                        <option value="">Select Branch</option>
+                                        <option value="Computer Science and Engineering">Computer Science and Engineering</option>
+                                        <option value="Electronics and Communication Engineering">Electronics and Communication Engineering</option>
+                                        <option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+                                        <option value="Information Technology">Information Technology</option>
+                                        <option value="Civil Engineering">Civil Engineering</option>
+                                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    </select>
+                                </div>
+                            )}
                             {/* Department input removed as per user request (Auto-assigned) */}
                             <button
                                 disabled={loading}

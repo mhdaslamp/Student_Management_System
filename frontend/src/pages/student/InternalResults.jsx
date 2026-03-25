@@ -156,6 +156,7 @@ const StudentInternalResults = () => {
                                     </tbody>
                                 </>
                             )}
+                        </table>
                     </div>
                 </div>
             )}

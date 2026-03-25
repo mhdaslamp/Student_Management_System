@@ -5,11 +5,11 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 exports.createBatch = async (req, res) => {
-    const { name, scheme } = req.body; // Branch is auto-assigned
+    const { name, scheme, branch } = req.body; // Branch can be manually sent by Admin
     try {
-        // Fetch the teacher to get their department
-        const teacher = await User.findById(req.user.userId);
-        if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
+        // Fetch the user to get their department (if they have one)
+        const user = await User.findById(req.user.userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
         const existingBatch = await Batch.findOne({ name });
         if (existingBatch) {
@@ -19,7 +19,7 @@ exports.createBatch = async (req, res) => {
         const newBatch = new Batch({
             name,
             scheme,
-            branch: teacher.department, // Auto-assign department
+            branch: branch || user.department, // Use provided branch or user's department
             createdBy: req.user.userId
         });
 

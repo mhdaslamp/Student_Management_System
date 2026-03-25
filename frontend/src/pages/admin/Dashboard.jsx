@@ -135,7 +135,7 @@ const AdminDashboard = () => {
                         <span className="font-medium text-[15px]">Sign Out</span>
                     </button>
                     <div className="mt-4 px-2 pb-2 text-center">
-                        <p className="text-[10px] text-gray-300 font-medium">© 2025 EduCore Inc.</p>
+                        <p className="text-[10px] text-gray-300 font-medium">© 2026 EduCore Inc.</p>
                     </div>
                 </div>
             </aside>
@@ -166,8 +166,8 @@ const AdminDashboard = () => {
                                 key={role}
                                 onClick={() => setActiveRole(role)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeRole === role
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                    ? 'bg-white text-gray-900 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 {roleLabels[role]}

@@ -145,7 +145,12 @@ const generatePDF = async (request) => {
 // POST /api/request — student creates request
 exports.createRequest = async (req, res) => {
     try {
-        const { type, subject, body, flow: flowInput } = req.body;
+        const { type, subject, body } = req.body;
+        // flow is sent as a JSON string when using multipart/form-data
+        let flowInput = req.body.flow;
+        if (typeof flowInput === 'string') {
+            try { flowInput = JSON.parse(flowInput); } catch { flowInput = []; }
+        }
         const studentId = req.user.userId;
 
         if (!type || !subject || !body) {

@@ -6,7 +6,37 @@ const CertificateSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    title: {
+    semester: {
+        type: Number,
+        required: true
+    },
+    activityDetails: {
+        type: String,
+        required: true
+    },
+    venue: {
+        type: String,
+        required: true
+    },
+    activityLevel: {
+        type: String,
+        enum: ['College Event', 'Zonal Event', 'State Event', 'University Event', 'National Event', 'International Event'],
+        required: true
+    },
+    prize: {
+        type: String,
+        enum: ['First', 'Second', 'Third', 'Other', 'None'],
+        required: true
+    },
+    dates: {
+        type: String,
+        required: true
+    },
+    duration: {
+        type: String,
+        required: true
+    },
+    proofDetails: {
         type: String,
         required: true
     },

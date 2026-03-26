@@ -32,15 +32,23 @@ exports.uploadCertificate = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
-        const { title } = req.body;
-        if (!title) {
-            return res.status(400).json({ message: 'Certificate title is required' });
+        const { semester, activityDetails, venue, activityLevel, prize, dates, duration, proofDetails } = req.body;
+        
+        if (!semester || !activityDetails || !venue || !activityLevel || !prize || !dates || !duration || !proofDetails) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
-
+        
         const Certificate = require('../models/Certificate');
         const newCert = new Certificate({
             student: req.user.userId,
-            title,
+            semester,
+            activityDetails,
+            venue,
+            activityLevel,
+            prize,
+            dates,
+            duration,
+            proofDetails,
             fileUrl: `/uploads/certificates/${req.file.filename}`
         });
         await newCert.save();
@@ -54,7 +62,10 @@ exports.uploadCertificate = async (req, res) => {
 exports.getCertificates = async (req, res) => {
     try {
         const Certificate = require('../models/Certificate');
-        const certificates = await Certificate.find({ student: req.user.userId }).sort({ createdAt: -1 });
+        const certificates = await Certificate.find({ 
+            student: req.user.userId,
+            activityDetails: { $exists: true } 
+        }).sort({ createdAt: -1 });
         res.json(certificates);
     } catch (err) {
         console.error(err.message);

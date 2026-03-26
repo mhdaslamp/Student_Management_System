@@ -400,7 +400,11 @@ exports.getPendingCertificates = async (req, res) => {
         const students = await User.find({ batch: { $in: batchIds }, role: 'student' });
         const studentIds = students.map(s => s._id);
 
-        const certificates = await Certificate.find({ student: { $in: studentIds }, status: 'Pending' })
+        const certificates = await Certificate.find({ 
+            student: { $in: studentIds }, 
+            status: 'Pending',
+            activityDetails: { $exists: true }
+        })
             .populate('student', 'name admissionNo registerId')
             .sort({ createdAt: -1 });
 
@@ -414,7 +418,7 @@ exports.getPendingCertificates = async (req, res) => {
 exports.updateCertificateStatus = async (req, res) => {
     try {
         const Certificate = require('../models/Certificate');
-        const { status, points } = req.body;
+        const { status, points, semester, activityDetails, venue } = req.body;
 
         if (!['Approved', 'Rejected'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status' });
@@ -427,6 +431,11 @@ exports.updateCertificateStatus = async (req, res) => {
         if (status === 'Approved') {
             cert.points = points || 0;
         }
+        
+        if (semester) cert.semester = semester;
+        if (activityDetails) cert.activityDetails = activityDetails;
+        if (venue) cert.venue = venue;
+
         await cert.save();
 
         res.json({ message: `Certificate ${status}`, certificate: cert });

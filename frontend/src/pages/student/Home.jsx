@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, User, Book, CreditCard, Bell, ChevronRight, GraduationCap, Trophy, FileText, ClipboardList, CheckCircle } from 'lucide-react';
+import { LogOut, User, Book, CreditCard, Bell, ChevronRight, GraduationCap, Trophy, FileText, ClipboardList, CheckCircle, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
 
@@ -83,6 +83,8 @@ const StudentHome = () => {
                         { icon: Trophy, label: 'Results', color: 'text-emerald-600', bg: 'bg-emerald-50', path: '/student/results' },
                         { icon: ClipboardList, label: 'Requests', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/requests' },
                         { icon: CheckCircle, label: 'Internals', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/internals' },
+                        { icon: FileText, label: 'Assign.', color: 'text-amber-600', bg: 'bg-amber-50', path: '/student/assignments' },
+                        { icon: Award, label: 'Activity Pts', color: 'text-yellow-600', bg: 'bg-yellow-50', path: '/student/certificates' },
                     ].map((item, idx) => (
                         <div key={idx} onClick={() => navigate(item.path)} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center aspect-square active:scale-95 transition-transform cursor-pointer">
                             <div className={`h-14 w-14 ${item.bg} ${item.color} rounded-full flex items-center justify-center mb-3`}>

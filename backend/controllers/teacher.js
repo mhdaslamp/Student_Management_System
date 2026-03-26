@@ -377,3 +377,70 @@ exports.uploadInternalmarks = async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 };
+
+exports.getPendingCertificates = async (req, res) => {
+    try {
+        const Certificate = require('../models/Certificate');
+        let query = { createdBy: req.user.userId };
+
+        if (['admin', 'exam_controller', 'principal'].includes(req.user.role)) {
+            query = {};
+        } else if (req.user.role === 'hod') {
+            const user = await User.findById(req.user.userId);
+            if (user && user.department) {
+                query = { branch: new RegExp(`^${user.department}$`, 'i') };
+            } else {
+                query = { _id: null };
+            }
+        }
+
+        const batches = await Batch.find(query);
+        const batchIds = batches.map(b => b._id);
+
+        const students = await User.find({ batch: { $in: batchIds }, role: 'student' });
+        const studentIds = students.map(s => s._id);
+
+        const certificates = await Certificate.find({ 
+            student: { $in: studentIds }, 
+            status: 'Pending',
+            activityDetails: { $exists: true }
+        })
+            .populate('student', 'name admissionNo registerId')
+            .sort({ createdAt: -1 });
+
+        res.json(certificates);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.updateCertificateStatus = async (req, res) => {
+    try {
+        const Certificate = require('../models/Certificate');
+        const { status, points, semester, activityDetails, venue } = req.body;
+
+        if (!['Approved', 'Rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status' });
+        }
+
+        const cert = await Certificate.findById(req.params.id);
+        if (!cert) return res.status(404).json({ message: 'Certificate not found' });
+
+        cert.status = status;
+        if (status === 'Approved') {
+            cert.points = points || 0;
+        }
+        
+        if (semester) cert.semester = semester;
+        if (activityDetails) cert.activityDetails = activityDetails;
+        if (venue) cert.venue = venue;
+
+        await cert.save();
+
+        res.json({ message: `Certificate ${status}`, certificate: cert });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

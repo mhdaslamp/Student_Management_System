@@ -32,4 +32,8 @@ router.post('/internal/upload/:batchId', auth('teacher'), upload.single('file'),
 router.put('/student/:studentId', auth('teacher'), teacherController.updateStudent);
 router.delete('/student/:studentId', auth('teacher'), teacherController.deleteStudent);
 
+// Certificate specific routes
+router.get('/certificates/pending', auth(['teacher', 'hod', 'admin', 'principal']), teacherController.getPendingCertificates);
+router.put('/certificates/:id/status', auth(['teacher', 'hod', 'admin', 'principal']), teacherController.updateCertificateStatus);
+
 module.exports = router;

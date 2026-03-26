@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { Upload, Plus, Users, LogOut, FileText, ChevronRight, GraduationCap, LayoutDashboard, CheckSquare, X, Trash2, Edit2 } from 'lucide-react';
+import { Upload, Plus, Users, LogOut, FileText, ChevronRight, GraduationCap, LayoutDashboard, CheckSquare, X, Trash2, Edit2, Award } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TeacherResults from './Results';
 import PendingRequests from './PendingRequests';
 import TeacherInternalResults from './InternalResults';
+import PendingCertificates from './PendingCertificates';
 
 const TeacherDashboard = () => {
     const { user, logout } = useAuth();
@@ -390,6 +391,8 @@ const TeacherDashboard = () => {
                 return <PendingRequests />;
             case 'internal-results':
                 return <TeacherInternalResults batches={batches} />;
+            case 'certificates':
+                return <PendingCertificates />;
             default:
                 return renderDashboard();
         }
@@ -414,6 +417,7 @@ const TeacherDashboard = () => {
                         { id: 'university-results', label: 'University Results', icon: CheckSquare },
                         { id: 'requests', label: 'Requests', icon: FileText },
                         { id: 'internal-results', label: 'Internal Results', icon: FileText },
+                        { id: 'certificates', label: 'Certificates', icon: Award },
                     ].filter(item => !item.hideFor?.includes(user?.role)).map(item => (
                         <button
                             key={item.id}
@@ -451,7 +455,7 @@ const TeacherDashboard = () => {
                 <header className="sticky top-0 z-10 bg-[#F5F7FA]/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-extrabold text-gray-900 capitalize text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600">
-                            {activeTab === 'manage-batches' ? 'Manage Batches' : activeTab === 'requests' ? 'Pending Requests' : 'University Results'}
+                            {activeTab === 'manage-batches' ? 'Manage Batches' : activeTab === 'requests' ? 'Pending Requests' : activeTab === 'certificates' ? 'Pending Certificates' : 'University Results'}
                         </h1>
                         <p className="text-sm text-gray-500 font-medium mt-0.5">Welcome back, Professor</p>
                     </div>

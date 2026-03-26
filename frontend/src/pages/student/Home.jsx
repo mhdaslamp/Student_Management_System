@@ -25,7 +25,7 @@ const StudentHome = () => {
         fetchProfile();
     }, []);
 
-    if (!profile) return <div className="h-screen flex items-center justify-center bg-violet-50 text-primary-600 font-bold animate-pulse">Loading Profile...</div>;
+    if (!profile) return <div className="h-screen flex items-center justify-center bg-primary-50 text-primary-600 font-bold animate-pulse">Loading Profile...</div>;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24 font-sans max-w-md mx-auto relative shadow-2xl">

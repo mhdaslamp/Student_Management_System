@@ -106,7 +106,7 @@ const RequestPreview = ({ draft, onEdit, onSubmitted }) => {
                 <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="flex-1 py-4 bg-[#1a2744] text-white font-bold rounded-2xl shadow-2xl hover:bg-[#243566] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="flex-1 py-4 bg-primary-600 text-white font-bold rounded-2xl shadow-2xl hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                     <Send className="h-4 w-4" />
                     {submitting ? 'Submitting...' : 'Submit'}

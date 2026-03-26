@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
-import { Edit, ChevronLeft, ChevronDown, ChevronRight, Eye, AlertCircle } from 'lucide-react';
+import { Edit, ChevronLeft, ChevronDown, ChevronRight, Eye, AlertCircle, Paperclip, X, FileText } from 'lucide-react';
+import { useRef } from 'react';
 
 const REQUEST_TYPES = [
     { id: 'bonafide', label: 'Bonafide Certificate' },
@@ -26,6 +27,8 @@ const WriteRequest = () => {
     
     // Flow is an array of selected user IDs matching the roles
     const [flowUsers, setFlowUsers] = useState([]);
+    const [attachments, setAttachments] = useState([]);
+    const fileInputRef = useRef(null);
 
     const [loadingStaff, setLoadingStaff] = useState(true);
     const [error, setError] = useState('');
@@ -75,6 +78,20 @@ const WriteRequest = () => {
         updated[index].assignedTo = userId;
         setFlowUsers(updated);
     };
+    
+    const handleFileChange = (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        if (attachments.length + selectedFiles.length > 5) {
+            setError('You can only attach up to 5 files.');
+            return;
+        }
+        setAttachments([...attachments, ...selectedFiles]);
+        e.target.value = null; // Reset input
+    };
+    
+    const removeAttachment = (index) => {
+        setAttachments(attachments.filter((_, i) => i !== index));
+    };
 
     const handlePreview = () => {
         setError('');
@@ -103,19 +120,20 @@ const WriteRequest = () => {
             type,
             subject,
             body,
-            flow: resolvedFlow
+            flow: resolvedFlow,
+            attachments // Pass file objects
         };
 
         navigate('/student/requests/preview', { state: { formData } });
     };
 
     return (
-        <div className="min-h-screen bg-[#eaf4fc] flex flex-col font-sans pb-28">
+        <div className="min-h-screen bg-[#E8F3FD] flex flex-col font-sans pb-28">
             {/* Header */}
-            <div className="bg-[#eaf4fc] text-[#1a2744] pt-10 pb-6 px-6 relative z-10 flex-shrink-0">
+            <div className="bg-[#E8F3FD] text-[#0E6EB8] pt-10 pb-6 px-6 relative z-10 flex-shrink-0">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-[#1a2744]/10 rounded-xl transition-colors">
-                        <Edit className="h-6 w-6 text-[#1a2744]" />
+                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-[#0E6EB8]/10 rounded-xl transition-colors">
+                        <Edit className="h-6 w-6 text-[#0E6EB8]" />
                     </button>
                     <div className="flex items-center gap-3">
                         <h1 className="text-xl font-bold">Write Request</h1>
@@ -139,21 +157,21 @@ const WriteRequest = () => {
                         <select
                             value={type}
                             onChange={e => setType(e.target.value)}
-                            className="w-full appearance-none bg-white font-semibold flex items-center justify-between text-gray-500 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-blue-500 pr-10"
+                            className="w-full appearance-none bg-white font-semibold flex items-center justify-between text-gray-500 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-primary-500 pr-10"
                         >
                             {REQUEST_TYPES.map(t => (
                                 <option key={t.id} value={t.id}>{t.label}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-4 text-[#1a2744] top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <ChevronDown className="absolute right-4 text-[#0E6EB8] top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                 </div>
 
                 {/* To Target (Readonly/Visual for now based on UI) */}
                 <div>
-                    <div className="bg-white font-semibold text-[#1a2744] p-4 rounded-2xl shadow-sm flex justify-between items-center bg-opacity-80">
+                    <div className="bg-white font-semibold text-[#0E6EB8] p-4 rounded-2xl shadow-sm flex justify-between items-center bg-opacity-80">
                         <span className="text-sm">To : The Principal, GEC Palakkad (Default)</span>
-                        <ChevronDown className="text-[#1a2744]" />
+                        <ChevronDown className="text-[#0E6EB8]" />
                     </div>
                 </div>
 
@@ -161,8 +179,8 @@ const WriteRequest = () => {
                 {type !== 'custom' && (
                     <div>
                         <div className="flex justify-between items-center mb-3 px-1">
-                            <label className="font-bold text-[#1a2744] text-sm">Request flow (Default)</label>
-                            <button className="text-[#1a2744] text-sm font-bold flex items-center gap-1 opacity-70">
+                            <label className="font-bold text-[#0E6EB8] text-sm">Request flow (Default)</label>
+                            <button className="text-[#0E6EB8] text-sm font-bold flex items-center gap-1 opacity-70">
                                 <Edit className="h-4 w-4" /> Edit
                             </button>
                         </div>
@@ -204,34 +222,83 @@ const WriteRequest = () => {
 
                 {/* Subject */}
                 <div>
-                    <label className="font-bold text-[#1a2744] text-[13px] px-1 mb-2 block">Subject</label>
+                    <label className="font-bold text-[#0E6EB8] text-[13px] px-1 mb-2 block">Subject</label>
                     <input
                         type="text"
                         value={subject}
                         onChange={e => setSubject(e.target.value)}
                         placeholder="Write the Subject"
-                        className="w-full bg-white font-medium text-gray-800 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+                        className="w-full bg-white font-medium text-gray-800 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-primary-500 placeholder-gray-400"
                     />
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 flex flex-col">
-                    <label className="font-bold text-[#1a2744] text-[13px] px-1 mb-2 block">Body</label>
+                <div className="flex flex-col">
+                    <label className="font-bold text-[#0E6EB8] text-[13px] px-1 mb-2 block">Body</label>
                     <textarea
                         value={body}
                         onChange={e => setBody(e.target.value)}
                         placeholder="Write the Body"
-                        className="w-full flex-1 min-h-[250px] bg-white font-medium text-gray-800 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-blue-500 placeholder-gray-400 resize-none"
+                        className="w-full min-h-[200px] bg-white font-medium text-gray-800 p-4 rounded-2xl shadow-sm border-0 focus:ring-2 focus:ring-primary-500 placeholder-gray-400 resize-none"
                     ></textarea>
+                </div>
+
+                {/* Attachments */}
+                <div className="pb-4">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <label className="font-bold text-[#0E6EB8] text-[13px]">Attachments (Optional)</label>
+                        <span className="text-[11px] text-gray-400 font-bold">{attachments.length}/5 files</span>
+                    </div>
+
+                    <div className="space-y-2">
+                        {attachments.map((file, idx) => (
+                            <div key={idx} className="bg-white p-3 rounded-2xl shadow-sm flex items-center justify-between group animate-in slide-in-from-right-4 duration-200">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <FileText className="h-5 w-5 text-primary-600" />
+                                    </div>
+                                    <div className="truncate">
+                                        <p className="text-sm font-bold text-gray-900 truncate">{file.name}</p>
+                                        <p className="text-[10px] text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => removeAttachment(idx)}
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+
+                        {attachments.length < 5 && (
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full py-4 border-2 border-dashed border-primary-200 rounded-2xl flex flex-col items-center justify-center gap-1 text-primary-600 hover:bg-primary-50/50 transition-colors"
+                            >
+                                <Paperclip className="h-6 w-6" />
+                                <span className="text-sm font-bold">Add Attachment</span>
+                                <span className="text-[10px] opacity-60">PDF, PNG, JPG (Max 5MB)</span>
+                            </button>
+                        )}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            multiple
+                            className="hidden"
+                            accept=".pdf, .png, .jpg, .jpeg"
+                        />
+                    </div>
                 </div>
 
             </div>
 
             {/* Sticky Preview Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#eaf4fc] via-[#eaf4fc] to-transparent">
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#E8F3FD] via-[#E8F3FD] to-transparent">
                 <button
                     onClick={handlePreview}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#1a2744] text-white font-bold text-lg rounded-2xl shadow-xl hover:bg-[#243566] transition-transform active:scale-95"
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-primary-600 text-white font-bold text-lg rounded-2xl shadow-xl hover:bg-primary-700 transition-transform active:scale-95"
                 >
                     <Eye className="h-5 w-5" />
                     Preview

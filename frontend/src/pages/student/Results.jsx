@@ -46,13 +46,13 @@ const StudentResults = () => {
                             className={`
                                 relative p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300
                                 ${isPublished
-                                    ? 'bg-white shadow-sm shadow-violet-100 border border-transparent hover:border-violet-500 hover:shadow-md cursor-pointer group'
+                                    ? 'bg-white shadow-sm shadow-primary-100 border border-transparent hover:border-primary-500 hover:shadow-md cursor-pointer group'
                                     : 'bg-gray-50 border border-gray-200 cursor-not-allowed opacity-60'}
                             `}
                         >
                             <div className={`
                                 h-10 w-10 rounded-lg flex items-center justify-center text-sm font-bold mb-1
-                                ${isPublished ? 'bg-violet-100 text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors' : 'bg-gray-200 text-gray-400'}
+                                ${isPublished ? 'bg-primary-100 text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors' : 'bg-gray-200 text-gray-400'}
                             `}>
                                 {sem}
                             </div>
@@ -73,11 +73,11 @@ const StudentResults = () => {
             {selectedResult && (
                 <div className="mt-8 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
                     {/* Header */}
-                    <div className="bg-violet-600 p-8 text-white">
+                    <div className="bg-primary-600 p-8 text-white">
                         <div className="flex justify-between items-start">
                             <div>
                                 <h2 className="text-3xl font-bold">{selectedResult.title}</h2>
-                                <p className="text-violet-200 text-sm mt-1">Published on {new Date(selectedResult.date).toLocaleDateString()}</p>
+                                <p className="text-primary-200 text-sm mt-1">Published on {new Date(selectedResult.date).toLocaleDateString()}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedResult(null)}
@@ -90,12 +90,12 @@ const StudentResults = () => {
                         <div className="mt-8 flex items-center gap-12">
                             <div>
                                 <p className="text-5xl font-bold">{selectedResult.sgpa?.toFixed(2) || 'N/A'}</p>
-                                <p className="text-violet-200 text-sm font-bold uppercase tracking-wider mt-1">SGPA</p>
+                                <p className="text-primary-200 text-sm font-bold uppercase tracking-wider mt-1">SGPA</p>
                             </div>
                             <div className="h-12 w-px bg-white/20"></div>
                             <div>
                                 <p className="text-4xl font-bold">{selectedResult.totalCredits || 0}</p>
-                                <p className="text-violet-200 text-sm font-bold uppercase tracking-wider mt-1">Total Credits</p>
+                                <p className="text-primary-200 text-sm font-bold uppercase tracking-wider mt-1">Total Credits</p>
                             </div>
                         </div>
                     </div>
@@ -105,13 +105,15 @@ const StudentResults = () => {
                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Subject Breakdown</h3>
                         <div className="space-y-4">
                             <div className="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 pb-3 border-b border-gray-100">
-                                <div className="col-span-8 px-4">Subject Code</div>
-                                <div className="col-span-4 text-center">Grade</div>
+                                <div className="col-span-3 px-4">Code</div>
+                                <div className="col-span-6">Subject Name</div>
+                                <div className="col-span-3 text-center">Grade</div>
                             </div>
                             {selectedResult.subjects.map((sub, sIdx) => (
                                 <div key={sIdx} className="grid grid-cols-12 gap-4 items-center py-3 hover:bg-gray-50 rounded-xl transition-colors">
-                                    <div className="col-span-8 px-4 font-semibold text-gray-700">{sub.subCode}</div>
-                                    <div className="col-span-4 text-center">
+                                    <div className="col-span-3 px-4 font-semibold text-gray-700">{sub.subCode}</div>
+                                    <div className="col-span-6 text-sm text-gray-600 font-medium line-clamp-2">{sub.name || '---'}</div>
+                                    <div className="col-span-3 text-center">
                                         <span className={`
                                             inline-block w-12 py-1.5 rounded-lg text-xs font-bold
                                             ${['F', 'FE', 'I', 'Absent'].includes(sub.grade) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}

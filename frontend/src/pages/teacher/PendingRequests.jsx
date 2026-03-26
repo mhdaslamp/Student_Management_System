@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { CheckCircle, XCircle, ChevronRight, X, Clock, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, ChevronRight, X, Clock, FileText, Download, Paperclip } from 'lucide-react';
 
 const TYPE_LABELS = {
     bonafide:       'Bonafide Certificate',
@@ -106,6 +106,37 @@ const RequestDetailModal = ({ req, onApprove, onReject, onClose, acting, readonl
                         Submitted: {new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
                 </div>
+
+                {/* Attachments */}
+                {req.attachments?.length > 0 && (
+                    <div className="px-6 pb-6">
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-3">Attachments ({req.attachments.length})</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {req.attachments.map((file, idx) => (
+                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-100 group">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                                            <FileText className="h-5 w-5 text-primary-600" />
+                                        </div>
+                                        <div className="truncate">
+                                            <p className="text-sm font-bold text-gray-800 truncate">{file.filename}</p>
+                                            <p className="text-[10px] text-gray-400">Supporting Document</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={`/api/request/attachment/${req.reqId}/${file.filename}`}
+                                        download={file.filename}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Action Buttons */}
                 {!readonly && (
@@ -215,7 +246,7 @@ const PendingRequests = () => {
                         key={t.id}
                         onClick={() => setTab(t.id)}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                            tab === t.id ? 'bg-[#1a2744] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'
+                            tab === t.id ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-800'
                         }`}
                     >
                         {t.label}
@@ -238,11 +269,11 @@ const PendingRequests = () => {
                     <div
                         key={req._id}
                         onClick={() => setSelected(req)}
-                        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all"
+                        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-primary-200 transition-all"
                     >
                         <div className="flex justify-between items-start gap-3">
                             <div className="flex-1 min-w-0">
-                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
                                     {TYPE_LABELS[req.type]}
                                 </span>
                                 <p className="font-semibold text-gray-800 mt-1 truncate">{req.subject}</p>

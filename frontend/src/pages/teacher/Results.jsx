@@ -77,7 +77,7 @@ const TeacherResults = ({ batches }) => {
     const UniActions = ({ item }) => (
         <div className="flex items-center gap-2 flex-wrap justify-end">
             <button onClick={() => handleDownload(item, true)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download Excel"><Download className="h-4 w-4" /></button>
-            <button onClick={() => handleAnalysis(item, 'department')} className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors" title="Dept Analysis"><BarChart2 className="h-4 w-4" /></button>
+            <button onClick={() => handleAnalysis(item, 'department')} className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Dept Analysis"><BarChart2 className="h-4 w-4" /></button>
             <button onClick={() => handleAnalysis(item, 'college')} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="College Analysis"><Globe className="h-4 w-4" /></button>
         </div>
     );

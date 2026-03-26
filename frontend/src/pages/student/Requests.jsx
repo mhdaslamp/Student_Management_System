@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     ClipboardList, RotateCcw, History, Plus, CheckCircle, XCircle,
-    Clock, Download, ChevronRight, FileText, X, AlertCircle, User
+    Clock, Download, ChevronRight, FileText, X, AlertCircle, User, Paperclip
 } from 'lucide-react';
 
 const TYPE_LABELS = {
@@ -106,6 +106,37 @@ const RequestDetailModal = ({ req, onClose }) => (
                 <div className="bg-gray-50 rounded-2xl p-4 font-[serif] text-sm leading-relaxed whitespace-pre-wrap text-gray-700 break-words max-h-96 overflow-y-auto pr-2">
                     {req.body}
                 </div>
+
+                {/* Attachments */}
+                {req.attachments?.length > 0 && (
+                    <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-3 px-1">Attachments ({req.attachments.length})</p>
+                        <div className="space-y-2">
+                            {req.attachments.map((file, idx) => (
+                                <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-2xl border border-gray-100 shadow-sm group">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <FileText className="h-5 w-5 text-primary-600" />
+                                        </div>
+                                        <div className="truncate">
+                                            <p className="text-sm font-bold text-gray-800 truncate">{file.filename || file.name}</p>
+                                            <p className="text-[10px] text-gray-400">Supporting Document</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={`/api/request/attachment/${req.reqId}/${file.filename || file.name}`}
+                                        download={file.filename || file.name}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <div>
                     <p className="text-xs font-bold text-gray-400 uppercase mb-2">Approval Trail</p>
                     <div className="space-y-2">
@@ -189,13 +220,13 @@ const StudentRequests = () => {
                         key={t.id}
                         onClick={() => setTab(t.id)}
                         className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
-                            tab === t.id ? 'bg-[#1a2744] text-white shadow-md' : 'text-gray-500 hover:text-gray-800'
+                            tab === t.id ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-800'
                         }`}
                     >
                         {t.label}
                         {t.count > 0 && (
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                                tab === t.id ? 'bg-blue-500/30' : 'bg-gray-100'
+                                tab === t.id ? 'bg-primary-500/30' : 'bg-gray-100'
                             }`}>
                                 {t.count}
                             </span>
@@ -222,7 +253,7 @@ const StudentRequests = () => {
             <div className="fixed bottom-6 right-6">
                 <button
                     onClick={() => navigate('/student/requests/new')}
-                    className="flex items-center justify-center gap-2 px-6 py-4 bg-[#1a2744] text-white font-bold rounded-full shadow-2xl hover:bg-[#243566] transition-transform active:scale-95"
+                    className="flex items-center justify-center gap-2 px-6 py-4 bg-primary-600 text-white font-bold rounded-full shadow-2xl hover:bg-primary-700 transition-transform active:scale-95"
                 >
                     <Plus className="h-5 w-5" />
                     Write Request

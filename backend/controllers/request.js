@@ -179,6 +179,13 @@ exports.createRequest = async (req, res) => {
 
         const reqId = generateReqId();
 
+        const attachments = (req.files || []).map(f => ({
+            filename: f.originalname,
+            path: f.path.replace(/\\/g, '/'), // normalization for windows
+            contentType: f.mimetype,
+            size: f.size
+        }));
+
         const request = await Request.create({
             reqId,
             type,
@@ -187,7 +194,8 @@ exports.createRequest = async (req, res) => {
             student: studentId,
             flow: flowSteps,
             currentStep: 0,
-            status: 'pending'
+            status: 'pending',
+            attachments
         });
 
         // Notify first approver
@@ -371,6 +379,10 @@ exports.verifyRequest = async (req, res) => {
                 status:   step.status,
                 actedAt:  step.actedAt
             })),
+            attachments: request.attachments.map(a => ({
+                filename: a.filename,
+                url: `/api/request/attachment/${request.reqId}/${a.filename}` // Conceptual or direct static link
+            })),
             createdAt: request.createdAt
         });
     } catch (err) {
@@ -434,5 +446,24 @@ exports.resubmitRequest = async (req, res) => {
     } catch (err) {
         console.error('[resubmitRequest]', err);
         res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+// GET /api/request/attachment/:reqId/:filename — Download attachment
+exports.downloadAttachment = async (req, res) => {
+    try {
+        const { reqId, filename } = req.params;
+        const request = await Request.findOne({ reqId });
+        if (!request) return res.status(404).json({ message: 'Request not found.' });
+
+        const attachment = request.attachments.find(a => a.filename === filename);
+        if (!attachment) return res.status(404).json({ message: 'Attachment not found.' });
+
+        // Join with parent dir because path starts with uploads/
+        const fullPath = path.join(__dirname, '..', attachment.path);
+        res.download(fullPath, attachment.filename);
+    } catch (err) {
+        console.error('[downloadAttachment]', err);
+        res.status(500).json({ message: 'Server error' });
     }
 };

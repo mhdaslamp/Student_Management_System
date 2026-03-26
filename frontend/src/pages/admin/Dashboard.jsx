@@ -300,7 +300,7 @@ const AdminDashboard = () => {
                                                 <td className="px-8 py-4 text-gray-600">{staff.email}</td>
                                                 {(activeRole === 'teacher' || activeRole === 'hod') && (
                                                     <td className="px-8 py-4 text-gray-600">
-                                                        <span className="px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-medium">
+                                                        <span className="px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-medium">
                                                             {staff.department}
                                                         </span>
                                                     </td>

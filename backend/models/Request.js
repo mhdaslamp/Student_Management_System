@@ -45,6 +45,12 @@ const RequestSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected', 'reverted'],
         default: 'pending'
     },
+    attachments: [{
+        filename: { type: String, required: true },
+        path:     { type: String, required: true },
+        contentType: { type: String },
+        size:     { type: Number }
+    }],
     pdfPath: { type: String }   // populated after final approval
 }, { timestamps: true });
 

@@ -62,7 +62,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${isCollege ? 'bg-blue-500/20 text-blue-300' :
-                                mode === 'department' ? 'bg-violet-500/20 text-violet-300' :
+                                mode === 'department' ? 'bg-primary-500/20 text-primary-300' :
                                     'bg-gray-500/20 text-gray-300'
                                 }`}>
                                 {isCollege ? '🌐 College-Wide' :
@@ -70,7 +70,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
                                         '📋 Batch'}
                             </span>
                         </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-400 to-blue-400 bg-clip-text text-transparent">
                             {mode === 'department' && data.department
                                 ? `${data.department} Department Analysis`
                                 : 'Result Analysis'}
@@ -102,7 +102,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
                                         <XAxis type="number" domain={[0, 10]} stroke="#9CA3AF" />
                                         <YAxis type="category" dataKey="name" stroke="#E5E7EB" width={110} tick={{ fontSize: 11 }} />
                                         <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }} cursor={{ fill: '#374151' }} />
-                                        <Bar dataKey="sgpa" name="SGPA" fill="#8B5CF6" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#E5E7EB', fontSize: 12 }} />
+                                        <Bar dataKey="sgpa" name="SGPA" fill="#0E6EB8" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#E5E7EB', fontSize: 12 }} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>

@@ -166,7 +166,7 @@ const ExamControllerDashboard = () => {
             <div className="relative">
                 <button
                     onClick={() => setDeptPickerFor(deptPickerFor === item.title ? null : item.title)}
-                    className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                     title="Department Analysis"
                 ><BarChart2 className="h-4 w-4" /></button>
                 {deptPickerFor === item.title && (
@@ -176,7 +176,7 @@ const ExamControllerDashboard = () => {
                             <button
                                 key={d}
                                 onClick={() => handleDeptAnalysis(item, d)}
-                                className="px-3 py-1 text-xs font-bold bg-violet-50 hover:bg-violet-600 hover:text-white text-violet-700 rounded-lg transition-colors"
+                                className="px-3 py-1 text-xs font-bold bg-primary-50 hover:bg-primary-600 hover:text-white text-primary-700 rounded-lg transition-colors"
                             >{d}</button>
                         ))}
                     </div>
@@ -234,7 +234,7 @@ const ExamControllerDashboard = () => {
 
                 {/* Upload Section */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-600 flex justify-between items-center text-white">
+                    <div className="p-6 bg-gradient-to-r from-primary-600 to-primary-800 flex justify-between items-center text-white">
                         <div>
                             <h2 className="text-xl font-bold flex items-center">
                                 <Upload className="mr-3 h-6 w-6" />

@@ -35,9 +35,9 @@ const StudentHome = () => {
 
                 {/* Top Bar */}
                 <div className="relative z-10 flex justify-between items-start mb-8">
-                    <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                        <GraduationCap className="h-6 w-6 text-white" />
-                    </div>
+
+                    <span className="text-white font-semibold text-lg">SAMS</span>
+
                     <button onClick={logout} className="bg-white/20 backdrop-blur-md p-2 rounded-xl hover:bg-white/30 transition-colors">
                         <LogOut className="h-5 w-5 text-white" />
                     </button>
@@ -52,7 +52,7 @@ const StudentHome = () => {
 
             {/* ID Card - Floating */}
             <div className="px-6 -mt-16 relative z-20">
-                <div 
+                <div
                     onClick={scrollToDetails}
                     className="bg-white rounded-3xl p-5 shadow-xl shadow-primary-900/10 border border-white/50 backdrop-blur-sm cursor-pointer active:scale-[0.98] transition-all"
                 >

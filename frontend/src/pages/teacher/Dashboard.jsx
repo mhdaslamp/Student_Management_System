@@ -124,110 +124,110 @@ const TeacherDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Actions */}
             {isTeacher && (
-            <div className="lg:col-span-1 space-y-8">
-                {/* Create Batch Card */}
-                <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 bg-gradient-to-r from-[#1A8AE5] to-[#0066CC]">
-                        <h2 className="text-lg font-bold text-white flex items-center">
-                            <Plus className="mr-2 h-5 w-5 opacity-80" />
-                            New Batch
-                        </h2>
-                        <p className="text-white/80 text-sm mt-1">Initialize a new student group</p>
-                    </div>
-                    <div className="p-6">
-                        <form onSubmit={handleCreateBatch} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">New Batch Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Class of 2025"
-                                    className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-[#1A8AE5] focus:ring-4 focus:ring-[#1A8AE5]/10 transition-all font-medium"
-                                    value={newBatch.name}
-                                    onChange={(e) => setNewBatch({ ...newBatch, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Scheme</label>
-                                <select
-                                    className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 transition-all font-medium"
-                                    value={newBatch.scheme}
-                                    onChange={(e) => setNewBatch({ ...newBatch, scheme: e.target.value })}
-                                    required
+                <div className="lg:col-span-1 space-y-8">
+                    {/* Create Batch Card */}
+                    <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 bg-gradient-to-r from-[#1A8AE5] to-[#0066CC]">
+                            <h2 className="text-lg font-bold text-white flex items-center">
+                                <Plus className="mr-2 h-5 w-5 opacity-80" />
+                                New Batch
+                            </h2>
+                            <p className="text-white/80 text-sm mt-1">Initialize a new student group</p>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleCreateBatch} className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">New Batch Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Class of 2025"
+                                        className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-[#1A8AE5] focus:ring-4 focus:ring-[#1A8AE5]/10 transition-all font-medium"
+                                        value={newBatch.name}
+                                        onChange={(e) => setNewBatch({ ...newBatch, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Scheme</label>
+                                    <select
+                                        className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 transition-all font-medium"
+                                        value={newBatch.scheme}
+                                        onChange={(e) => setNewBatch({ ...newBatch, scheme: e.target.value })}
+                                        required
+                                    >
+                                        <option value="2024">2024</option>
+                                        <option value="2019">2019</option>
+                                    </select>
+                                </div>
+                                {/* Department input removed as per user request (Auto-assigned) */}
+                                <button
+                                    disabled={loading}
+                                    className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors shadow-lg shadow-gray-200"
                                 >
-                                    <option value="2024">2024</option>
-                                    <option value="2019">2019</option>
-                                </select>
-                            </div>
-                            {/* Department input removed as per user request (Auto-assigned) */}
-                            <button
-                                disabled={loading}
-                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors shadow-lg shadow-gray-200"
-                            >
-                                {loading ? 'Creating...' : 'Create Batch'}
-                            </button>
-                        </form>
+                                    {loading ? 'Creating...' : 'Create Batch'}
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                </div>
 
-                {/* Upload Card */}
-                <div className="bg-white rounded-[24px] shadow-lg shadow-[#1A8AE5]/5 border border-[#1A8AE5]/10 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Upload className="h-24 w-24 text-[#1A8AE5]" />
-                    </div>
-                    <div className="p-6">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center mb-4">
-                            <Upload className="mr-2 h-5 w-5 text-[#1A8AE5]" />
-                            Bulk Upload
-                        </h2>
+                    {/* Upload Card */}
+                    <div className="bg-white rounded-[24px] shadow-lg shadow-[#1A8AE5]/5 border border-[#1A8AE5]/10 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Upload className="h-24 w-24 text-[#1A8AE5]" />
+                        </div>
+                        <div className="p-6">
+                            <h2 className="text-lg font-bold text-gray-900 flex items-center mb-4">
+                                <Upload className="mr-2 h-5 w-5 text-[#1A8AE5]" />
+                                Bulk Upload
+                            </h2>
 
-                        <form onSubmit={handleFileUpload} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Target Batch</label>
-                                <select
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:ring-4 focus:ring-[#1A8AE5]/10 outline-none cursor-pointer"
-                                    onChange={(e) => setSelectedBatch(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Select a batch...</option>
-                                    {batches.map(b => <option key={b._id} value={b._id}>{b.name} ({b.branch})</option>)}
-                                </select>
-                            </div>
+                            <form onSubmit={handleFileUpload} className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Target Batch</label>
+                                    <select
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:ring-4 focus:ring-[#1A8AE5]/10 outline-none cursor-pointer"
+                                        onChange={(e) => setSelectedBatch(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select a batch...</option>
+                                        {batches.map(b => <option key={b._id} value={b._id}>{b.name} ({b.branch})</option>)}
+                                    </select>
+                                </div>
 
-                            <div className="border-2 border-dashed border-[#1A8AE5]/20 rounded-2xl p-6 text-center hover:bg-[#1A8AE5]/5 transition-colors group cursor-pointer relative">
-                                <input
-                                    type="file"
-                                    accept=".xlsx, .xls, .csv"
-                                    onChange={(e) => setFile(e.target.files[0])}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <div className="flex flex-col items-center">
-                                    <div className="h-10 w-10 bg-[#1A8AE5]/10 text-[#1A8AE5] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <FileText className="h-5 w-5" />
+                                <div className="border-2 border-dashed border-[#1A8AE5]/20 rounded-2xl p-6 text-center hover:bg-[#1A8AE5]/5 transition-colors group cursor-pointer relative">
+                                    <input
+                                        type="file"
+                                        accept=".xlsx, .xls, .csv"
+                                        onChange={(e) => setFile(e.target.files[0])}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                    <div className="flex flex-col items-center">
+                                        <div className="h-10 w-10 bg-[#1A8AE5]/10 text-[#1A8AE5] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <FileText className="h-5 w-5" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-600 group-hover:text-[#1A8AE5]">
+                                            {file ? file.name : 'Drop Excel file here'}
+                                        </span>
+                                        <span className="text-xs text-gray-400 mt-1">.xlsx or .csv</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-600 group-hover:text-[#1A8AE5]">
-                                        {file ? file.name : 'Drop Excel file here'}
-                                    </span>
-                                    <span className="text-xs text-gray-400 mt-1">.xlsx or .csv</span>
                                 </div>
-                            </div>
 
-                            {uploadMessage && (
-                                <div className={`text-xs font-bold p-3 rounded-lg text-center ${uploadMessage.includes('SUCCESS') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {uploadMessage}
-                                </div>
-                            )}
+                                {uploadMessage && (
+                                    <div className={`text-xs font-bold p-3 rounded-lg text-center ${uploadMessage.includes('SUCCESS') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {uploadMessage}
+                                    </div>
+                                )}
 
-                            <button
-                                disabled={!file || !selectedBatch}
-                                className="w-full py-3 bg-[#1A8AE5] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold hover:bg-[#1570B9] transition-all shadow-lg shadow-[#1A8AE5]/20"
-                            >
-                                Process & Generate Logins
-                            </button>
-                        </form>
+                                <button
+                                    disabled={!file || !selectedBatch}
+                                    className="w-full py-3 bg-[#1A8AE5] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold hover:bg-[#1570B9] transition-all shadow-lg shadow-[#1A8AE5]/20"
+                                >
+                                    Process & Generate Logins
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
             )}
 
             {/* Right Column: Batches List */}
@@ -354,14 +354,14 @@ const TeacherDashboard = () => {
                                             <td className="px-4 py-3 text-gray-600 font-mono text-xs">{student.admissionNo}</td>
                                             <td className="px-4 py-3 text-right">
                                                 {isTeacher && (
-                                                <div className="flex justify-end space-x-2">
-                                                    <button onClick={() => startEditStudent(student)} className="p-1.5 text-[#1A8AE5] hover:bg-blue-50 rounded-lg">
-                                                        <Edit2 className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteStudent(student._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button onClick={() => startEditStudent(student)} className="p-1.5 text-[#1A8AE5] hover:bg-blue-50 rounded-lg">
+                                                            <Edit2 className="h-4 w-4" />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteStudent(student._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -404,7 +404,7 @@ const TeacherDashboard = () => {
                         <div className="h-8 w-8 bg-[#1A8AE5]/10 rounded-lg flex items-center justify-center">
                             <GraduationCap className="h-5 w-5 text-[#1A8AE5]" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-gray-900">EduCore</span>
+                        <span className="text-xl font-bold tracking-tight text-gray-900">SAMS</span>
                     </div>
                 </div>
 
@@ -441,7 +441,7 @@ const TeacherDashboard = () => {
                         <span className="font-medium text-[15px]">Logout</span>
                     </button>
                     <div className="mt-4 px-2 pb-2 text-center">
-                        <p className="text-[10px] text-gray-300 font-medium">© 2025 EduCore Inc.</p>
+                        <p className="text-[10px] text-gray-300 font-medium">© SAMS</p>
                     </div>
                 </div>
             </aside>
@@ -543,14 +543,14 @@ const TeacherDashboard = () => {
                                             <td className="px-4 py-3.5 text-gray-500 font-mono text-xs">{student.admissionNo}</td>
                                             <td className="px-4 py-3.5 text-right">
                                                 {isTeacher && (
-                                                <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => startEditStudent(student)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                                                        <Edit2 className="h-4 w-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteStudent(student._id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
+                                                    <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => startEditStudent(student)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                                            <Edit2 className="h-4 w-4" />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteStudent(student._id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>

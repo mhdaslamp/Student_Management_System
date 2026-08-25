@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { BCRYPT_SALT_ROUNDS, ROLES } = require('../src/config/constants');
 
 exports.addStaff = async (req, res, next) => {
-    const { name, email, password, department, role } = req.body;
+    const { name, email, password, department, role, designation } = req.body;
 
     try {
         let user = await User.findOne({ email });
@@ -25,6 +25,7 @@ exports.addStaff = async (req, res, next) => {
             email,
             password: hashedPassword,
             role,
+            designation,
             department: (role === ROLES.TEACHER || role === ROLES.HOD) ? department : undefined
         });
 

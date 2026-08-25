@@ -8,12 +8,11 @@
 // Must mirror the backend ROLES object (backend/src/config/constants.js)
 
 export const ROLES = Object.freeze({
-    ADMIN:           'admin',
-    TEACHER:         'teacher',
-    STUDENT:         'student',
-    EXAM_CONTROLLER: 'exam_controller',
-    HOD:             'hod',
-    PRINCIPAL:       'principal',
+    ADMIN:     'admin',
+    TEACHER:   'teacher',
+    STUDENT:   'student',
+    HOD:       'hod',
+    PRINCIPAL: 'principal',
 });
 
 /** Roles that share the Teacher dashboard */
@@ -27,12 +26,11 @@ export const TEACHER_DASHBOARD_ROLES = Object.freeze([
 
 /** Maps a user role to its root dashboard path */
 export const ROLE_DASHBOARD_PATHS = Object.freeze({
-    [ROLES.ADMIN]:           '/admin',
-    [ROLES.TEACHER]:         '/teacher',
-    [ROLES.STUDENT]:         '/student',
-    [ROLES.EXAM_CONTROLLER]: '/exam-controller',
-    [ROLES.HOD]:             '/teacher',
-    [ROLES.PRINCIPAL]:       '/teacher',
+    [ROLES.ADMIN]:     '/admin',
+    [ROLES.TEACHER]:   '/teacher',
+    [ROLES.STUDENT]:   '/student',
+    [ROLES.HOD]:       '/teacher',
+    [ROLES.PRINCIPAL]: '/teacher',
 });
 
 // ─── Request Types ─────────────────────────────────────────────────────────────

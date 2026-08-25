@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { UserPlus, LogOut, Users, School, LayoutDashboard, Trash2, Edit2, X } from 'lucide-react';
+import { UserPlus, LogOut, Users, School, LayoutDashboard, Trash2, Edit2, X, Upload, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ResultSection from '../exam_controller/ResultSection';
+import UploadSection from '../exam_controller/UploadSection';
 
 const AdminDashboard = () => {
     const { logout } = useAuth();
@@ -11,12 +13,15 @@ const AdminDashboard = () => {
     const [editingStaff, setEditingStaff] = useState(null);
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('staff');
-    const [activeRole, setActiveRole] = useState('teacher'); // 'teacher', 'exam_controller', 'hod'
+    const [activeRole, setActiveRole] = useState('teacher'); // 'teacher', 'hod', 'principal'
+
+    // Results state (moved from exam_controller)
+    const [drafts, setDrafts] = useState([]);
+    const [overview, setOverview] = useState([]);
 
     useEffect(() => {
-        if (activeTab === 'staff') {
-            fetchStaff();
-        }
+        if (activeTab === 'staff') fetchStaff();
+        if (activeTab === 'results') fetchResults();
     }, [activeTab, activeRole]);
 
     const fetchStaff = async () => {
@@ -26,6 +31,19 @@ const AdminDashboard = () => {
         } catch (error) {
             console.error('Error fetching staff:', error);
             setStaffList([]);
+        }
+    };
+
+    const fetchResults = async () => {
+        try {
+            const [draftsRes, overviewRes] = await Promise.all([
+                axios.get('/academic/result/draft-overview'),
+                axios.get('/academic/result/overview'),
+            ]);
+            setDrafts(draftsRes.data || []);
+            setOverview(overviewRes.data || []);
+        } catch (error) {
+            console.error('Error fetching results:', error);
         }
     };
 
@@ -87,9 +105,8 @@ const AdminDashboard = () => {
     };
 
     const roleLabels = {
-        teacher: 'Teachers',
-        exam_controller: 'Exam Controllers',
-        hod: 'HODs',
+        teacher:   'Teachers',
+        hod:       'HODs',
         principal: 'Principals'
     };
 
@@ -109,21 +126,24 @@ const AdminDashboard = () => {
 
                 <nav className="flex-1 px-4 space-y-[16px] py-2">
                     <button
-                        onClick={() => setActiveTab('teachers')}
-                        className={`w-full flex items-center gap-[12px] px-[18px] py-[12px] rounded-[10px] transition-all duration-200 ease-in-out group font-medium relative ${activeTab === 'teachers' ? 'bg-[#E8F3FD] text-[#1A8AE5]' : 'text-[#4B5563] hover:bg-[#F3F4F6] bg-transparent'}`}
+                        onClick={() => setActiveTab('staff')}
+                        className={`w-full flex items-center gap-[12px] px-[18px] py-[12px] rounded-[10px] transition-all duration-200 ease-in-out group font-medium relative ${activeTab === 'staff' ? 'bg-[#E8F3FD] text-[#1A8AE5]' : 'text-[#4B5563] hover:bg-[#F3F4F6] bg-transparent'}`}
                     >
-                        {activeTab === 'teachers' && (
+                        {activeTab === 'staff' && (
                             <div className="absolute left-2 top-1/2 -translate-y-1/2 h-6 w-1 bg-[#1A8AE5] rounded-full"></div>
                         )}
-                        <Users className={`w-[18px] h-[18px] ${activeTab === 'teachers' ? 'text-[#1A8AE5]' : 'text-gray-400 group-hover:text-gray-500'}`} />
-                        <span className="text-[15px]">Manage Teachers</span>
+                        <Users className={`w-[18px] h-[18px] ${activeTab === 'staff' ? 'text-[#1A8AE5]' : 'text-gray-400 group-hover:text-gray-500'}`} />
+                        <span className="text-[15px]">Manage Staff</span>
                     </button>
                     <button
-                        onClick={() => setActiveTab('staff')}
-                        className={`flex items-center space-x-3 w-full px-4 py-3.5 rounded-xl transition-all duration-200 ${activeTab === 'staff' ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}
+                        onClick={() => setActiveTab('results')}
+                        className={`w-full flex items-center gap-[12px] px-[18px] py-[12px] rounded-[10px] transition-all duration-200 ease-in-out group font-medium relative ${activeTab === 'results' ? 'bg-[#E8F3FD] text-[#1A8AE5]' : 'text-[#4B5563] hover:bg-[#F3F4F6] bg-transparent'}`}
                     >
-                        <Users className="h-5 w-5" />
-                        <span>Manage Staff</span>
+                        {activeTab === 'results' && (
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 h-6 w-1 bg-[#1A8AE5] rounded-full"></div>
+                        )}
+                        <FileText className={`w-[18px] h-[18px] ${activeTab === 'results' ? 'text-[#1A8AE5]' : 'text-gray-400 group-hover:text-gray-500'}`} />
+                        <span className="text-[15px]">Results</span>
                     </button>
                 </nav>
 
@@ -155,6 +175,24 @@ const AdminDashboard = () => {
                 </header>
 
                 <div className="p-6 md:p-10 max-w-5xl mx-auto">
+
+                    {/* ── Results Panel ─────────────────────────────────── */}
+                    {activeTab === 'results' && (
+                        <div>
+                            <div className="mb-8">
+                                <h1 className="text-3xl font-bold text-gray-900">Result Management</h1>
+                                <p className="text-gray-500 mt-2">Upload university result PDFs, review drafts, and publish to students.</p>
+                            </div>
+                            <UploadSection refreshAll={fetchResults} />
+                            <div className="mt-8">
+                                <ResultSection drafts={drafts} overview={overview} refreshAll={fetchResults} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Staff Panel ───────────────────────────────────── */}
+                    {activeTab === 'staff' && (
+                    <div>
                     <div className="mb-10">
                         <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
                         <p className="text-gray-500 mt-2">Add, edit, and manage teaching and administrative staff.</p>
@@ -330,6 +368,8 @@ const AdminDashboard = () => {
                             )}
                         </div>
                     </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

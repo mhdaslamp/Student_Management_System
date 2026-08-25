@@ -7,7 +7,7 @@ const { BATCH_VIEWER_ROLES } = require('../src/config/constants');
 
 // ─── Results ──────────────────────────────────────────────────────────────────
 router.post('/result',                  auth('teacher'),            academicController.addResult);
-router.post('/result/upload',           auth('exam_controller'),    pdfOnly.single('file'), academicController.uploadResultPDF);
+router.post('/result/upload',           auth('admin'),              pdfOnly.single('file'), academicController.uploadResultPDF);
 router.get('/result/student',           auth('student'),            academicController.getResultsByStudent);
 router.get('/result/batch',             auth(BATCH_VIEWER_ROLES),   academicController.getResultsByBatch);
 
@@ -15,8 +15,8 @@ router.get('/result/batch',             auth(BATCH_VIEWER_ROLES),   academicCont
 router.get('/result/draft-overview',    auth(BATCH_VIEWER_ROLES),   academicController.getDraftResultOverview);
 router.get('/result/overview',          auth(BATCH_VIEWER_ROLES),   academicController.getAllResultOverview);
 router.get('/result/overview/:batchId', auth(BATCH_VIEWER_ROLES),   academicController.getBatchResultOverview);
-router.post('/result/publish',          auth('exam_controller'),    academicController.publishResult);
-router.post('/result/delete',           auth('exam_controller'),    academicController.deleteResult);
+router.post('/result/publish',          auth('admin'),              academicController.publishResult);
+router.post('/result/delete',           auth('admin'),              academicController.deleteResult);
 
 // ─── Result Details ───────────────────────────────────────────────────────────
 router.get('/result/details/all',       auth(BATCH_VIEWER_ROLES),   academicController.getAllResultDetails);

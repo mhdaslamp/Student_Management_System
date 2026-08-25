@@ -6,7 +6,7 @@ import { Eye, X, BarChart2, Globe, Download, GraduationCap } from 'lucide-react'
 
 const TeacherResults = ({ batches }) => {
     const { user } = useAuth();
-    const isExamController = user?.role === 'exam_controller';
+    const isAdmin = user?.role === 'admin';
 
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
@@ -165,7 +165,7 @@ const TeacherResults = ({ batches }) => {
                             )}
                         </div>
 
-                        {isExamController && !viewingResult.published && (
+                        {isAdmin && !viewingResult.published && (
                             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
                                 <button
                                     onClick={() => { fetchUniResults(); setViewingResult(null); }}

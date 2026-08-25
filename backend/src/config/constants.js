@@ -26,7 +26,6 @@ const APPROVER_ROLES = Object.freeze([
 /** Roles that have global/admin-level access */
 const ADMIN_ROLES = Object.freeze([
     ROLES.ADMIN,
-    ROLES.EXAM_CONTROLLER,
     ROLES.PRINCIPAL,
 ]);
 
@@ -34,7 +33,6 @@ const ADMIN_ROLES = Object.freeze([
 const BATCH_VIEWER_ROLES = Object.freeze([
     ROLES.TEACHER,
     ROLES.ADMIN,
-    ROLES.EXAM_CONTROLLER,
     ROLES.HOD,
     ROLES.PRINCIPAL,
 ]);

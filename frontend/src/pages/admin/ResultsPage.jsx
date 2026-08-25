@@ -46,21 +46,19 @@ function UploadFileIcon() {
 }
 
 function DraftCard({ item, onPublish, onDelete, onDownload, onView, onAnalysis }) {
-    const [deptPickerOpen, setDeptPickerOpen] = useState(false);
-    const DEPTS = ["IT", "CS", "EC", "EE", "CE", "ME"];
     return (
-        <div className="border border-[#d0d3d9] rounded-[16px] px-5 py-4 flex flex-col gap-3 hover:border-black transition-colors cursor-pointer" onClick={() => onView(item)}>
+        <div className="border border-[#d0d3d9] rounded-[16px] px-5 py-4 flex flex-col gap-3 hover:border-black transition-colors">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-0.5 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-black text-base truncate" style={{ fontFamily: "Inter, sans-serif" }}>{formatResultTitle(item.title)}</p>
-                        <span className="shrink-0 px-2.5 py-0.5 rounded-[56px] bg-amber-100 text-amber-700 text-xs font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>Draft</span>
+                        <span className="shrink-0 px-2.5 py-0.5 rounded-[56px] bg-gray-100 text-gray-700 text-xs font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>Draft</span>
                     </div>
                     <p className="text-[#616161] text-xs mt-0.5" style={{ fontFamily: "Inter, sans-serif" }}>
                         {item.totalStudents} students · Avg SGPA: {item.averageSGPA} · {new Date(item.lastUploaded).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                     </p>
                 </div>
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse mt-1.5 shrink-0" />
+                <span className="h-2.5 w-2.5 rounded-full bg-gray-400 animate-pulse mt-1.5 shrink-0" />
             </div>
             <div className="flex flex-col gap-2" onClick={e => e.stopPropagation()}>
                 <button onClick={() => onPublish(item)} className="w-full h-10 px-4 rounded-[56px] bg-black text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-neutral-800 transition-colors" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -68,18 +66,7 @@ function DraftCard({ item, onPublish, onDelete, onDownload, onView, onAnalysis }
                 </button>
                 <div className="flex items-center gap-2 flex-wrap">
                     <button onClick={() => onDownload(item)} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Download Excel"><Download size={15} /></button>
-                    <button onClick={() => onAnalysis(item, "college")} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="College Analysis"><Globe size={15} /></button>
-                    <div className="relative">
-                        <button onClick={() => setDeptPickerOpen(v => !v)} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Department Analysis"><BarChart2 size={15} /></button>
-                        {deptPickerOpen && (
-                            <div className="absolute left-0 top-12 z-50 bg-white border border-[#d0d3d9] rounded-[12px] shadow-xl p-2 flex flex-wrap gap-1 w-40">
-                                <p className="w-full text-[10px] text-[#9c9c9c] font-semibold px-1 mb-1 uppercase tracking-wide">Department</p>
-                                {DEPTS.map(d => (
-                                    <button key={d} onClick={() => { setDeptPickerOpen(false); onAnalysis(item, "department", d); }} className="px-3 py-1 text-xs font-semibold bg-gray-100 hover:bg-black hover:text-white rounded-[56px] transition-colors" style={{ fontFamily: "Inter, sans-serif" }}>{d}</button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <button onClick={() => onAnalysis(item, "college")} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Analysis"><BarChart2 size={15} /></button>
                     <button onClick={() => onDelete(item)} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={15} /></button>
                 </div>
             </div>
@@ -197,9 +184,9 @@ const AdminResultsPage = ({ drafts = [], overview = [], refreshAll }) => {
                     <div className="flex-1 min-w-0">
                         <div className="border border-[#d0d3d9] rounded-[16px] p-6 flex flex-col gap-4 h-full">
                             <div className="flex items-center gap-3">
-                                <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+                                <span className="h-2.5 w-2.5 rounded-full bg-gray-400 animate-pulse" />
                                 <p className="font-semibold text-black text-base" style={{ fontFamily: "Inter, sans-serif" }}>Awaiting Publishing</p>
-                                <span className="px-2.5 py-0.5 rounded-[56px] bg-amber-100 text-amber-700 text-xs font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>{drafts.length}</span>
+                                <span className="px-2.5 py-0.5 rounded-[56px] bg-gray-100 text-gray-700 text-xs font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>{drafts.length}</span>
                             </div>
                             {drafts.length === 0 ? (
                                 <div className="border border-dashed border-[#d0d3d9] rounded-[16px] flex flex-col items-center justify-center gap-3 text-[#9c9c9c] flex-1">
@@ -217,37 +204,192 @@ const AdminResultsPage = ({ drafts = [], overview = [], refreshAll }) => {
 
                 {/* DESKTOP VIEW: Normal Table */}
                 <div className="hidden md:flex flex-col gap-4 w-full mt-4">
+                    {/* Section Header */}
                     <div className="flex items-center gap-3">
-                        <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-                        <p className="font-semibold text-black text-base" style={{ fontFamily: "Inter, sans-serif" }}>Published Results</p>
-                        <span className="px-2.5 py-0.5 rounded-[56px] bg-green-100 text-green-700 text-xs font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>{overview.length}</span>
+                        <span className="h-2.5 w-2.5 rounded-full bg-black" />
+
+                        <p
+                            className="font-semibold text-black text-base"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                            Published Results
+                        </p>
+
+                        <span
+                            className="px-2.5 py-0.5 rounded-[56px] bg-gray-100 text-gray-700 text-xs font-semibold"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                            {overview.length}
+                        </span>
                     </div>
+
+                    {/* Empty State */}
                     {overview.length === 0 ? (
                         <div className="border border-dashed border-[#d0d3d9] rounded-[16px] py-10 flex flex-col items-center justify-center gap-3 text-[#9c9c9c]">
                             <FileText size={28} className="opacity-30" />
-                            <p className="text-sm" style={{ fontFamily: "Inter, sans-serif" }}>No published results yet.</p>
+
+                            <p
+                                className="text-sm"
+                                style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                                No published results yet.
+                            </p>
                         </div>
                     ) : (
                         <div className="border border-[#d0d3d9] rounded-[16px] overflow-hidden">
-                            <div className="flex items-center px-5 py-3 border-b border-[#d0d3d9] bg-gray-50/60">
-                                <div className="flex-1 min-w-0 text-xs font-semibold text-[#616161] uppercase tracking-wide" style={{ fontFamily: "Inter, sans-serif" }}>Title</div>
-                                <div className="w-28 shrink-0 text-xs font-semibold text-[#616161] uppercase tracking-wide" style={{ fontFamily: "Inter, sans-serif" }}>Students</div>
-                                <div className="w-24 shrink-0 text-xs font-semibold text-[#616161] uppercase tracking-wide" style={{ fontFamily: "Inter, sans-serif" }}>Avg SGPA</div>
-                                <div className="w-32 shrink-0" />
+
+                            {/* ================= HEADER ================= */}
+                            <div
+                                className="
+                    grid
+                    grid-cols-[minmax(0,1fr)_112px_96px_190px]
+                    items-center
+                    px-5
+                    py-3
+                    border-b
+                    border-[#d0d3d9]
+                    bg-gray-50/60
+                "
+                                style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                                {/* Title */}
+                                <div className="text-xs font-semibold text-[#616161] uppercase tracking-wide">
+                                    Title
+                                </div>
+
+                                {/* Students */}
+                                <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">
+                                    Students
+                                </div>
+
+                                {/* Avg SGPA */}
+                                <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">
+                                    Avg SGPA
+                                </div>
+
+                                {/* Actions - empty header column */}
+                                <div />
                             </div>
+
+
+                            {/* ================= DATA ROWS ================= */}
                             {overview.map((item, idx) => (
-                                <div key={idx} className={`flex items-center px-5 py-4 gap-4 hover:bg-gray-50/60 cursor-pointer transition-colors ${idx < overview.length - 1 ? "border-b border-[#d0d3d9]" : ""}`} onClick={() => handleViewDetails(item)} style={{ fontFamily: "Inter, sans-serif" }}>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-semibold text-black text-sm truncate">{formatResultTitle(item.title)}</p>
-                                        <p className="text-[#9c9c9c] text-xs mt-0.5">{new Date(item.lastUploaded).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                                <div
+                                    key={idx}
+                                    className={`
+                        grid
+                        grid-cols-[minmax(0,1fr)_112px_96px_190px]
+                        items-center
+                        px-5
+                        py-4
+                        hover:bg-gray-50/60
+                        transition-colors
+                        ${idx < overview.length - 1
+                                            ? "border-b border-[#d0d3d9]"
+                                            : ""
+                                        }
+                    `}
+                                    style={{ fontFamily: "Inter, sans-serif" }}
+                                >
+
+                                    {/* ================= TITLE ================= */}
+                                    <div className="min-w-0 pr-4">
+                                        <p className="font-semibold text-black text-sm truncate">
+                                            {formatResultTitle(item.title)}
+                                        </p>
+
+                                        <p className="text-[#9c9c9c] text-xs mt-0.5">
+                                            {new Date(item.lastUploaded).toLocaleDateString(
+                                                "en-GB",
+                                                {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                }
+                                            )}
+                                        </p>
                                     </div>
-                                    <div className="w-28 shrink-0 text-sm text-[#616161]">{item.totalStudents}</div>
-                                    <div className="w-24 shrink-0 text-sm font-semibold text-black">{item.averageSGPA}</div>
-                                    <div className="w-32 shrink-0 flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                                        <button onClick={() => handleViewDetails(item)} className="size-9 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="View Details"><Eye size={14} /></button>
-                                        <button onClick={() => handleDownload(item)} className="size-9 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Download Excel"><Download size={14} /></button>
-                                        <button onClick={() => handleDelete(item)} className="size-9 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={14} /></button>
+
+
+                                    {/* ================= STUDENTS ================= */}
+                                    <div className="w-full flex justify-center text-sm text-[#616161]">
+                                        {item.totalStudents}
                                     </div>
+
+
+                                    {/* ================= AVG SGPA ================= */}
+                                    <div className="w-full flex justify-center text-sm font-semibold text-black">
+                                        {item.averageSGPA}
+                                    </div>
+
+
+                                    {/* ================= ACTION BUTTONS ================= */}
+                                    <div
+                                        className="w-full flex items-center justify-end gap-1"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {/* Analysis */}
+                                        <button
+                                            onClick={() => handleAnalysis(item, "college")}
+                                            className="
+                                size-9
+                                rounded-[56px]
+                                bg-white
+                                border
+                                border-[#d0d3d9]
+                                flex
+                                items-center
+                                justify-center
+                                hover:border-black
+                                transition-colors
+                            "
+                                            title="Analysis"
+                                        >
+                                            <BarChart2 size={14} />
+                                        </button>
+
+                                        {/* Download */}
+                                        <button
+                                            onClick={() => handleDownload(item)}
+                                            className="
+                                size-9
+                                rounded-[56px]
+                                bg-white
+                                border
+                                border-[#d0d3d9]
+                                flex
+                                items-center
+                                justify-center
+                                hover:border-black
+                                transition-colors
+                            "
+                                            title="Download Excel"
+                                        >
+                                            <Download size={14} />
+                                        </button>
+
+                                        {/* Delete */}
+                                        <button
+                                            onClick={() => handleDelete(item)}
+                                            className="
+                                size-9
+                                rounded-[56px]
+                                bg-white
+                                border
+                                border-[#d0d3d9]
+                                flex
+                                items-center
+                                justify-center
+                                hover:border-red-400
+                                hover:text-red-500
+                                transition-colors
+                            "
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+
                                 </div>
                             ))}
                         </div>
@@ -289,7 +431,7 @@ const AdminResultsPage = ({ drafts = [], overview = [], refreshAll }) => {
                                         </div>
                                     </div>
                                     <div className="flex gap-[10px] items-center shrink-0">
-                                        <button onClick={(e) => { e.stopPropagation(); handleViewDetails(item); }} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="View Details"><Eye size={16} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleAnalysis(item, "college"); }} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Analysis"><BarChart2 size={16} /></button>
                                         <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Download Excel"><Download size={16} /></button>
                                         <button onClick={(e) => { e.stopPropagation(); handleDelete(item); }} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={16} /></button>
                                     </div>

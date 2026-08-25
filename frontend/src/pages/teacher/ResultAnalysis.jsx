@@ -3,19 +3,21 @@ import axios from '../../api/axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { X, Trophy, AlertCircle, BookOpen, Building2 } from 'lucide-react';
 
-const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOverride = null }) => {
+const ResultAnalysis = ({ batchId, title, type, onClose, mode: initialMode = 'batch', deptOverride: initialDept = null }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [currentMode, setCurrentMode] = useState(initialMode);
+    const [currentDept, setCurrentDept] = useState(initialDept);
 
     useEffect(() => {
         const fetchAnalysis = async () => {
             try {
                 let url = '';
-                if (mode === 'college') {
+                if (currentMode === 'college') {
                     url = `/academic/result/analysis/college?title=${encodeURIComponent(title)}&type=${type}`;
-                } else if (mode === 'department') {
+                } else if (currentMode === 'department') {
                     url = `/academic/result/analysis/department?title=${encodeURIComponent(title)}&type=${type}`;
-                    if (deptOverride) url += `&dept=${encodeURIComponent(deptOverride)}`;
+                    if (currentDept) url += `&dept=${encodeURIComponent(currentDept)}`;
                 } else {
                     url = `/academic/result/analysis/${batchId}?title=${encodeURIComponent(title)}&type=${type}`;
                 }
@@ -28,7 +30,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
             }
         };
         fetchAnalysis();
-    }, [batchId, title, type, mode, deptOverride]);
+    }, [batchId, title, type, currentMode, currentDept]);
 
     if (loading) return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -48,7 +50,7 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
     );
 
     const COLORS = ['#10B981', '#EF4444'];
-    const isCollege = mode === 'college';
+    const isCollege = currentMode === 'college';
     const totalPassRate = data.passFail
         ? ((data.passFail[0].value / (data.passFail[0].value + data.passFail[1].value)) * 100).toFixed(1)
         : 0;
@@ -62,17 +64,42 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode = 'batch', deptOve
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${isCollege ? 'bg-blue-500/20 text-blue-300' :
-                                mode === 'department' ? 'bg-violet-500/20 text-violet-300' :
+                                currentMode === 'department' ? 'bg-violet-500/20 text-violet-300' :
                                     'bg-gray-500/20 text-gray-300'
                                 }`}>
                                 {isCollege ? '🌐 College-Wide' :
-                                    mode === 'department' ? `🏢 ${data.department || ''} Department` :
+                                    currentMode === 'department' ? `🏢 ${data.department || currentDept || ''} Department` :
                                         '📋 Batch'}
                             </span>
+
+                            {(initialMode === 'college' || initialMode === 'department') && (
+                                <select 
+                                    className="ml-3 bg-gray-800/80 border border-gray-700 text-white rounded-lg px-2 py-0.5 text-xs font-medium outline-none focus:border-violet-400 cursor-pointer"
+                                    value={currentMode === 'college' ? 'college' : currentDept}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === 'college') {
+                                            setCurrentMode('college');
+                                            setCurrentDept(null);
+                                        } else {
+                                            setCurrentMode('department');
+                                            setCurrentDept(val);
+                                        }
+                                    }}
+                                >
+                                    <option value="college">College-Wide</option>
+                                    <option value="CS">Computer Science</option>
+                                    <option value="IT">Information Technology</option>
+                                    <option value="EC">Electronics & Comm.</option>
+                                    <option value="EE">Electrical & Elect.</option>
+                                    <option value="CE">Civil Engineering</option>
+                                    <option value="ME">Mechanical Engg.</option>
+                                </select>
+                            )}
                         </div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                            {mode === 'department' && data.department
-                                ? `${data.department} Department Analysis`
+                            {currentMode === 'department' && (data.department || currentDept)
+                                ? `${data.department || currentDept} Department Analysis`
                                 : 'Result Analysis'}
                         </h1>
                         <p className="text-gray-400 mt-1 text-sm">{title} &nbsp;|&nbsp; {type?.toUpperCase()}

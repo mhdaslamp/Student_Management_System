@@ -3,6 +3,7 @@ import axios from '../../api/axios';
 import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Menu, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AdminResultsPage from './ResultsPage';
+import samsLogoSmall from '../../assets/SAMS LOGO SMALL.svg';
 
 const AdminDashboard = () => {
     const { logout } = useAuth();
@@ -11,7 +12,7 @@ const AdminDashboard = () => {
     const [staffList, setStaffList] = useState([]);
     const [editingStaff, setEditingStaff] = useState(null);
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState('staff');
+    const [activeTab, setActiveTab] = useState('results');
     const [activeRole, setActiveRole] = useState('HOD'); // 'Principal', 'HOD', 'Tutor', 'Professor'
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showPwd, setShowPwd] = useState(false);
@@ -178,7 +179,7 @@ const AdminDashboard = () => {
             {/* ── Sidebar ── */}
             <aside className="w-[260px] shrink-0 h-full flex flex-col border-r border-[#d0d3d9] overflow-y-auto hidden md:flex">
                 <div className="px-4 py-1 h-[85px] flex items-center overflow-hidden">
-                    <img src="/src/assets/SAMS LOGO SMALL.svg" alt="SAMS Logo" className="w-[155.637px] h-[58.137px] object-contain" />
+                    <img src={samsLogoSmall} alt="SAMS Logo" className="w-[155.637px] h-[58.137px] object-contain" />
                 </div>
                 <div className="px-4 py-4">
                     <div className="bg-white border border-[#9c9c9c] flex gap-2 h-11 items-center pl-4 pr-4 rounded-[56px]">
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
                     </div>
                     {/* Mobile Header */}
                     <div className="flex md:hidden w-full items-center justify-between py-2">
-                        <img src="/src/assets/SAMS LOGO SMALL.svg" alt="SAMS Logo" className="w-[100px] object-contain" />
+                        <img src={samsLogoSmall} alt="SAMS Logo" className="w-[100px] object-contain" />
                         <button onClick={() => setMobileMenuOpen(true)} className="size-12 rounded-[56px] border border-[#d0d3d9] bg-white flex items-center justify-center">
                             <Menu size={20} className="text-black" />
                         </button>
@@ -259,14 +260,14 @@ const AdminDashboard = () => {
 
                     {/* Mobile Tabs */}
                     <div className="flex md:hidden gap-2 mb-8">
-                        <button 
+                        <button
                             onClick={() => setActiveTab('results')}
                             className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'results' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
                             style={{ fontFamily: "'Inter', sans-serif" }}
                         >
                             KTU Result
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('staff')}
                             className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'staff' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
                             style={{ fontFamily: "'Inter', sans-serif" }}
@@ -282,7 +283,7 @@ const AdminDashboard = () => {
 
                     {/* ── Staff Panel ───────────────────────────────────── */}
                     {activeTab === 'staff' && (
-                        <div className="flex flex-col gap-6 w-full max-w-[900px]">
+                        <div className="flex flex-col gap-6 w-full">
                             {/* Create Form Card */}
                             <div className="border border-[#d0d3d9] rounded-[16px] p-4 md:p-6 flex flex-col gap-6">
                                 {message && (
@@ -290,7 +291,7 @@ const AdminDashboard = () => {
                                         <span className="font-medium text-sm">{message}</span>
                                     </div>
                                 )}
-                                
+
                                 <form onSubmit={editingStaff ? handleUpdateStaff : handleAddStaff} className="flex flex-col gap-6">
                                     <div className="flex flex-wrap gap-6">
                                         <div className="flex flex-col gap-2 flex-1 min-w-[200px]">
@@ -307,7 +308,7 @@ const AdminDashboard = () => {
                                                 />
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex flex-col gap-2 flex-1 min-w-[200px]">
                                             <p className="font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>Email</p>
                                             <div className="bg-white border border-[#9c9c9c] flex h-14 items-center px-4 rounded-[56px]">
@@ -397,51 +398,51 @@ const AdminDashboard = () => {
                             <div className="flex flex-col gap-4 mt-8 md:mt-0">
                                 {/* MOBILE History Header */}
                                 <div className="flex md:hidden flex-col gap-3">
-                                    <p className="font-medium text-black text-2xl" style={{ fontFamily: "'Inter', sans-serif" }}>History</p>
+                                    <p className="font-medium text-black text-2xl" style={{ fontFamily: "'Inter', sans-serif" }}>Staff Details</p>
                                     <div className="flex items-center gap-2">
                                         <div className="bg-white border border-[#9c9c9c] flex gap-2 h-14 items-center pl-4 pr-4 rounded-[56px] flex-1 min-w-0">
                                             <Search size={18} className="text-[#9c9c9c] shrink-0" />
-                                            <input 
-                                                type="text" 
-                                                placeholder="Search here" 
-                                                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]" 
-                                                style={{ fontFamily: "'Inter', sans-serif" }} 
+                                            <input
+                                                type="text"
+                                                placeholder="Search here"
+                                                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]"
+                                                style={{ fontFamily: "'Inter', sans-serif" }}
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
-                                        <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
+                                        {/*}  <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
                                             <div aria-hidden className="absolute border border-[#d0d3d9] border-solid inset-0 pointer-events-none rounded-[56px]" />
                                             <div className="flex gap-[2px] items-center rotate-90">
                                                 <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] left-0"></div></div>
                                                 <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] right-0"></div></div>
                                             </div>
-                                        </button>
+                                        </button>*/}
                                     </div>
                                 </div>
 
                                 {/* DESKTOP History Header */}
                                 <div className="hidden md:flex items-center justify-between gap-3 min-h-[56px]">
-                                    <p className="font-medium text-black text-2xl shrink-0" style={{ fontFamily: "'Inter', sans-serif" }}>History</p>
+                                    <p className="font-medium text-black text-2xl shrink-0" style={{ fontFamily: "'Inter', sans-serif" }}>Staff Details</p>
                                     <div className="flex gap-3 items-center min-w-0">
                                         <div className="bg-white border border-[#9c9c9c] flex gap-2 h-14 items-center pl-4 pr-4 rounded-[56px] w-56 shrink-0">
                                             <Search size={18} className="text-[#9c9c9c] shrink-0" />
-                                            <input 
-                                                type="text" 
-                                                placeholder="Search here" 
-                                                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]" 
-                                                style={{ fontFamily: "'Inter', sans-serif" }} 
+                                            <input
+                                                type="text"
+                                                placeholder="Search here"
+                                                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]"
+                                                style={{ fontFamily: "'Inter', sans-serif" }}
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
-                                        <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
+                                        {/*}   <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
                                             <div aria-hidden className="absolute border border-[#d0d3d9] border-solid inset-0 pointer-events-none rounded-[56px]" />
                                             <div className="flex gap-[2px] items-center rotate-90">
                                                 <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] left-0"></div></div>
                                                 <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] right-0"></div></div>
                                             </div>
-                                        </button>
+                                        </button>*/}
                                     </div>
                                 </div>
 
@@ -453,7 +454,7 @@ const AdminDashboard = () => {
                                         <div className="flex-1 min-w-0 font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>Department</div>
                                         <div className="w-[180px] shrink-0"></div>
                                     </div>
-                                    
+
                                     {filteredStaff.length === 0 ? (
                                         <div className="px-6 py-8 text-center text-[#9c9c9c] text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>No staff records found.</div>
                                     ) : (
@@ -516,28 +517,30 @@ const AdminDashboard = () => {
                         </div>
                     )}
                 </main>
-            </div>
+            </div >
 
             {/* Mobile Menu Overlay */}
-            {mobileMenuOpen && (
-                <div className="fixed inset-0 bg-white z-[100] flex flex-col md:hidden">
-                    <div className="flex justify-between items-center p-4 py-6 border-b border-[#d0d3d9]">
-                        <img src="/src/assets/SAMS LOGO SMALL.svg" alt="SAMS Logo" className="w-[100px] object-contain ml-2" />
-                        <button onClick={() => setMobileMenuOpen(false)} className="size-12 rounded-[56px] border border-[#d0d3d9] bg-white flex items-center justify-center mr-2">
-                            <X size={20} className="text-black" />
-                        </button>
+            {
+                mobileMenuOpen && (
+                    <div className="fixed inset-0 bg-white z-[100] flex flex-col md:hidden">
+                        <div className="flex justify-between items-center p-4 py-6 border-b border-[#d0d3d9]">
+                            <img src={samsLogoSmall} alt="SAMS Logo" className="w-[100px] object-contain ml-2" />
+                            <button onClick={() => setMobileMenuOpen(false)} className="size-12 rounded-[56px] border border-[#d0d3d9] bg-white flex items-center justify-center mr-2">
+                                <X size={20} className="text-black" />
+                            </button>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center justify-end pb-16 gap-6">
+                            <button className="flex items-center gap-2 text-[#333] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                <Settings size={20} /> Settings
+                            </button>
+                            <button onClick={logout} className="flex items-center gap-2 text-[#ff3232] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                <LogOut size={20} /> Log out
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex-1 flex flex-col items-center justify-end pb-16 gap-6">
-                        <button className="flex items-center gap-2 text-[#333] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            <Settings size={20} /> Settings
-                        </button>
-                        <button onClick={logout} className="flex items-center gap-2 text-[#ff3232] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            <LogOut size={20} /> Log out
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

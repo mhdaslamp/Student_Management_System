@@ -6,13 +6,7 @@ import {
     ClipboardList, RotateCcw, History, Plus, CheckCircle, XCircle,
     Clock, Download, ChevronRight, FileText, X, AlertCircle, User
 } from 'lucide-react';
-
-const TYPE_LABELS = {
-    bonafide:       'Bonafide Certificate',
-    duty_leave:     'Duty Leave',
-    lab_permission: 'Lab / Classroom Permission',
-    custom:         'Custom Request'
-};
+import { REQUEST_TYPE_LABELS } from '../../config/constants';
 
 const STATUS_COLORS = {
     pending:  'bg-yellow-100 text-yellow-700',
@@ -58,7 +52,7 @@ const RequestCard = ({ req, onDownload, onExpand }) => {
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                            {TYPE_LABELS[req.type]}
+                            {REQUEST_TYPE_LABELS[req.type]}
                         </span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[req.status]}`}>
                             {req.status.charAt(0).toUpperCase() + req.status.slice(1)}

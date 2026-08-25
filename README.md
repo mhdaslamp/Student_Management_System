@@ -58,15 +58,16 @@ npm install
 Create a `.env` file in the `backend` directory with the following content:
 
 ```env
+NODE_ENV=development # Set to 'production' for production builds
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/student_db  # Or your MongoDB Atlas URI
+MONGO_URI=mongodb://localhost:27017/student_db  # Use MongoDB Atlas URI for production
 JWT_SECRET=your_super_secret_key_here
 ```
 
 **Start the Server:**
 
 ```bash
-# Development mode (with auto-reload)
+# Development mode (with nodemon)
 npm run dev
 
 # Production mode
@@ -95,14 +96,14 @@ The application will likely run on `http://localhost:5173` (Vite default).
 ## 📖 Usage Guide
 
 1.  **Login:** Open the frontend URL.
-    -   **Admin:** Use admin credentials (create manually in DB or use seeder if available).
-    -   **Teacher:** Login to upload results and manage batches.
-    -   **Student:** Login to view results and profile.
-2.  **Upload Results (Teacher):**
-    -   Go to the Result Management section.
-    -   Select a Batch.
-    -   Upload the University Result PDF.
-    -   The system will parse the PDF, save individual student results to the database, and download an Excel analysis file automatically.
+    -   **Admin:** Use admin credentials.
+    -   **Exam Controller:** Login to upload university results and publish them.
+    -   **Teacher:** Login to manage batches, handle internal results, and view university results.
+    -   **Student:** Login to view results, profile, and make requests.
+2.  **Upload Results (Exam Controller):**
+    -   Go to the University Results section.
+    -   Upload the official University Result PDF.
+    -   Review the draft and click **Publish** to release the results to teachers and students.
 
 ## 📂 Project Structure
 

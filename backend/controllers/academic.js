@@ -5,7 +5,7 @@ const Batch = require('../models/Batch'); // Added
 const { processedData, generateExcel, calculateManualSGPA } = require('../utils/resultProcessor');
 
 // --- Results ---
-exports.addResult = async (req, res) => {
+exports.addResult = async (req, res, next) => {
     try {
         const { studentId, batchId, type, title, subjects } = req.body;
 
@@ -34,11 +34,11 @@ exports.addResult = async (req, res) => {
         res.status(201).json(result);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getResultsByStudent = async (req, res) => {
+exports.getResultsByStudent = async (req, res, next) => {
     try {
         // Find results linked to this student OR matching their registerId
         const student = await User.findById(req.user.userId);
@@ -70,11 +70,11 @@ exports.getResultsByStudent = async (req, res) => {
         res.json(results);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getResultsByBatch = async (req, res) => {
+exports.getResultsByBatch = async (req, res, next) => {
     try {
         // Teacher views results for a specific batch (optional filter)
         const { batchId } = req.query;
@@ -87,12 +87,12 @@ exports.getResultsByBatch = async (req, res) => {
         res.json(results);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // --- Assignments ---
-exports.createAssignment = async (req, res) => {
+exports.createAssignment = async (req, res, next) => {
     try {
         const { title, description, batchId, dueDate } = req.body;
 
@@ -108,11 +108,11 @@ exports.createAssignment = async (req, res) => {
         res.status(201).json(assignment);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getAssignments = async (req, res) => {
+exports.getAssignments = async (req, res, next) => {
     try {
         // Teachers see what they created, Students see what's for their batch
         // Simplified: Teachers see all for now (or filtered by their batches)
@@ -135,12 +135,12 @@ exports.getAssignments = async (req, res) => {
         res.json(assignments);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // --- PDF Upload for Results ---
-const uploadResultPDF = async (req, res) => {
+const uploadResultPDF = async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
@@ -226,7 +226,7 @@ const uploadResultPDF = async (req, res) => {
         const fs = require('fs');
         const path = require('path');
         fs.appendFileSync(path.join(__dirname, '../debug_error.log'), `${new Date().toISOString()} - Upload Error: ${error.message}\n${error.stack}\n\n`);
-        res.status(500).json({ message: 'Error processing PDF', error: error.message });
+        next(err);
     }
 };
 
@@ -236,7 +236,7 @@ exports.uploadResultPDF = uploadResultPDF;
 
 
 
-exports.downloadBatchResult = async (req, res) => {
+exports.downloadBatchResult = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -286,12 +286,12 @@ exports.downloadBatchResult = async (req, res) => {
 
     } catch (err) {
         console.error("Error downloading excel:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Download Excel for all students across all batches for a given exam title (for EC + Teachers)
-exports.downloadResultExcelGlobal = async (req, res) => {
+exports.downloadResultExcelGlobal = async (req, res, next) => {
     try {
         const { title, type } = req.query;
         const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
@@ -350,11 +350,11 @@ exports.downloadResultExcelGlobal = async (req, res) => {
 
     } catch (err) {
         console.error("Error downloading global excel:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatchResultOverview = async (req, res) => {
+exports.getBatchResultOverview = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const mongoose = require('mongoose');
@@ -385,12 +385,12 @@ exports.getBatchResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching result overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get overview of ALL published results across all batches (for Exam Controller)
-exports.getAllResultOverview = async (req, res) => {
+exports.getAllResultOverview = async (req, res, next) => {
     try {
         const overview = await Result.aggregate([
             { $match: { published: true } },
@@ -416,12 +416,12 @@ exports.getAllResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching all results overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get overview of ALL DRAFT (unpublished) results across all batches (for Exam Controller Recent Uploads)
-exports.getDraftResultOverview = async (req, res) => {
+exports.getDraftResultOverview = async (req, res, next) => {
     try {
         const overview = await Result.aggregate([
             { $match: { published: false } },
@@ -447,11 +447,11 @@ exports.getDraftResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching draft results overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.publishResult = async (req, res) => {
+exports.publishResult = async (req, res, next) => {
     try {
         const { batchId, title, type } = req.body;
 
@@ -470,11 +470,11 @@ exports.publishResult = async (req, res) => {
 
     } catch (err) {
         console.error("Error publishing result:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatchResultDetails = async (req, res) => {
+exports.getBatchResultDetails = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -495,12 +495,12 @@ exports.getBatchResultDetails = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching result details:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get all student details for an exam across ALL batches (for EC dashboard modal)
-exports.getAllResultDetails = async (req, res) => {
+exports.getAllResultDetails = async (req, res, next) => {
     try {
         const { title, type } = req.query;
 
@@ -521,11 +521,11 @@ exports.getAllResultDetails = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching all result details:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.deleteResult = async (req, res) => {
+exports.deleteResult = async (req, res, next) => {
     try {
         const { title, type } = req.body;
 
@@ -541,11 +541,11 @@ exports.deleteResult = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
-exports.getBatchResultAnalysis = async (req, res) => {
+exports.getBatchResultAnalysis = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -623,11 +623,11 @@ exports.getBatchResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error("Error generating analysis:", err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
-exports.getCollegeResultAnalysis = async (req, res) => {
+exports.getCollegeResultAnalysis = async (req, res, next) => {
     try {
         const { title, type } = req.query;
 
@@ -714,12 +714,12 @@ exports.getCollegeResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error("Error generating college analysis:", err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
 
-exports.getDepartmentResultAnalysis = async (req, res) => {
+exports.getDepartmentResultAnalysis = async (req, res, next) => {
     try {
         const { title, type, dept: deptQuery } = req.query;
         const user = await User.findById(req.user.userId);
@@ -834,6 +834,6 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error('Error generating department analysis:', err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };

@@ -143,7 +143,7 @@ const generatePDF = async (request) => {
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
 // POST /api/request — student creates request
-exports.createRequest = async (req, res) => {
+exports.createRequest = async (req, res, next) => {
     try {
         const { type, subject, body, flow: flowInput } = req.body;
         const studentId = req.user.userId;
@@ -196,24 +196,24 @@ exports.createRequest = async (req, res) => {
         res.status(201).json({ reqId: request.reqId, _id: request._id });
     } catch (err) {
         console.error('[createRequest]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };
 
 // GET /api/request/my — student's own requests
-exports.getMyRequests = async (req, res) => {
+exports.getMyRequests = async (req, res, next) => {
     try {
         const requests = await Request.find({ student: req.user.userId })
             .populate('flow.assignedTo', 'name role designation')
             .sort({ createdAt: -1 });
         res.json(requests);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };
 
 // GET /api/request/pending — requests waiting for the logged-in approver
-exports.getPendingRequests = async (req, res) => {
+exports.getPendingRequests = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         // Find requests where the current step is assigned to this user
@@ -229,13 +229,13 @@ exports.getPendingRequests = async (req, res) => {
         res.json(requests);
     } catch (err) {
         console.error('[getPendingRequests]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };
 const mongoose = require('mongoose');
 
 // GET /api/request/history — requests the approver has acted upon (approved, forwarded, reverted)
-exports.getApproverHistory = async (req, res) => {
+exports.getApproverHistory = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const requests = await Request.find({
@@ -252,12 +252,12 @@ exports.getApproverHistory = async (req, res) => {
         res.json(requests);
     } catch (err) {
         console.error('[getApproverHistory]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };
 
 // POST /api/request/:id/approve — approver approves current step
-exports.approveRequest = async (req, res) => {
+exports.approveRequest = async (req, res, next) => {
     try {
         const { comment } = req.body || {};
         const userId = req.user.userId;
@@ -299,12 +299,12 @@ exports.approveRequest = async (req, res) => {
         res.json({ message: isLastStep ? 'Approved — PDF generated.' : 'Approved — forwarded to next step.', status: request.status });
     } catch (err) {
         console.error('[approveRequest]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };
 
 // POST /api/request/:id/reject — approver rejects
-exports.rejectRequest = async (req, res) => {
+exports.rejectRequest = async (req, res, next) => {
     try {
         const { comment } = req.body || {};
         const userId = req.user.userId;
@@ -329,12 +329,12 @@ exports.rejectRequest = async (req, res) => {
         res.json({ message: 'Request rejected and returned to student.' });
     } catch (err) {
         console.error('[rejectRequest]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };
 
 // GET /api/request/:id/pdf — download PDF (auth required)
-exports.downloadPDF = async (req, res) => {
+exports.downloadPDF = async (req, res, next) => {
     try {
         const request = await Request.findById(req.params.id);
         if (!request || !request.pdfPath) {
@@ -342,12 +342,12 @@ exports.downloadPDF = async (req, res) => {
         }
         res.download(request.pdfPath, `${request.reqId}.pdf`);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };
 
 // GET /api/request/verify/:reqId — PUBLIC — QR verification
-exports.verifyRequest = async (req, res) => {
+exports.verifyRequest = async (req, res, next) => {
     try {
         const request = await Request.findOne({ reqId: req.params.reqId })
             .populate('student', 'name registerId department')
@@ -374,12 +374,12 @@ exports.verifyRequest = async (req, res) => {
             createdAt: request.createdAt
         });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };
 
 // GET /api/request/staff — list tutors/HoDs for flow builder dropdown
-exports.getStaff = async (req, res) => {
+exports.getStaff = async (req, res, next) => {
     try {
         const { dept, role } = req.query;
         const filter = { role: { $in: ['teacher', 'hod', 'principal'] } };
@@ -391,12 +391,12 @@ exports.getStaff = async (req, res) => {
         const staff = await User.find(filter).select('name role designation department');
         res.json(staff);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        next(err);
     }
 };
 
 // POST /api/request/:id/resubmit — student edits a reverted request
-exports.resubmitRequest = async (req, res) => {
+exports.resubmitRequest = async (req, res, next) => {
     try {
         const { subject, body, flow: flowInput } = req.body;
         const userId = req.user.userId;
@@ -433,6 +433,6 @@ exports.resubmitRequest = async (req, res) => {
         res.json({ message: 'Request resubmitted successfully.' });
     } catch (err) {
         console.error('[resubmitRequest]', err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        next(err);
     }
 };

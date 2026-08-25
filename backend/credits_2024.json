@@ -1,579 +1,3125 @@
-
-
 {
     "university": "APJ Abdul Kalam Technological University",
     "scheme": "2024",
-    "semester_total_credits": {
-        "S1": 20,
-        "S2": 24,
-        "S3": 25,
-        "S4": 24,
-        "S5": 23,
-        "S6": 23,
-        "S7": 17,
-        "S8": 11
-    },
-    "curricula": [
+    "departments": [
         {
-            "department": "All Branches",
+            "department_name": "Computer Science and Engineering",
             "semesters": [
                 {
                     "semester": 1,
+                    "total_credit": 20,
                     "courses": [
                         {
-                            "code": "GAMAT101",
-                            "credits": 3
+                            "course_code": "GAMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-1"
                         },
                         {
-                            "code": "GAPHT121",
-                            "credits": 4
+                            "course_code": "GAPHT121",
+                            "credit": 4,
+                            "course_name": "Physics for Information Science"
                         },
                         {
-                            "code": "GXCYT122",
-                            "credits": 4
+                            "course_code": "GMEST103",
+                            "credit": 3,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing."
                         },
                         {
-                            "code": "GMEST103",
-                            "credits": 3
+                            "course_code": "GXCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Information Science"
                         },
                         {
-                            "code": "GXEST104",
-                            "credits": 4
+                            "course_code": "GXESL106",
+                            "credit": 1,
+                            "course_name": "Basic Electrical and Electronics Engineering Workshop"
                         },
                         {
-                            "code": "UCEST105",
-                            "credits": 4
+                            "course_code": "GXEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Electrical & Electronics Engineering (Part 1: Electrical Engineering)"
                         },
                         {
-                            "code": "GXESL106",
-                            "credits": 1
+                            "course_code": "UCEST105",
+                            "credit": 4,
+                            "course_name": "Algorithmic Thinking with Python"
                         },
                         {
-                            "code": "UCHUT128",
-                            "credits": 1
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
                         },
                         {
-                            "code": "UCHWT128",
-                            "credits": 1
+                            "course_code": "UCHWT127",
+                            "credit": 1,
+                            "course_name": "Health and Wellness"
                         },
                         {
-                            "code": "UCPWT127",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GYMAT101",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GBPHT121",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GZPHT121",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GCCYT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GCEST103",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GCEST104",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GCESL106",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCSEM129",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GDMAT101",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GDCYT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "CGMEST103",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GDXXT104",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GDXXL106",
-                            "credits": 1
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(NASSCOM)"
                         }
                     ]
                 },
                 {
                     "semester": 2,
+                    "total_credit": 24,
                     "courses": [
                         {
-                            "code": "GAMAT201",
-                            "credits": 4
+                            "course_code": "GAMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-2"
                         },
                         {
-                            "code": "GDMAT201",
-                            "credits": 3
+                            "course_code": "GXESL208",
+                            "credit": 1,
+                            "course_name": "IT Workshop"
                         },
                         {
-                            "code": "GAPHT121",
-                            "credits": 4
+                            "course_code": "GXEST203",
+                            "credit": 3,
+                            "course_name": "Foundations of Computing: From Hardware"
                         },
                         {
-                            "code": "GXCYT122",
-                            "credits": 4
+                            "course_code": "GXEST204",
+                            "credit": 4,
+                            "course_name": "Programming in C"
                         },
                         {
-                            "code": "GXEST203",
-                            "credits": 3
+                            "course_code": "PCCST205",
+                            "credit": 4,
+                            "course_name": "Discrete Mathematics"
                         },
                         {
-                            "code": "GXEST204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "PCXXT205",
-                            "credits": 4
-                        },
-                        {
-                            "code": "UCEST206",
-                            "credits": 3
-                        },
-                        {
-                            "code": "UCPWT127",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCHUT128",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GXESL208",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCSEM129",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GYMAT201",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GBPHT121",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GXCYT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GXEST203",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GBEST204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GXEST204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "PCXXT204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "PCXXT205",
-                            "credits": 4
-                        },
-                        {
-                            "code": "UCEST206",
-                            "credits": 3
-                        },
-                        {
-                            "code": "UCPWT127",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCHUT128",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GXESL208",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCHUT129",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GYMAT201",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GBPHT121",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GCCYT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GZEST203",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GCEST204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "PCXXT205",
-                            "credits": 4
-                        },
-                        {
-                            "code": "UCEST206",
-                            "credits": 3
-                        },
-                        {
-                            "code": "UCHUT128",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GZESL208",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GCESL218",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GDMAT201",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GZPHT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GDCYT122",
-                            "credits": 4
-                        },
-                        {
-                            "code": "GDESTT203",
-                            "credits": 3
-                        },
-                        {
-                            "code": "GDEST204",
-                            "credits": 4
-                        },
-                        {
-                            "code": "PCXXT205",
-                            "credits": 4
-                        },
-                        {
-                            "code": "UCEST206",
-                            "credits": 3
-                        },
-                        {
-                            "code": "UCHUT128",
-                            "credits": 1
-                        },
-                        {
-                            "code": "UCPWT127",
-                            "credits": 1
-                        },
-                        {
-                            "code": "GZESL208",
-                            "credits": 1
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
                         }
                     ]
                 },
                 {
                     "semester": 3,
+                    "total_credit": 25,
                     "courses": [
                         {
-                            "code": "GYMAT301",
-                            "credits": 3
+                            "course_code": "GAEST305",
+                            "credit": 4,
+                            "course_name": "Digital Electronics & Logic Design"
                         },
                         {
-                            "code": "PCXXT302",
-                            "credits": 4
+                            "course_code": "GAMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-3"
                         },
                         {
-                            "code": "PCXXT303",
-                            "credits": 4
+                            "course_code": "PBCST304",
+                            "credit": 4,
+                            "course_name": "Object Oriented Programming"
                         },
                         {
-                            "code": "PBXXT304",
-                            "credits": 4
+                            "course_code": "PCCSL307",
+                            "credit": 2,
+                            "course_name": "Data Structures Lab"
                         },
                         {
-                            "code": "GAEST305",
-                            "credits": 4
+                            "course_code": "PCCSL308",
+                            "credit": 2,
+                            "course_name": "Digital Lab"
                         },
                         {
-                            "code": "GNEST305",
-                            "credits": 4
+                            "course_code": "PCCST302",
+                            "credit": 4,
+                            "course_name": "Theory of Computation"
                         },
                         {
-                            "code": "UCHUT346",
-                            "credits": 2
+                            "course_code": "PCCST303",
+                            "credit": 4,
+                            "course_name": "Data Structures and Algorithms"
                         },
                         {
-                            "code": "UCHUT347",
-                            "credits": 2
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Economics for Engineers"
                         },
                         {
-                            "code": "PCXXL307",
-                            "credits": 2
-                        },
-                        {
-                            "code": "PCXXL308",
-                            "credits": 2
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
                         }
                     ]
                 },
                 {
                     "semester": 4,
+                    "total_credit": 24,
                     "courses": [
                         {
-                            "code": "GYMAT401",
-                            "credits": 3
+                            "course_code": "GAMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-4"
                         },
                         {
-                            "code": "PCXXT402",
-                            "credits": 4
+                            "course_code": "PBCST404",
+                            "credit": 4,
+                            "course_name": "Computer Organization and Architecture"
                         },
                         {
-                            "code": "PCXXT403",
-                            "credits": 4
+                            "course_code": "PCCSL407",
+                            "credit": 2,
+                            "course_name": "Operating Systems Lab"
                         },
                         {
-                            "code": "PBXXT404",
-                            "credits": 4
+                            "course_code": "PCCSL408",
+                            "credit": 2,
+                            "course_name": "DBMS Lab"
                         },
                         {
-                            "code": "PEXXT41N",
-                            "credits": 3
+                            "course_code": "PCCST402",
+                            "credit": 4,
+                            "course_name": "Database Management Systems"
                         },
                         {
-                            "code": "PCXXL407",
-                            "credits": 2
+                            "course_code": "PCCST403",
+                            "credit": 4,
+                            "course_name": "Operating Systems"
                         },
                         {
-                            "code": "PCXXL408",
-                            "credits": 2
+                            "course_code": "PECST411",
+                            "credit": 3,
+                            "course_name": "Software Engineering"
                         },
                         {
-                            "code": "UCHUT346",
-                            "credits": 2
+                            "course_code": "PECST412",
+                            "credit": 3,
+                            "course_name": "Pattern Recognition"
                         },
                         {
-                            "code": "UCHUT347",
-                            "credits": 2
+                            "course_code": "PECST413",
+                            "credit": 3,
+                            "course_name": "Functional Programming"
+                        },
+                        {
+                            "course_code": "PECST414",
+                            "credit": 3,
+                            "course_name": "Coding Theory"
+                        },
+                        {
+                            "course_code": "PECST415",
+                            "credit": 3,
+                            "course_name": "VLSI Design"
+                        },
+                        {
+                            "course_code": "PECST416",
+                            "credit": 3,
+                            "course_name": "Signals And Systems"
+                        },
+                        {
+                            "course_code": "PECST417",
+                            "credit": 3,
+                            "course_name": "Soft Computing"
+                        },
+                        {
+                            "course_code": "PECST418",
+                            "credit": 3,
+                            "course_name": "Computational Geometry"
+                        },
+                        {
+                            "course_code": "PECST419",
+                            "credit": 3,
+                            "course_name": "Cyber Ethics, Privacy, And Legal Issues"
+                        },
+                        {
+                            "course_code": "PECST495",
+                            "credit": 3,
+                            "course_name": "Advanced Data Structures"
                         }
                     ]
                 },
                 {
                     "semester": 5,
+                    "total_credit": 23,
                     "courses": [
                         {
-                            "code": "PCXXT501",
-                            "credits": 4
+                            "course_code": "PBCST504",
+                            "credit": 4,
+                            "course_name": "Microcontrollers"
                         },
                         {
-                            "code": "PCXXT502",
-                            "credits": 4
+                            "course_code": "PCCSL507",
+                            "credit": 2,
+                            "course_name": "Networks Lab"
                         },
                         {
-                            "code": "PCXXT503",
-                            "credits": 3
+                            "course_code": "PCCSL508",
+                            "credit": 2,
+                            "course_name": "Machine Learning Lab"
                         },
                         {
-                            "code": "PBXXT504",
-                            "credits": 4
+                            "course_code": "PCCST501",
+                            "credit": 4,
+                            "course_name": "Computer Networks"
                         },
                         {
-                            "code": "PEXXT52N",
-                            "credits": 3
+                            "course_code": "PCCST502",
+                            "credit": 4,
+                            "course_name": "Design and Analysis of Algorithms"
                         },
                         {
-                            "code": "UCHUM506",
-                            "credits": 1
+                            "course_code": "PCCST503",
+                            "credit": 3,
+                            "course_name": "Machine Learning"
                         },
                         {
-                            "code": "PCXXL507",
-                            "credits": 2
+                            "course_code": "PECST521",
+                            "credit": 3,
+                            "course_name": "Software Project Management"
                         },
                         {
-                            "code": "PCXXL508",
-                            "credits": 2
+                            "course_code": "PECST522",
+                            "credit": 3,
+                            "course_name": "Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "PECST523",
+                            "credit": 3,
+                            "course_name": "Data Analytics"
+                        },
+                        {
+                            "course_code": "PECST524",
+                            "credit": 3,
+                            "course_name": "Data Compression"
+                        },
+                        {
+                            "course_code": "PECST525",
+                            "credit": 3,
+                            "course_name": "Data Mining"
+                        },
+                        {
+                            "course_code": "PECST526",
+                            "credit": 3,
+                            "course_name": "Digital Signal Processing"
+                        },
+                        {
+                            "course_code": "PECST527",
+                            "credit": 3,
+                            "course_name": "Computer Graphics & Multimedia"
+                        },
+                        {
+                            "course_code": "PECST528",
+                            "credit": 3,
+                            "course_name": "Advanced Computer Architectures"
+                        },
+                        {
+                            "course_code": "PECST595",
+                            "credit": 3,
+                            "course_name": "Advanced Graph Algorithms"
                         }
                     ]
                 },
                 {
                     "semester": 6,
+                    "total_credit": 23,
                     "courses": [
                         {
-                            "code": "PCXXT601",
-                            "credits": 4
+                            "course_code": "GAEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product"
                         },
                         {
-                            "code": "PCXXT602",
-                            "credits": 3
+                            "course_code": "OECST611",
+                            "credit": 3,
+                            "course_name": "Data Structures"
                         },
                         {
-                            "code": "PCXXT63N",
-                            "credits": 3
+                            "course_code": "OECST612",
+                            "credit": 3,
+                            "course_name": "Data Communication"
                         },
                         {
-                            "code": "PBXXT604",
-                            "credits": 4
+                            "course_code": "OECST613",
+                            "credit": 3,
+                            "course_name": "Foundations of Cryptography"
                         },
                         {
-                            "code": "GAEST605",
-                            "credits": 2
+                            "course_code": "OECST614",
+                            "credit": 3,
+                            "course_name": "Machine Learning for Engineers"
                         },
                         {
-                            "code": "GBEST605",
-                            "credits": 1
+                            "course_code": "OECST615",
+                            "credit": 3,
+                            "course_name": "Object Oriented Programming"
                         },
                         {
-                            "code": "GCEST605",
-                            "credits": 2
+                            "course_code": "PBCST604",
+                            "credit": 4,
+                            "course_name": "Fundamentals of Cyber Security"
                         },
                         {
-                            "code": "GDEST605",
-                            "credits": 2
+                            "course_code": "PCCSL607",
+                            "credit": 2,
+                            "course_name": "Systems Lab"
                         },
                         {
-                            "code": "OEXXT61N",
-                            "credits": 3
+                            "course_code": "PCCSP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
                         },
                         {
-                            "code": "IEXXT61N",
-                            "credits": 3
+                            "course_code": "PCCST601",
+                            "credit": 4,
+                            "course_name": "Compiler Design"
                         },
                         {
-                            "code": "PCXXL607",
-                            "credits": 2
+                            "course_code": "PCCST602",
+                            "credit": 3,
+                            "course_name": "Advanced Computing Systems"
                         },
                         {
-                            "code": "PCXXP608",
-                            "credits": 2
+                            "course_code": "PECST631",
+                            "credit": 3,
+                            "course_name": "Software Testing"
                         },
                         {
-                            "code": "PCXXP609",
-                            "credits": 1
+                            "course_code": "PECST632",
+                            "credit": 3,
+                            "course_name": "Deep Learning"
+                        },
+                        {
+                            "course_code": "PECST633",
+                            "credit": 3,
+                            "course_name": "Wireless & Mobile Computing"
+                        },
+                        {
+                            "course_code": "PECST634",
+                            "credit": 3,
+                            "course_name": "Advanced Database Systems"
+                        },
+                        {
+                            "course_code": "PECST635",
+                            "credit": 3,
+                            "course_name": "Cloud Computing"
+                        },
+                        {
+                            "course_code": "PECST636",
+                            "credit": 3,
+                            "course_name": "Digital Image Processing"
+                        },
+                        {
+                            "course_code": "PECST637",
+                            "credit": 3,
+                            "course_name": "Fundamentals of Cryptography"
+                        },
+                        {
+                            "course_code": "PECST638",
+                            "credit": 3,
+                            "course_name": "Quantum Computing"
+                        },
+                        {
+                            "course_code": "PECST639",
+                            "credit": 3,
+                            "course_name": "Randomized Algorithms"
+                        },
+                        {
+                            "course_code": "PECST695",
+                            "credit": 3,
+                            "course_name": "Mobile Application Development"
                         }
                     ]
                 },
                 {
                     "semester": 7,
+                    "total_credit": 17,
                     "courses": [
                         {
-                            "code": "PEXXT74N",
-                            "credits": 3
+                            "course_code": "OECST721",
+                            "credit": 3,
+                            "course_name": "Cyber Security"
                         },
                         {
-                            "code": "PEXXM74N",
-                            "credits": 3
+                            "course_code": "OECST722",
+                            "credit": 3,
+                            "course_name": "Cyber Security"
                         },
                         {
-                            "code": "PEXXT75N",
-                            "credits": 3
+                            "course_code": "OECST723",
+                            "credit": 3,
+                            "course_name": "Cyber Security"
                         },
                         {
-                            "code": "PEXXM75N",
-                            "credits": 3
+                            "course_code": "OECST724",
+                            "credit": 3,
+                            "course_name": "Cyber Security"
                         },
                         {
-                            "code": "OEXXT72N",
-                            "credits": 3
+                            "course_code": "OECST725",
+                            "credit": 3,
+                            "course_name": "Cyber Security"
                         },
                         {
-                            "code": "IEXXT72N",
-                            "credits": 3
+                            "course_code": "PCCSI706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
                         },
                         {
-                            "code": "OEXXM72N",
-                            "credits": 3
+                            "course_code": "PCCSP706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
                         },
                         {
-                            "code": "UEHUT704",
-                            "credits": 2
+                            "course_code": "PCCSS705",
+                            "credit": 2,
+                            "course_name": "Seminar"
                         },
                         {
-                            "code": "UEHUM70N",
-                            "credits": 2
+                            "course_code": "PECST741",
+                            "credit": 3,
+                            "course_name": "Formal Methods in Software Engineering"
                         },
                         {
-                            "code": "PCXXS705",
-                            "credits": 2
+                            "course_code": "PECST742",
+                            "credit": 3,
+                            "course_name": "Web Programming"
                         },
                         {
-                            "code": "PCXXP706",
-                            "credits": 4
+                            "course_code": "PECST743",
+                            "credit": 3,
+                            "course_name": "Bioinformatics"
                         },
                         {
-                            "code": "PCXXI706",
-                            "credits": 4
+                            "course_code": "PECST744",
+                            "credit": 3,
+                            "course_name": "Information Security"
+                        },
+                        {
+                            "course_code": "PECST745",
+                            "credit": 3,
+                            "course_name": "Computer Vision"
+                        },
+                        {
+                            "course_code": "PECST746",
+                            "credit": 3,
+                            "course_name": "Embedded Systems"
+                        },
+                        {
+                            "course_code": "PECST747",
+                            "credit": 3,
+                            "course_name": "Blockchain and Cryptocurrencies"
+                        },
+                        {
+                            "course_code": "PECST748",
+                            "credit": 3,
+                            "course_name": "Realtime Systems"
+                        },
+                        {
+                            "course_code": "PECST749",
+                            "credit": 5,
+                            "course_name": "Approximation Algorithms"
+                        },
+                        {
+                            "course_code": "PECST751",
+                            "credit": 3,
+                            "course_name": "Advanced Computer Networks"
+                        },
+                        {
+                            "course_code": "PECST752",
+                            "credit": 3,
+                            "course_name": "Responsible Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "PECST753",
+                            "credit": 3,
+                            "course_name": "Fuzzy Systems"
+                        },
+                        {
+                            "course_code": "PECST754",
+                            "credit": 3,
+                            "course_name": "Digital Forensics"
+                        },
+                        {
+                            "course_code": "PECST755",
+                            "credit": 3,
+                            "course_name": "Internet of Things"
+                        },
+                        {
+                            "course_code": "PECST756",
+                            "credit": 3,
+                            "course_name": "Game Theory and Mechanism Design"
+                        },
+                        {
+                            "course_code": "PECST757",
+                            "credit": 3,
+                            "course_name": "High Performance Computing"
+                        },
+                        {
+                            "course_code": "PECST758",
+                            "credit": 3,
+                            "course_name": "Programming Languages"
+                        },
+                        {
+                            "course_code": "PECST759",
+                            "credit": 3,
+                            "course_name": "Parallel Algorithms"
+                        },
+                        {
+                            "course_code": "PECST785",
+                            "credit": 3,
+                            "course_name": "Algorithms For Data Science"
+                        },
+                        {
+                            "course_code": "PECST795",
+                            "credit": 3,
+                            "course_name": "Topics in Theoretical Computer Science"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "Elective"
                         }
                     ]
                 },
                 {
                     "semester": 8,
+                    "total_credit": 11,
                     "courses": [
                         {
-                            "code": "PEXXT86N",
-                            "credits": 3
+                            "course_code": "OECST831",
+                            "credit": 3,
+                            "course_name": "Introduction to Algorithms"
                         },
                         {
-                            "code": "PEXXM86N",
-                            "credits": 3
+                            "course_code": "OECST832",
+                            "credit": 3,
+                            "course_name": "Web Programming"
                         },
                         {
-                            "code": "OEXXT83N",
-                            "credits": 3
+                            "course_code": "OECST833",
+                            "credit": 3,
+                            "course_name": "Software Testing"
                         },
                         {
-                            "code": "IEXXT83N",
-                            "credits": 3
+                            "course_code": "OECST834",
+                            "credit": 3,
+                            "course_name": "Internet of Things"
                         },
                         {
-                            "code": "OEXXM83N",
-                            "credits": 3
+                            "course_code": "OECST835",
+                            "credit": 3,
+                            "course_name": "Computer Graphics"
                         },
                         {
-                            "code": "UEHUT803",
-                            "credits": 1
+                            "course_code": "PCCSI806",
+                            "credit": 0,
+                            "course_name": "Course PCCSI806"
                         },
                         {
-                            "code": "UEHUM803",
-                            "credits": 1
+                            "course_code": "PCCSJ806",
+                            "credit": 0,
+                            "course_name": "Course PCCSJ806"
                         },
                         {
-                            "code": "PCXXP806",
-                            "credits": 4
+                            "course_code": "PCCSP806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
                         },
                         {
-                            "code": "PCXXI806",
-                            "credits": 4
+                            "course_code": "PECST861",
+                            "credit": 3,
+                            "course_name": "Software Architectures"
                         },
                         {
-                            "code": "PCXXJ806",
-                            "credits": 4
+                            "course_code": "PECST862",
+                            "credit": 3,
+                            "course_name": "Natural Language Processing"
+                        },
+                        {
+                            "course_code": "PECST863",
+                            "credit": 3,
+                            "course_name": "Topics in Security"
+                        },
+                        {
+                            "course_code": "PECST864",
+                            "credit": 3,
+                            "course_name": "Computational Complexity"
+                        },
+                        {
+                            "course_code": "PECST865",
+                            "credit": 3,
+                            "course_name": "Next Generation Interaction Design"
+                        },
+                        {
+                            "course_code": "PECST866",
+                            "credit": 3,
+                            "course_name": "Speech and Audio Processing"
+                        },
+                        {
+                            "course_code": "PECST867",
+                            "credit": 3,
+                            "course_name": "Storage Systems"
+                        },
+                        {
+                            "course_code": "PECST868",
+                            "credit": 3,
+                            "course_name": "Prompt Engineering"
+                        },
+                        {
+                            "course_code": "PECST869",
+                            "credit": 3,
+                            "course_name": "Computational Number Theory"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department_name": "Information Technology",
+            "semesters": [
+                {
+                    "semester": 1,
+                    "total_credit": 20,
+                    "courses": [
+                        {
+                            "course_code": "GAMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-1"
+                        },
+                        {
+                            "course_code": "GAPHT121",
+                            "credit": 4,
+                            "course_name": "Physics for Information Science"
+                        },
+                        {
+                            "course_code": "GMEST103",
+                            "credit": 3,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing."
+                        },
+                        {
+                            "course_code": "GXCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Information Science"
+                        },
+                        {
+                            "course_code": "GXESL106",
+                            "credit": 1,
+                            "course_name": "Basic Electrical and Electronics Engineering Workshop"
+                        },
+                        {
+                            "course_code": "GXEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Electrical & Electronics Engineering (Part 1: Electrical Engineering)"
+                        },
+                        {
+                            "course_code": "UCEST105",
+                            "credit": 4,
+                            "course_name": "Algorithmic Thinking with Python"
+                        },
+                        {
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
+                        },
+                        {
+                            "course_code": "UCHWT127",
+                            "credit": 1,
+                            "course_name": "Health and Wellness"
+                        },
+                        {
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(NASSCOM)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 2,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GAMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-2"
+                        },
+                        {
+                            "course_code": "GXESL208",
+                            "credit": 1,
+                            "course_name": "IT Workshop"
+                        },
+                        {
+                            "course_code": "GXEST203",
+                            "credit": 3,
+                            "course_name": "Foundations of Computing: From Hardware"
+                        },
+                        {
+                            "course_code": "GXEST204",
+                            "credit": 4,
+                            "course_name": "Programming in C"
+                        },
+                        {
+                            "course_code": "PCITT205",
+                            "credit": 4,
+                            "course_name": "Discrete Mathematical Structures"
+                        },
+                        {
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
+                        }
+                    ]
+                },
+                {
+                    "semester": 3,
+                    "total_credit": 25,
+                    "courses": [
+                        {
+                            "course_code": "GAEST305",
+                            "credit": 4,
+                            "course_name": "Digital Electronics & Logic Design"
+                        },
+                        {
+                            "course_code": "GAMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-3"
+                        },
+                        {
+                            "course_code": "PBITT304",
+                            "credit": 4,
+                            "course_name": "PC- PBL"
+                        },
+                        {
+                            "course_code": "PCITL307",
+                            "credit": 2,
+                            "course_name": "Programming in Python Lab"
+                        },
+                        {
+                            "course_code": "PCITL308",
+                            "credit": 2,
+                            "course_name": "Data structures Lab"
+                        },
+                        {
+                            "course_code": "PCITT302",
+                            "credit": 4,
+                            "course_name": "Computer Organisation and"
+                        },
+                        {
+                            "course_code": "PCITT303",
+                            "credit": 4,
+                            "course_name": "Data structures"
+                        },
+                        {
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Engineering Economics"
+                        },
+                        {
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
+                        }
+                    ]
+                },
+                {
+                    "semester": 4,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GAMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Information Science-4"
+                        },
+                        {
+                            "course_code": "PBITT404",
+                            "credit": 4,
+                            "course_name": "Data Science"
+                        },
+                        {
+                            "course_code": "PCITL407",
+                            "credit": 2,
+                            "course_name": "Computer Networks Lab"
+                        },
+                        {
+                            "course_code": "PCITL408",
+                            "credit": 2,
+                            "course_name": "Operating Systems Lab"
+                        },
+                        {
+                            "course_code": "PCITT402",
+                            "credit": 4,
+                            "course_name": "Computer Networks"
+                        },
+                        {
+                            "course_code": "PCITT403",
+                            "credit": 4,
+                            "course_name": "Operating Systems"
+                        }
+                    ]
+                },
+                {
+                    "semester": 5,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "PBITT504",
+                            "credit": 4,
+                            "course_name": "Web Application Development"
+                        },
+                        {
+                            "course_code": "PCITL507",
+                            "credit": 2,
+                            "course_name": "Machine Learning Lab"
+                        },
+                        {
+                            "course_code": "PCITL508",
+                            "credit": 2,
+                            "course_name": "Algorithm Analysis and Design Lab"
+                        },
+                        {
+                            "course_code": "PCITT501",
+                            "credit": 4,
+                            "course_name": "Machine Learning"
+                        },
+                        {
+                            "course_code": "PCITT502",
+                            "credit": 4,
+                            "course_name": "Algorithm Analysis and Design"
+                        },
+                        {
+                            "course_code": "PCITT503",
+                            "credit": 3,
+                            "course_name": "Software Engineering"
+                        },
+                        {
+                            "course_code": "PEITT521",
+                            "credit": 3,
+                            "course_name": "Soft Computing"
+                        },
+                        {
+                            "course_code": "PEITT522",
+                            "credit": 3,
+                            "course_name": "Internetworking using TCP/IP"
+                        },
+                        {
+                            "course_code": "PEITT523",
+                            "credit": 3,
+                            "course_name": "Cloud Computing"
+                        },
+                        {
+                            "course_code": "PEITT524",
+                            "credit": 3,
+                            "course_name": "Data Mining and Warehousing"
+                        },
+                        {
+                            "course_code": "PEITT525",
+                            "credit": 3,
+                            "course_name": "Formal Languages and Automata Theory"
+                        },
+                        {
+                            "course_code": "UCHUM506",
+                            "credit": 1,
+                            "course_name": "Constitution Of India (MOOC)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 6,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "GAEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product Development"
+                        },
+                        {
+                            "course_code": "OEITT611",
+                            "credit": 3,
+                            "course_name": "Object Oriented Programming using JAVA"
+                        },
+                        {
+                            "course_code": "OEITT612",
+                            "credit": 3,
+                            "course_name": "Data Structures using C++"
+                        },
+                        {
+                            "course_code": "OEITT613",
+                            "credit": 3,
+                            "course_name": "AI with Python"
+                        },
+                        {
+                            "course_code": "PBITT604",
+                            "credit": 4,
+                            "course_name": "nternet of Things"
+                        },
+                        {
+                            "course_code": "PCITL607",
+                            "credit": 2,
+                            "course_name": "Network Security Lab"
+                        },
+                        {
+                            "course_code": "PCITP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
+                        },
+                        {
+                            "course_code": "PCITT601",
+                            "credit": 4,
+                            "course_name": "Cryptography and Network Security"
+                        },
+                        {
+                            "course_code": "PCITT602",
+                            "credit": 3,
+                            "course_name": "Advanced Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "PEITT631",
+                            "credit": 3,
+                            "course_name": "Compiler Design"
+                        },
+                        {
+                            "course_code": "PEITT632",
+                            "credit": 3,
+                            "course_name": "Meta Heuristic Optimization"
+                        },
+                        {
+                            "course_code": "PEITT633",
+                            "credit": 3,
+                            "course_name": "Software Project Management"
+                        },
+                        {
+                            "course_code": "PEITT634",
+                            "credit": 3,
+                            "course_name": "Quantum Computing"
+                        },
+                        {
+                            "course_code": "PEITT635",
+                            "credit": 3,
+                            "course_name": "Data Analytics"
+                        }
+                    ]
+                },
+                {
+                    "semester": 7,
+                    "total_credit": 17,
+                    "courses": [
+                        {
+                            "course_code": "OEITT721",
+                            "credit": 3,
+                            "course_name": "Machine Learning"
+                        },
+                        {
+                            "course_code": "OEITT722",
+                            "credit": 3,
+                            "course_name": "Data Science for Engineers"
+                        },
+                        {
+                            "course_code": "OEITT723",
+                            "credit": 3,
+                            "course_name": "Internet of Things"
+                        },
+                        {
+                            "course_code": "PCITI706",
+                            "credit": 4,
+                            "course_name": "*Option 1: Major Project *Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCITP706",
+                            "credit": 4,
+                            "course_name": "*Option 1: Major Project *Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCITS705",
+                            "credit": 2,
+                            "course_name": "Seminar"
+                        },
+                        {
+                            "course_code": "PEITT741",
+                            "credit": 3,
+                            "course_name": "Natural Language Processing"
+                        },
+                        {
+                            "course_code": "PEITT742",
+                            "credit": 3,
+                            "course_name": "oftware Development with Agile and DevOps"
+                        },
+                        {
+                            "course_code": "PEITT743",
+                            "credit": 3,
+                            "course_name": "Blockchain Technology"
+                        },
+                        {
+                            "course_code": "PEITT744",
+                            "credit": 3,
+                            "course_name": "Mobile App Development"
+                        },
+                        {
+                            "course_code": "PEITT745",
+                            "credit": 3,
+                            "course_name": "Deep Learning"
+                        },
+                        {
+                            "course_code": "PEITT751",
+                            "credit": 3,
+                            "course_name": "Approximation Algorithms"
+                        },
+                        {
+                            "course_code": "PEITT752",
+                            "credit": 3,
+                            "course_name": "Software Quality Assurance"
+                        },
+                        {
+                            "course_code": "PEITT753",
+                            "credit": 3,
+                            "course_name": "Augmented and Virtual Reality"
+                        },
+                        {
+                            "course_code": "PEITT754",
+                            "credit": 3,
+                            "course_name": "Network Science"
+                        },
+                        {
+                            "course_code": "PEITT755",
+                            "credit": 3,
+                            "course_name": "Cyber and Network Forensics"
+                        },
+                        {
+                            "course_code": "UEHUM701",
+                            "credit": 1,
+                            "course_name": "Proficiency course in French (B1 level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM702",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in German (B1 Level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM703",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in Spanish (B1 Level) (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM704",
+                            "credit": 5,
+                            "course_name": "Introduction to Japanese Language and Culture (N5 level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "Elective"
+                        }
+                    ]
+                },
+                {
+                    "semester": 8,
+                    "total_credit": 11,
+                    "courses": [
+                        {
+                            "course_code": "OEITT831",
+                            "credit": 3,
+                            "course_name": "Computer Vision"
+                        },
+                        {
+                            "course_code": "OEITT832",
+                            "credit": 3,
+                            "course_name": "Deep Learning"
+                        },
+                        {
+                            "course_code": "OEITT833",
+                            "credit": 3,
+                            "course_name": "Web Designing"
+                        },
+                        {
+                            "course_code": "PCITI806",
+                            "credit": 0,
+                            "course_name": "Course PCITI806"
+                        },
+                        {
+                            "course_code": "PCITJ806",
+                            "credit": 0,
+                            "course_name": "Course PCITJ806"
+                        },
+                        {
+                            "course_code": "PCITP806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PEITT861",
+                            "credit": 3,
+                            "course_name": "Bioinformatics"
+                        },
+                        {
+                            "course_code": "PEITT862",
+                            "credit": 3,
+                            "course_name": "Software Testing"
+                        },
+                        {
+                            "course_code": "PEITT863",
+                            "credit": 3,
+                            "course_name": "Adhoc and Wireless Sensor Networks"
+                        },
+                        {
+                            "course_code": "PEITT864",
+                            "credit": 3,
+                            "course_name": "Semantic Web"
+                        },
+                        {
+                            "course_code": "PEITT865",
+                            "credit": 3,
+                            "course_name": "Robotics and Automation"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department_name": "Electrical and Electronics Engineering",
+            "semesters": [
+                {
+                    "semester": 1,
+                    "total_credit": 20,
+                    "courses": [
+                        {
+                            "course_code": "GBPHT121",
+                            "credit": 5,
+                            "course_name": "Physics for Electrical Science"
+                        },
+                        {
+                            "course_code": "GMEST103",
+                            "credit": 4,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing."
+                        },
+                        {
+                            "course_code": "GXCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Electrical Science"
+                        },
+                        {
+                            "course_code": "GXESL106",
+                            "credit": 2,
+                            "course_name": "Basic Electrical and Electronics Engineering Workshop"
+                        },
+                        {
+                            "course_code": "GXEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Electrical & Electronics Engineering (part 1: Electrical Engineering)"
+                        },
+                        {
+                            "course_code": "GYMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-1"
+                        },
+                        {
+                            "course_code": "UCEST105",
+                            "credit": 5,
+                            "course_name": "Algorithmic Thinking with Python"
+                        },
+                        {
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
+                        },
+                        {
+                            "course_code": "UCHWT127",
+                            "credit": 3,
+                            "course_name": "Health and Wellness"
+                        },
+                        {
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(NASSCOM)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 2,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GBEST213",
+                            "credit": 3,
+                            "course_name": "Course GBEST213"
+                        },
+                        {
+                            "course_code": "GXESL208",
+                            "credit": 2,
+                            "course_name": "IT Workshop"
+                        },
+                        {
+                            "course_code": "GXEST204",
+                            "credit": 3,
+                            "course_name": "Programming in C"
+                        },
+                        {
+                            "course_code": "GYMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-2"
+                        },
+                        {
+                            "course_code": "PCEET205",
+                            "credit": 3,
+                            "course_name": "Measurements and Instrumentation"
+                        },
+                        {
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
+                        }
+                    ]
+                },
+                {
+                    "semester": 3,
+                    "total_credit": 25,
+                    "courses": [
+                        {
+                            "course_code": "GNEST305",
+                            "credit": 3,
+                            "course_name": "Introduction to Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "GYMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science - 3"
+                        },
+                        {
+                            "course_code": "PBEET304",
+                            "credit": 3,
+                            "course_name": "Analog Electronics"
+                        },
+                        {
+                            "course_code": "PCEEL307",
+                            "credit": 3,
+                            "course_name": "Circuits and Measurements Lab"
+                        },
+                        {
+                            "course_code": "PCEEL308",
+                            "credit": 3,
+                            "course_name": "Analog Electronics Lab"
+                        },
+                        {
+                            "course_code": "PCEET302",
+                            "credit": 3,
+                            "course_name": "Circuits and Networks"
+                        },
+                        {
+                            "course_code": "PCEET303",
+                            "credit": 3,
+                            "course_name": "DC Machines and Transformers"
+                        },
+                        {
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Economics for Engineers"
+                        },
+                        {
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
+                        }
+                    ]
+                },
+                {
+                    "semester": 4,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GBMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science - 4"
+                        },
+                        {
+                            "course_code": "PBEET404",
+                            "credit": 3,
+                            "course_name": "Digital Electronics"
+                        },
+                        {
+                            "course_code": "PCEEL407",
+                            "credit": 3,
+                            "course_name": "DC Machines and Transformers Lab"
+                        },
+                        {
+                            "course_code": "PCEEL408",
+                            "credit": 3,
+                            "course_name": "Power Electronics and Drives Lab"
+                        },
+                        {
+                            "course_code": "PCEET402",
+                            "credit": 3,
+                            "course_name": "Synchronous and Induction Machines"
+                        },
+                        {
+                            "course_code": "PCEET403",
+                            "credit": 3,
+                            "course_name": "Power Electronics and Drives"
+                        },
+                        {
+                            "course_code": "PEEET411",
+                            "credit": 3,
+                            "course_name": "Electronic Instrumentation"
+                        },
+                        {
+                            "course_code": "PEEET412",
+                            "credit": 3,
+                            "course_name": "Renewable Energy Sources"
+                        },
+                        {
+                            "course_code": "PEEET413",
+                            "credit": 3,
+                            "course_name": "Mathematics for Machine Learning"
+                        },
+                        {
+                            "course_code": "PEEET414",
+                            "credit": 3,
+                            "course_name": "Theory of Computation"
+                        },
+                        {
+                            "course_code": "PEEET416",
+                            "credit": 3,
+                            "course_name": "Computer Organization"
+                        },
+                        {
+                            "course_code": "PEEET417",
+                            "credit": 3,
+                            "course_name": "Solid State Devices"
+                        },
+                        {
+                            "course_code": "PEEET418",
+                            "credit": 3,
+                            "course_name": "Illumination Technology"
+                        },
+                        {
+                            "course_code": "PEEET419",
+                            "credit": 3,
+                            "course_name": "Object Oriented Programming"
+                        }
+                    ]
+                },
+                {
+                    "semester": 5,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "PBEET504",
+                            "credit": 3,
+                            "course_name": "5 . 5"
+                        },
+                        {
+                            "course_code": "PCEEL507",
+                            "credit": 3,
+                            "course_name": "AC Machines Lab"
+                        },
+                        {
+                            "course_code": "PCEEL508",
+                            "credit": 3,
+                            "course_name": "Microprocessor and Embedded Systems Lab"
+                        },
+                        {
+                            "course_code": "PCEET501",
+                            "credit": 3,
+                            "course_name": "Power Generation, Transmission and"
+                        },
+                        {
+                            "course_code": "PCEET502",
+                            "credit": 3,
+                            "course_name": "Electromagnetic Theory"
+                        },
+                        {
+                            "course_code": "PCEET503",
+                            "credit": 3,
+                            "course_name": "Signals & Systems"
+                        },
+                        {
+                            "course_code": "PEEET521",
+                            "credit": 3,
+                            "course_name": "Energy Storage Systems"
+                        },
+                        {
+                            "course_code": "PEEET522",
+                            "credit": 3,
+                            "course_name": "Electric Vehicles"
+                        },
+                        {
+                            "course_code": "PEEET523",
+                            "credit": 3,
+                            "course_name": "Digital System Design"
+                        },
+                        {
+                            "course_code": "PEEET524",
+                            "credit": 3,
+                            "course_name": "Software Engineering"
+                        },
+                        {
+                            "course_code": "PEEET526",
+                            "credit": 3,
+                            "course_name": "Data Structures"
+                        },
+                        {
+                            "course_code": "PEEET527",
+                            "credit": 3,
+                            "course_name": "Introduction to Machine Learning"
+                        },
+                        {
+                            "course_code": "PEEET528",
+                            "credit": 3,
+                            "course_name": "Computer Network Systems"
+                        },
+                        {
+                            "course_code": "UCHUM506",
+                            "credit": 1,
+                            "course_name": "Course UCHUM506"
+                        }
+                    ]
+                },
+                {
+                    "semester": 6,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "GXEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product"
+                        },
+                        {
+                            "course_code": "OEEET611",
+                            "credit": 3,
+                            "course_name": "Introduction to Control Systems"
+                        },
+                        {
+                            "course_code": "OEEET612",
+                            "credit": 3,
+                            "course_name": "Energy Management"
+                        },
+                        {
+                            "course_code": "OEEET613",
+                            "credit": 3,
+                            "course_name": "Renewable Energy Systems"
+                        },
+                        {
+                            "course_code": "PBEET604",
+                            "credit": 4,
+                            "course_name": "Power System Analysis"
+                        },
+                        {
+                            "course_code": "PCEEL607",
+                            "credit": 2,
+                            "course_name": "Control Systems Lab"
+                        },
+                        {
+                            "course_code": "PCEEL609",
+                            "credit": 1,
+                            "course_name": "Power Systems Lab"
+                        },
+                        {
+                            "course_code": "PCEEP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
+                        },
+                        {
+                            "course_code": "PCEET601",
+                            "credit": 4,
+                            "course_name": "Control Systems"
+                        },
+                        {
+                            "course_code": "PCEET602",
+                            "credit": 3,
+                            "course_name": "Electrical System Design and Estimation"
+                        },
+                        {
+                            "course_code": "PEEET631",
+                            "credit": 3,
+                            "course_name": "Digital protection of power systems"
+                        },
+                        {
+                            "course_code": "PEEET632",
+                            "credit": 3,
+                            "course_name": "Operating Systems"
+                        },
+                        {
+                            "course_code": "PEEET633",
+                            "credit": 3,
+                            "course_name": "High Voltage Engineering"
+                        },
+                        {
+                            "course_code": "PEEET634",
+                            "credit": 3,
+                            "course_name": "Internet of Things"
+                        },
+                        {
+                            "course_code": "PEEET636",
+                            "credit": 3,
+                            "course_name": "Digital Signal Processing"
+                        },
+                        {
+                            "course_code": "PEEET637",
+                            "credit": 3,
+                            "course_name": "Cloud Computing"
+                        },
+                        {
+                            "course_code": "PEEET638",
+                            "credit": 3,
+                            "course_name": "Optimization Techniques"
+                        }
+                    ]
+                },
+                {
+                    "semester": 7,
+                    "total_credit": 17,
+                    "courses": [
+                        {
+                            "course_code": "OEEET721",
+                            "credit": 3,
+                            "course_name": "Design of Solar PV systems"
+                        },
+                        {
+                            "course_code": "OEEET722",
+                            "credit": 3,
+                            "course_name": "Hybrid and Electric Vehicles"
+                        },
+                        {
+                            "course_code": "OEEET723",
+                            "credit": 3,
+                            "course_name": "Introduction to Energy Storage Systems"
+                        },
+                        {
+                            "course_code": "PCEEI706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCEEP706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCEES705",
+                            "credit": 3,
+                            "course_name": "Seminar"
+                        },
+                        {
+                            "course_code": "PEEET741",
+                            "credit": 3,
+                            "course_name": "Power System Operation and Control"
+                        },
+                        {
+                            "course_code": "PEEET742",
+                            "credit": 3,
+                            "course_name": "Energy Management and Auditing"
+                        },
+                        {
+                            "course_code": "PEEET743",
+                            "credit": 3,
+                            "course_name": "Special Electrical Machines"
+                        },
+                        {
+                            "course_code": "PEEET744",
+                            "credit": 3,
+                            "course_name": "Discrete Time Control Systems"
+                        },
+                        {
+                            "course_code": "PEEET746",
+                            "credit": 3,
+                            "course_name": "Digital Image Processing"
+                        },
+                        {
+                            "course_code": "PEEET751",
+                            "credit": 3,
+                            "course_name": "Power Quality"
+                        },
+                        {
+                            "course_code": "PEEET752",
+                            "credit": 3,
+                            "course_name": "Nonlinear Control Systems"
+                        },
+                        {
+                            "course_code": "PEEET753",
+                            "credit": 3,
+                            "course_name": "Deep Learning"
+                        },
+                        {
+                            "course_code": "PEEET754",
+                            "credit": 3,
+                            "course_name": "Computer Vision"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "Elective"
+                        }
+                    ]
+                },
+                {
+                    "semester": 8,
+                    "total_credit": 11,
+                    "courses": [
+                        {
+                            "course_code": "PCEEI806",
+                            "credit": 0,
+                            "course_name": "Course PCEEI806"
+                        },
+                        {
+                            "course_code": "PCEEJ806",
+                            "credit": 0,
+                            "course_name": "Course PCEEJ806"
+                        },
+                        {
+                            "course_code": "PCEEP806",
+                            "credit": 0,
+                            "course_name": "Course PCEEP806"
+                        },
+                        {
+                            "course_code": "PEEET861",
+                            "credit": 3,
+                            "course_name": "Smart Grid Technologies"
+                        },
+                        {
+                            "course_code": "PEEET862",
+                            "credit": 3,
+                            "course_name": "HVDC and FACTS"
+                        },
+                        {
+                            "course_code": "PEEET863",
+                            "credit": 3,
+                            "course_name": "Mechatronic Systems"
+                        },
+                        {
+                            "course_code": "PEEET864",
+                            "credit": 3,
+                            "course_name": "Electronic Communication"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department_name": "Electronics & Communication Engineering",
+            "semesters": [
+                {
+                    "semester": 1,
+                    "total_credit": 20,
+                    "courses": [
+                        {
+                            "course_code": "GBPHT121",
+                            "credit": 5,
+                            "course_name": "Physics for Electrical Science"
+                        },
+                        {
+                            "course_code": "GMEST103",
+                            "credit": 4,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing."
+                        },
+                        {
+                            "course_code": "GXCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Electrical Science"
+                        },
+                        {
+                            "course_code": "GXESL106",
+                            "credit": 2,
+                            "course_name": "Basic Electrical and Electronics Engineering Workshop"
+                        },
+                        {
+                            "course_code": "GXEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Electrical & Electronics Engineering (Part 1: Electrical Engineering)"
+                        },
+                        {
+                            "course_code": "GYMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-1"
+                        },
+                        {
+                            "course_code": "UCEST105",
+                            "credit": 5,
+                            "course_name": "Algorithmic Thinking with Python"
+                        },
+                        {
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
+                        },
+                        {
+                            "course_code": "UCHWT127",
+                            "credit": 3,
+                            "course_name": "Health and Wellness"
+                        },
+                        {
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(NASSCOM)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 2,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GBEST213",
+                            "credit": 0,
+                            "course_name": "Engineering Mechanics (EEE, CP, RA & RU)"
+                        },
+                        {
+                            "course_code": "GXESL208",
+                            "credit": 2,
+                            "course_name": "IT Workshop"
+                        },
+                        {
+                            "course_code": "GXEST203",
+                            "credit": 3,
+                            "course_name": "Foundations of Computing: From Hardware"
+                        },
+                        {
+                            "course_code": "GXEST204",
+                            "credit": 3,
+                            "course_name": "Programming in C"
+                        },
+                        {
+                            "course_code": "GYMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-2"
+                        },
+                        {
+                            "course_code": "PCECT205",
+                            "credit": 3,
+                            "course_name": "Network Theory"
+                        },
+                        {
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
+                        }
+                    ]
+                },
+                {
+                    "semester": 3,
+                    "total_credit": 25,
+                    "courses": [
+                        {
+                            "course_code": "GNEST305",
+                            "credit": 3,
+                            "course_name": "Course GNEST305"
+                        },
+                        {
+                            "course_code": "GYMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-3"
+                        },
+                        {
+                            "course_code": "PBECT304",
+                            "credit": 3,
+                            "course_name": "Logic Circuit Design"
+                        },
+                        {
+                            "course_code": "PCECL307",
+                            "credit": 3,
+                            "course_name": "Analog Circuits Lab"
+                        },
+                        {
+                            "course_code": "PCECL308",
+                            "credit": 3,
+                            "course_name": "Logic Circuit Design Lab"
+                        },
+                        {
+                            "course_code": "PCECT302",
+                            "credit": 3,
+                            "course_name": "Solid State Devices"
+                        },
+                        {
+                            "course_code": "PCECT303",
+                            "credit": 3,
+                            "course_name": "Analog Circuits"
+                        },
+                        {
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Economics for Engineers"
+                        },
+                        {
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
+                        }
+                    ]
+                },
+                {
+                    "semester": 4,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GBMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Electrical Science-4"
+                        },
+                        {
+                            "course_code": "PBECT404",
+                            "credit": 3,
+                            "course_name": "Microcontrollers"
+                        },
+                        {
+                            "course_code": "PCECL407",
+                            "credit": 3,
+                            "course_name": "Linear Integrated Circuits Lab"
+                        },
+                        {
+                            "course_code": "PCECL408",
+                            "credit": 3,
+                            "course_name": "Microcontroller Lab"
+                        },
+                        {
+                            "course_code": "PCECT402",
+                            "credit": 3,
+                            "course_name": "Signals and Systems"
+                        },
+                        {
+                            "course_code": "PCECT403",
+                            "credit": 3,
+                            "course_name": "Linear Integrated Circuits"
+                        }
+                    ]
+                },
+                {
+                    "semester": 5,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "PBECT504",
+                            "credit": 3,
+                            "course_name": "Course PBECT504"
+                        },
+                        {
+                            "course_code": "PCECL507",
+                            "credit": 3,
+                            "course_name": "DSP Lab"
+                        },
+                        {
+                            "course_code": "PCECL508",
+                            "credit": 3,
+                            "course_name": "Communication Lab I"
+                        },
+                        {
+                            "course_code": "PCECT501",
+                            "credit": 3,
+                            "course_name": "Electromagnetics"
+                        },
+                        {
+                            "course_code": "PCECT502",
+                            "credit": 3,
+                            "course_name": "Analog & Digital Communication"
+                        },
+                        {
+                            "course_code": "PCECT503",
+                            "credit": 3,
+                            "course_name": "Control Systems"
+                        },
+                        {
+                            "course_code": "PEECT524",
+                            "credit": 3,
+                            "course_name": "ARM architecture and programming"
+                        },
+                        {
+                            "course_code": "UCHUM506",
+                            "credit": 1,
+                            "course_name": "Course UCHUM506"
+                        }
+                    ]
+                },
+                {
+                    "semester": 6,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "GXEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product"
+                        },
+                        {
+                            "course_code": "PBECT604",
+                            "credit": 4,
+                            "course_name": "VLSI Circuit Design"
+                        },
+                        {
+                            "course_code": "PCECL607",
+                            "credit": 2,
+                            "course_name": "Communication Lab II"
+                        },
+                        {
+                            "course_code": "PCECT601",
+                            "credit": 4,
+                            "course_name": "Advanced Communication Theory"
+                        },
+                        {
+                            "course_code": "PCECT602",
+                            "credit": 3,
+                            "course_name": "Microwaves and Antennas"
+                        },
+                        {
+                            "course_code": "PCEVP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
+                        }
+                    ]
+                },
+                {
+                    "semester": 7,
+                    "total_credit": 17,
+                    "courses": [
+                        {
+                            "course_code": "PCECI706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCECP706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCECS705",
+                            "credit": 3,
+                            "course_name": "Seminar"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "Elective"
+                        }
+                    ]
+                },
+                {
+                    "semester": 8,
+                    "total_credit": 11,
+                    "courses": [
+                        {
+                            "course_code": "PCECI806",
+                            "credit": 0,
+                            "course_name": "Course PCECI806"
+                        },
+                        {
+                            "course_code": "PCECJ806",
+                            "credit": 0,
+                            "course_name": "Course PCECJ806"
+                        },
+                        {
+                            "course_code": "PCECP806",
+                            "credit": 0,
+                            "course_name": "Course PCECP806"
+                        },
+                        {
+                            "course_code": "PEECT861",
+                            "credit": 3,
+                            "course_name": "Wireless Sensor Networks"
+                        },
+                        {
+                            "course_code": "PEECT862",
+                            "credit": 3,
+                            "course_name": "RF Engineering"
+                        },
+                        {
+                            "course_code": "PEECT863",
+                            "credit": 3,
+                            "course_name": "Renewable Energy Systems"
+                        },
+                        {
+                            "course_code": "PEECT864",
+                            "credit": 3,
+                            "course_name": "Cyber-Security"
+                        },
+                        {
+                            "course_code": "PEECT865",
+                            "credit": 3,
+                            "course_name": "Antenna Theory & Design"
+                        },
+                        {
+                            "course_code": "PEECT866",
+                            "credit": 3,
+                            "course_name": "Low Power VLSI"
+                        },
+                        {
+                            "course_code": "PEECT867",
+                            "credit": 3,
+                            "course_name": "Blockchain"
+                        },
+                        {
+                            "course_code": "PEECT868",
+                            "credit": 3,
+                            "course_name": "Antenna Theory & Wave Propagation"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department_name": "Civil Engineering",
+            "semesters": [
+                {
+                    "semester": 1,
+                    "total_credit": 20,
+                    "courses": [
+                        {
+                            "course_code": "GCCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Physical Science"
+                        },
+                        {
+                            "course_code": "GCESL106",
+                            "credit": 1,
+                            "course_name": "Engineering Workshop"
+                        },
+                        {
+                            "course_code": "GCEST103",
+                            "credit": 3,
+                            "course_name": "Engineering Mechanics"
+                        },
+                        {
+                            "course_code": "GCEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Mechanical Engineering & Civil Engineering (Part1: Mechanical Engineering)"
+                        },
+                        {
+                            "course_code": "GYMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-1"
+                        },
+                        {
+                            "course_code": "GZPHT121",
+                            "credit": 4,
+                            "course_name": "Physics for Physical Science"
+                        },
+                        {
+                            "course_code": "UCEST105",
+                            "credit": 4,
+                            "course_name": "Algorithmic Thinking with Python"
+                        },
+                        {
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
+                        },
+                        {
+                            "course_code": "UCHWT127",
+                            "credit": 1,
+                            "course_name": "Health and wellness"
+                        },
+                        {
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(30 Hours, NASSCOM)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 2,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GCESL218",
+                            "credit": 1,
+                            "course_name": "Civil Engineering Drafting lab"
+                        },
+                        {
+                            "course_code": "GCEST203",
+                            "credit": 3,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing"
+                        },
+                        {
+                            "course_code": "GYMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-2"
+                        },
+                        {
+                            "course_code": "GZEST204",
+                            "credit": 4,
+                            "course_name": "Basic Electrical & Electronics Engineering (Part 1: Electrical Engineering)"
+                        },
+                        {
+                            "course_code": "PCCET205",
+                            "credit": 4,
+                            "course_name": "Mechanics of Solids"
+                        },
+                        {
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
+                        }
+                    ]
+                },
+                {
+                    "semester": 3,
+                    "total_credit": 25,
+                    "courses": [
+                        {
+                            "course_code": "GNEST305",
+                            "credit": 4,
+                            "course_name": "Introduction to Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "GYMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-3"
+                        },
+                        {
+                            "course_code": "PBCET304",
+                            "credit": 4,
+                            "course_name": "PC- PBL"
+                        },
+                        {
+                            "course_code": "PCCEL307",
+                            "credit": 2,
+                            "course_name": "Survey Lab"
+                        },
+                        {
+                            "course_code": "PCCEL308",
+                            "credit": 2,
+                            "course_name": "Fluid mechanics Lab"
+                        },
+                        {
+                            "course_code": "PCCET302",
+                            "credit": 4,
+                            "course_name": "Fluid mechanics"
+                        },
+                        {
+                            "course_code": "PCCET303",
+                            "credit": 4,
+                            "course_name": "Structural analysis-I"
+                        },
+                        {
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Economics for Engineers"
+                        },
+                        {
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
+                        }
+                    ]
+                },
+                {
+                    "semester": 4,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GCMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-4"
+                        },
+                        {
+                            "course_code": "PBCET404",
+                            "credit": 4,
+                            "course_name": "Design of concrete structures"
+                        },
+                        {
+                            "course_code": "PCCEL407",
+                            "credit": 2,
+                            "course_name": "Materials testing lab"
+                        },
+                        {
+                            "course_code": "PCCEL408",
+                            "credit": 2,
+                            "course_name": "Civil engineering modelling Lab"
+                        },
+                        {
+                            "course_code": "PCCET402",
+                            "credit": 4,
+                            "course_name": "Soil mechanics"
+                        },
+                        {
+                            "course_code": "PCCET403",
+                            "credit": 4,
+                            "course_name": "Structural analysis-II"
+                        },
+                        {
+                            "course_code": "PECET411",
+                            "credit": 3,
+                            "course_name": "Advanced Solid Mechanics"
+                        },
+                        {
+                            "course_code": "PECET412",
+                            "credit": 3,
+                            "course_name": "Concrete Technology"
+                        },
+                        {
+                            "course_code": "PECET413",
+                            "credit": 3,
+                            "course_name": "Mechanics of Fluid Flow"
+                        },
+                        {
+                            "course_code": "PECET414",
+                            "credit": 3,
+                            "course_name": "Cartography and GIS"
+                        },
+                        {
+                            "course_code": "PECET415",
+                            "credit": 3,
+                            "course_name": "Architectural Engineering"
+                        },
+                        {
+                            "course_code": "PECET416",
+                            "credit": 3,
+                            "course_name": "Engineering Geology"
+                        },
+                        {
+                            "course_code": "PECET417",
+                            "credit": 3,
+                            "course_name": "Numerical methods for Engineers"
+                        },
+                        {
+                            "course_code": "PECET418",
+                            "credit": 3,
+                            "course_name": "Environmental law and Policy"
+                        }
+                    ]
+                },
+                {
+                    "semester": 5,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "PBCET504",
+                            "credit": 4,
+                            "course_name": "Course PBCET504"
+                        },
+                        {
+                            "course_code": "PCCEL507",
+                            "credit": 2,
+                            "course_name": "Geotechnical engineering lab"
+                        },
+                        {
+                            "course_code": "PCCEL508",
+                            "credit": 2,
+                            "course_name": "Concrete lab (MT-2)"
+                        },
+                        {
+                            "course_code": "PCCET501",
+                            "credit": 4,
+                            "course_name": "Hydrology & water resources"
+                        },
+                        {
+                            "course_code": "PCCET502",
+                            "credit": 4,
+                            "course_name": "Transportation engineering"
+                        },
+                        {
+                            "course_code": "PCCET503",
+                            "credit": 3,
+                            "course_name": "Environmental engineering"
+                        },
+                        {
+                            "course_code": "PECET521",
+                            "credit": 3,
+                            "course_name": "Advanced Structural Analysis"
+                        },
+                        {
+                            "course_code": "PECET522",
+                            "credit": 3,
+                            "course_name": "Modern Construction Technology"
+                        },
+                        {
+                            "course_code": "PECET523",
+                            "credit": 3,
+                            "course_name": "Open Channel Hydraulics"
+                        },
+                        {
+                            "course_code": "PECET524",
+                            "credit": 3,
+                            "course_name": "Disaster management"
+                        },
+                        {
+                            "course_code": "PECET525",
+                            "credit": 3,
+                            "course_name": "Design of prestressed concrete"
+                        },
+                        {
+                            "course_code": "PECET526",
+                            "credit": 3,
+                            "course_name": "Applied hydrology and climatology"
+                        },
+                        {
+                            "course_code": "PECET527",
+                            "credit": 3,
+                            "course_name": "Town Planning"
+                        },
+                        {
+                            "course_code": "PECET528",
+                            "credit": 3,
+                            "course_name": "Optimization techniques and operations research for Civil Engineers"
+                        },
+                        {
+                            "course_code": "UCHUM506",
+                            "credit": 1,
+                            "course_name": "Constitution of India (MOOC)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 6,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "GCEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product"
+                        },
+                        {
+                            "course_code": "PBCET604",
+                            "credit": 4,
+                            "course_name": "Construction project management"
+                        },
+                        {
+                            "course_code": "PCCEL607",
+                            "credit": 2,
+                            "course_name": "Transportation engineering lab"
+                        },
+                        {
+                            "course_code": "PCCEL609",
+                            "credit": 1,
+                            "course_name": "Environmental engineering lab"
+                        },
+                        {
+                            "course_code": "PCCEP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
+                        },
+                        {
+                            "course_code": "PCCET601",
+                            "credit": 3,
+                            "course_name": "Quantity surveying & valuation"
+                        },
+                        {
+                            "course_code": "PCCET602",
+                            "credit": 3,
+                            "course_name": "Design of steel structures"
+                        }
+                    ]
+                },
+                {
+                    "semester": 7,
+                    "total_credit": 17,
+                    "courses": [
+                        {
+                            "course_code": "OECET721",
+                            "credit": 3,
+                            "course_name": "Intelligent Transportation Systems"
+                        },
+                        {
+                            "course_code": "OECET722",
+                            "credit": 3,
+                            "course_name": "Environment Health and Safety"
+                        },
+                        {
+                            "course_code": "OECET723",
+                            "credit": 3,
+                            "course_name": "Watershed Conservation and Management"
+                        },
+                        {
+                            "course_code": "OECET724",
+                            "credit": 3,
+                            "course_name": "Forensic Engineering"
+                        },
+                        {
+                            "course_code": "OECET725",
+                            "credit": 3,
+                            "course_name": "Finance for Engineers"
+                        },
+                        {
+                            "course_code": "PCCEI706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCCEP706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCCES705",
+                            "credit": 2,
+                            "course_name": "Seminar"
+                        },
+                        {
+                            "course_code": "PECET741",
+                            "credit": 3,
+                            "course_name": "Structural Dynamics"
+                        },
+                        {
+                            "course_code": "PECET742",
+                            "credit": 3,
+                            "course_name": "Formwork Engineering"
+                        },
+                        {
+                            "course_code": "PECET743",
+                            "credit": 3,
+                            "course_name": "Environmental Geotechnology"
+                        },
+                        {
+                            "course_code": "PECET744",
+                            "credit": 3,
+                            "course_name": "Airport Planning and Design"
+                        },
+                        {
+                            "course_code": "PECET745",
+                            "credit": 3,
+                            "course_name": "Pavement Design and Construction"
+                        },
+                        {
+                            "course_code": "PECET746",
+                            "credit": 3,
+                            "course_name": "Highway Material & Design"
+                        },
+                        {
+                            "course_code": "PECET747",
+                            "credit": 3,
+                            "course_name": "River Engineering"
+                        },
+                        {
+                            "course_code": "PECET751",
+                            "credit": 3,
+                            "course_name": "Groundwater Engineering"
+                        },
+                        {
+                            "course_code": "PECET752",
+                            "credit": 3,
+                            "course_name": "Sustainable Construction Practices"
+                        },
+                        {
+                            "course_code": "PECET753",
+                            "credit": 3,
+                            "course_name": "Advanced Geotechnical Investigation"
+                        },
+                        {
+                            "course_code": "PECET754",
+                            "credit": 3,
+                            "course_name": "Railway,Port and Harbor Engineering"
+                        },
+                        {
+                            "course_code": "PECET755",
+                            "credit": 3,
+                            "course_name": "Design of hydraulic structures"
+                        },
+                        {
+                            "course_code": "PECET756",
+                            "credit": 3,
+                            "course_name": "Air and Noise Pollution Control Engineering"
+                        },
+                        {
+                            "course_code": "PECET757",
+                            "credit": 3,
+                            "course_name": "Finite element method"
+                        },
+                        {
+                            "course_code": "UEHUM701",
+                            "credit": 1,
+                            "course_name": "Proficiency course in French. (MOOC) (B1 level)"
+                        },
+                        {
+                            "course_code": "UEHUM702",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in German (B1 Level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM703",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in Spanish (B1 Level) (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM704",
+                            "credit": 5,
+                            "course_name": "Introduction to Japanese Language and Culture (N5 level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "Elective"
+                        }
+                    ]
+                },
+                {
+                    "semester": 8,
+                    "total_credit": 11,
+                    "courses": [
+                        {
+                            "course_code": "OECET831",
+                            "credit": 3,
+                            "course_name": "Waste management"
+                        },
+                        {
+                            "course_code": "OECET832",
+                            "credit": 3,
+                            "course_name": "Rainwater harvesting"
+                        },
+                        {
+                            "course_code": "OECET833",
+                            "credit": 3,
+                            "course_name": "Public Transportation Systems"
+                        },
+                        {
+                            "course_code": "OECET834",
+                            "credit": 3,
+                            "course_name": "Fundamentals of building planning"
+                        },
+                        {
+                            "course_code": "OECET835",
+                            "credit": 3,
+                            "course_name": "Hydrogeology"
+                        },
+                        {
+                            "course_code": "PCCEI806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PCCEJ806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PCCEP806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PECET861",
+                            "credit": 3,
+                            "course_name": "Water and air quality management"
+                        },
+                        {
+                            "course_code": "PECET862",
+                            "credit": 3,
+                            "course_name": "Valuation of Real Properties"
+                        },
+                        {
+                            "course_code": "PECET863",
+                            "credit": 3,
+                            "course_name": "Contracts Management"
+                        },
+                        {
+                            "course_code": "PECET864",
+                            "credit": 3,
+                            "course_name": "Advanced Design of steel Structures"
+                        },
+                        {
+                            "course_code": "PECET865",
+                            "credit": 3,
+                            "course_name": "Design of Earthquake Resistant Structures"
+                        },
+                        {
+                            "course_code": "PECET866",
+                            "credit": 3,
+                            "course_name": "Urban Transportation Planning."
+                        },
+                        {
+                            "course_code": "PECET867",
+                            "credit": 3,
+                            "course_name": "Rural Water Supply and Onsite Sanitation Systems"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 1,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "department_name": "Mechanical Engineering",
+            "semesters": [
+                {
+                    "semester": 1,
+                    "total_credit": 20,
+                    "courses": [
+                        {
+                            "course_code": "GCCYT122",
+                            "credit": 4,
+                            "course_name": "Chemistry for Physical Science"
+                        },
+                        {
+                            "course_code": "GCESL106",
+                            "credit": 2,
+                            "course_name": "Engineering Workshop"
+                        },
+                        {
+                            "course_code": "GCEST103",
+                            "credit": 3,
+                            "course_name": "Engineering Mechanics"
+                        },
+                        {
+                            "course_code": "GCEST104",
+                            "credit": 4,
+                            "course_name": "Introduction to Mechanical Engineering & Civil Engineering (Part1: Mechanical Engineering)"
+                        },
+                        {
+                            "course_code": "GYMAT101",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-1"
+                        },
+                        {
+                            "course_code": "GZPHT121",
+                            "credit": 5,
+                            "course_name": "Physics for Physical Science"
+                        },
+                        {
+                            "course_code": "UCEST105",
+                            "credit": 5,
+                            "course_name": "Algorithmic Thinking with Python"
+                        },
+                        {
+                            "course_code": "UCHUT128",
+                            "credit": 3,
+                            "course_name": "Life Skills and Professional Communication"
+                        },
+                        {
+                            "course_code": "UCHWT127",
+                            "credit": 3,
+                            "course_name": "Health and wellness"
+                        },
+                        {
+                            "course_code": "UCSEM129",
+                            "credit": 2,
+                            "course_name": "Skill Enhancement Course: Digital 101(30 Hours, NASSCOM)"
+                        }
+                    ]
+                },
+                {
+                    "semester": 2,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GCEST203",
+                            "credit": 2,
+                            "course_name": "Engineering Graphics and Computer Aided Drawing"
+                        },
+                        {
+                            "course_code": "GYMAT201",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-2"
+                        },
+                        {
+                            "course_code": "GZESL208",
+                            "credit": 2,
+                            "course_name": "Basic Electrical and Electronics Engineering workshop"
+                        },
+                        {
+                            "course_code": "GZEST204",
+                            "credit": 2,
+                            "course_name": "Basic Electrical & Electronics Engineering (Part 1: Electrical Engineering)"
+                        },
+                        {
+                            "course_code": "PCMET205",
+                            "credit": 3,
+                            "course_name": "Material Science and Engineering"
+                        },
+                        {
+                            "course_code": "UCEST206",
+                            "credit": 3,
+                            "course_name": "Engineering Entrepreneurship & IPR"
+                        }
+                    ]
+                },
+                {
+                    "semester": 3,
+                    "total_credit": 25,
+                    "courses": [
+                        {
+                            "course_code": "GNEST305",
+                            "credit": 3,
+                            "course_name": "Introduction to Artificial Intelligence"
+                        },
+                        {
+                            "course_code": "GYMAT301",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-3"
+                        },
+                        {
+                            "course_code": "PBMET304",
+                            "credit": 3,
+                            "course_name": "PC- PBL"
+                        },
+                        {
+                            "course_code": "PCMEL307",
+                            "credit": 3,
+                            "course_name": "Computer Aided Machine Drawing & Modelling"
+                        },
+                        {
+                            "course_code": "PCMEL308",
+                            "credit": 3,
+                            "course_name": "Materials Testing lab"
+                        },
+                        {
+                            "course_code": "PCMET302",
+                            "credit": 3,
+                            "course_name": "Mechanics of Solids"
+                        },
+                        {
+                            "course_code": "PCMET303",
+                            "credit": 3,
+                            "course_name": "Fluid Mechanics and Machinery"
+                        },
+                        {
+                            "course_code": "UCHUT346",
+                            "credit": 2,
+                            "course_name": "Economics for Engineers"
+                        },
+                        {
+                            "course_code": "UCHUT347",
+                            "credit": 2,
+                            "course_name": "Engineering Ethics and Sustainable"
+                        }
+                    ]
+                },
+                {
+                    "semester": 4,
+                    "total_credit": 24,
+                    "courses": [
+                        {
+                            "course_code": "GCMAT401",
+                            "credit": 3,
+                            "course_name": "Mathematics for Physical Science-4"
+                        },
+                        {
+                            "course_code": "PBMET404",
+                            "credit": 3,
+                            "course_name": "Mechanics of Machinery"
+                        },
+                        {
+                            "course_code": "PCMEL407",
+                            "credit": 3,
+                            "course_name": "Fluid Mechanics and Hydraulic Machines Lab"
+                        },
+                        {
+                            "course_code": "PCMEL408",
+                            "credit": 3,
+                            "course_name": "Manufacturing Technology Lab"
+                        },
+                        {
+                            "course_code": "PCMET402",
+                            "credit": 3,
+                            "course_name": "Machine Tools and Metrology"
+                        },
+                        {
+                            "course_code": "PCMET403",
+                            "credit": 3,
+                            "course_name": "Engineering Thermodynamics"
+                        },
+                        {
+                            "course_code": "PEMET411",
+                            "credit": 3,
+                            "course_name": "Turbo Machinery"
+                        },
+                        {
+                            "course_code": "PEMET412",
+                            "credit": 3,
+                            "course_name": "Nuclear Energy"
+                        },
+                        {
+                            "course_code": "PEMET413",
+                            "credit": 3,
+                            "course_name": "Composite Materials"
+                        },
+                        {
+                            "course_code": "PEMET414",
+                            "credit": 3,
+                            "course_name": "Components of Intelligent Systems"
+                        },
+                        {
+                            "course_code": "PEMET415",
+                            "credit": 3,
+                            "course_name": "Advanced Mechanics of Solids"
+                        },
+                        {
+                            "course_code": "PEMET416",
+                            "credit": 3,
+                            "course_name": "Advanced Metal Joining Techniques"
+                        },
+                        {
+                            "course_code": "PEMET417",
+                            "credit": 3,
+                            "course_name": "Technology Management"
+                        },
+                        {
+                            "course_code": "PEMET418",
+                            "credit": 3,
+                            "course_name": "Supply Chain and Logistics Management"
+                        }
+                    ]
+                },
+                {
+                    "semester": 5,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "PBMET504",
+                            "credit": 3,
+                            "course_name": "Course PBMET504"
+                        },
+                        {
+                            "course_code": "PCMEL507",
+                            "credit": 3,
+                            "course_name": "Thermal Engineering Lab-1"
+                        },
+                        {
+                            "course_code": "PCMEL508",
+                            "credit": 3,
+                            "course_name": "Mechanical Engineering Lab"
+                        },
+                        {
+                            "course_code": "PCMET501",
+                            "credit": 3,
+                            "course_name": "Dynamics of Machinery"
+                        },
+                        {
+                            "course_code": "PCMET502",
+                            "credit": 3,
+                            "course_name": "Advanced Manufacturing Engineering"
+                        },
+                        {
+                            "course_code": "PCMET503",
+                            "credit": 3,
+                            "course_name": "Heat and Mass Transfer"
+                        },
+                        {
+                            "course_code": "PEMET521",
+                            "credit": 3,
+                            "course_name": "Computational Fluid Dynamics"
+                        },
+                        {
+                            "course_code": "PEMET522",
+                            "credit": 3,
+                            "course_name": "Design for Manufacture and Assembly"
+                        },
+                        {
+                            "course_code": "PEMET523",
+                            "credit": 3,
+                            "course_name": "Computer Aided Design and Analysis"
+                        },
+                        {
+                            "course_code": "PEMET524",
+                            "credit": 3,
+                            "course_name": "Additive Manufacturing"
+                        },
+                        {
+                            "course_code": "PEMET525",
+                            "credit": 3,
+                            "course_name": "Instrumentation and Control Systems"
+                        },
+                        {
+                            "course_code": "PEMET526",
+                            "credit": 3,
+                            "course_name": "Energy Economics and Policy"
+                        },
+                        {
+                            "course_code": "PEMET527",
+                            "credit": 3,
+                            "course_name": "Human Resources Management"
+                        },
+                        {
+                            "course_code": "PEMET528",
+                            "credit": 3,
+                            "course_name": "Operations Research"
+                        },
+                        {
+                            "course_code": "UCHUM506",
+                            "credit": 1,
+                            "course_name": "Course UCHUM506"
+                        }
+                    ]
+                },
+                {
+                    "semester": 6,
+                    "total_credit": 23,
+                    "courses": [
+                        {
+                            "course_code": "GZEST605",
+                            "credit": 2,
+                            "course_name": "Design Thinking and Product Development (Group Specific Syllabus)"
+                        },
+                        {
+                            "course_code": "PBMET604",
+                            "credit": 4,
+                            "course_name": "Thermal Engineering"
+                        },
+                        {
+                            "course_code": "PCMEL607",
+                            "credit": 2,
+                            "course_name": "Computer Aided Design and Analysis Lab"
+                        },
+                        {
+                            "course_code": "PCMEL609",
+                            "credit": 1,
+                            "course_name": "Thermal engineering Lab-2"
+                        },
+                        {
+                            "course_code": "PCMEP608",
+                            "credit": 2,
+                            "course_name": "Mini Project: Socially Relevant Project"
+                        },
+                        {
+                            "course_code": "PCMET601",
+                            "credit": 3,
+                            "course_name": "Industrial and Systems Engineering"
+                        },
+                        {
+                            "course_code": "PCMET602",
+                            "credit": 3,
+                            "course_name": "Machine Design"
+                        }
+                    ]
+                },
+                {
+                    "semester": 7,
+                    "total_credit": 17,
+                    "courses": [
+                        {
+                            "course_code": "PCMEI706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCMEP706",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months)"
+                        },
+                        {
+                            "course_code": "PCMES705",
+                            "credit": 2,
+                            "course_name": "Seminar"
+                        },
+                        {
+                            "course_code": "PEMET741",
+                            "credit": 3,
+                            "course_name": "Gas Turbine and Jet Propulsion"
+                        },
+                        {
+                            "course_code": "PEMET742",
+                            "credit": 3,
+                            "course_name": "Automobile Engineering"
+                        },
+                        {
+                            "course_code": "PEMET743",
+                            "credit": 3,
+                            "course_name": "Design of Machine Elements"
+                        },
+                        {
+                            "course_code": "PEMET744",
+                            "credit": 3,
+                            "course_name": "Failure Analysis and Design"
+                        },
+                        {
+                            "course_code": "PEMET745",
+                            "credit": 3,
+                            "course_name": "Mechatronics"
+                        },
+                        {
+                            "course_code": "PEMET746",
+                            "credit": 3,
+                            "course_name": "Lean Manufacturing"
+                        },
+                        {
+                            "course_code": "PEMET747",
+                            "credit": 3,
+                            "course_name": "Reliability Engineering"
+                        },
+                        {
+                            "course_code": "PEMET748",
+                            "credit": 3,
+                            "course_name": "Robotics"
+                        },
+                        {
+                            "course_code": "UEHUM701",
+                            "credit": 1,
+                            "course_name": "Proficiency course in French. (MOOC) (B1 level)"
+                        },
+                        {
+                            "course_code": "UEHUM702",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in German (B1 Level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM703",
+                            "credit": 1,
+                            "course_name": "Proficiency Course in Spanish (B1 Level) (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUM704",
+                            "credit": 5,
+                            "course_name": "Introduction to Japanese Language and Culture (N5 level). (MOOC)"
+                        },
+                        {
+                            "course_code": "UEHUT704",
+                            "credit": 2,
+                            "course_name": "University Elective"
+                        }
+                    ]
+                },
+                {
+                    "semester": 8,
+                    "total_credit": 11,
+                    "courses": [
+                        {
+                            "course_code": "PCMEI806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PCMEJ806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "PCMEP806",
+                            "credit": 4,
+                            "course_name": "Option 1: Major Project Option 2: Internship (4-6 Months) Option 3: Major Project Phase -II (For the students who have not opted for internship in S7/S8)"
+                        },
+                        {
+                            "course_code": "UEHUM803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
+                        },
+                        {
+                            "course_code": "UEHUT803",
+                            "credit": 2,
+                            "course_name": "Organizational Behavior and Business Communication (Internship Students: Self Study/MOOC Approved by the University/Online Classes)"
                         }
                     ]
                 }

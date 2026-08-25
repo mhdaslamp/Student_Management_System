@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { CheckCircle, XCircle, ChevronRight, X, Clock, FileText } from 'lucide-react';
-
-const TYPE_LABELS = {
-    bonafide:       'Bonafide Certificate',
-    duty_leave:     'Duty Leave',
-    lab_permission: 'Lab / Classroom Permission',
-    custom:         'Custom Request'
-};
+import { REQUEST_TYPE_LABELS } from '../../config/constants';
 
 const RejectModal = ({ onConfirm, onCancel }) => {
     const [comment, setComment] = useState('');
@@ -47,7 +41,7 @@ const RequestDetailModal = ({ req, onApprove, onReject, onClose, acting, readonl
                 <div className="flex justify-between items-start p-6 border-b border-gray-100">
                     <div>
                         <span className="text-xs font-bold text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded-full">
-                            {TYPE_LABELS[req.type]}
+                            {REQUEST_TYPE_LABELS[req.type]}
                         </span>
                         <h2 className="text-xl font-bold text-gray-800 mt-2">{req.subject}</h2>
                         <p className="text-sm text-gray-400 mt-0.5">
@@ -243,7 +237,7 @@ const PendingRequests = () => {
                         <div className="flex justify-between items-start gap-3">
                             <div className="flex-1 min-w-0">
                                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                                    {TYPE_LABELS[req.type]}
+                                    {REQUEST_TYPE_LABELS[req.type]}
                                 </span>
                                 <p className="font-semibold text-gray-800 mt-1 truncate">{req.subject}</p>
                                 <p className="text-sm text-gray-500 mt-0.5">

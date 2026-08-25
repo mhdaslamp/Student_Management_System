@@ -2,13 +2,7 @@ import { useState } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { ChevronRight, Send, Pencil } from 'lucide-react';
-
-const TYPE_LABELS = {
-    bonafide:       'Bonafide Certificate',
-    duty_leave:     'Duty Leave',
-    lab_permission: 'Lab / Classroom Permission',
-    custom:         'Custom Request'
-};
+import { REQUEST_TYPE_LABELS } from '../../config/constants';
 
 const RequestPreview = ({ draft, onEdit, onSubmitted }) => {
     const { user } = useAuth();

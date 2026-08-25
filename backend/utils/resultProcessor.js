@@ -77,8 +77,11 @@ const processedData = async (buffer) => {
         const data = await pdf(buffer);
         const fullText = data.text;
 
-        // DEBUG: Write text to file
-        fs.writeFileSync(path.join(__dirname, '../debug_pdf_text.txt'), fullText);
+        // DEBUG: Write text to file (only when DEBUG_PDF=true is set in .env)
+        if (process.env.DEBUG_PDF === 'true') {
+            fs.writeFileSync(path.join(__dirname, '../debug_pdf_text.txt'), fullText);
+        }
+
 
         // Extract Metadata from first 1000 chars roughly
         const headerText = fullText.substring(0, 1500);

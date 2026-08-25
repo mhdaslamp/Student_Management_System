@@ -1,10 +1,15 @@
-const Batch = require('../models/Batch');
-const User = require('../models/User');
-const xlsx = require('xlsx');
-const bcrypt = require('bcryptjs');
-const fs = require('fs');
+const Batch           = require('../models/Batch');
+const User            = require('../models/User');
+const InternalResult  = require('../models/InternalResult');
+const Result          = require('../models/Result');
+const xlsx            = require('xlsx');
+const bcrypt          = require('bcryptjs');
+const fs              = require('fs');
+const ExcelJS         = require('exceljs');
+const { BCRYPT_SALT_ROUNDS, BATCH_VIEWER_ROLES } = require('../src/config/constants');
 
-exports.createBatch = async (req, res) => {
+
+exports.createBatch = async (req, res, next) => {
     const { name, scheme } = req.body; // Branch is auto-assigned
     try {
         // Fetch the teacher to get their department
@@ -27,11 +32,11 @@ exports.createBatch = async (req, res) => {
         res.status(201).json(newBatch);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.updateStudent = async (req, res) => {
+exports.updateStudent = async (req, res, next) => {
     const { name, admissionNo, registerId } = req.body;
     const Result = require('../models/Result');
     try {
@@ -58,11 +63,11 @@ exports.updateStudent = async (req, res) => {
         res.json({ message: 'Student updated', student });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.deleteStudent = async (req, res) => {
+exports.deleteStudent = async (req, res, next) => {
     try {
         const studentId = req.params.studentId;
         const student = await User.findById(studentId);
@@ -80,11 +85,11 @@ exports.deleteStudent = async (req, res) => {
         res.json({ message: 'Student deleted successfully' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatches = async (req, res) => {
+exports.getBatches = async (req, res, next) => {
     try {
         let query = { createdBy: req.user.userId };
 
@@ -105,11 +110,11 @@ exports.getBatches = async (req, res) => {
         res.json(batches);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.uploadStudents = async (req, res) => {
+exports.uploadStudents = async (req, res, next) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
@@ -196,22 +201,22 @@ exports.uploadStudents = async (req, res) => {
         res.json({ message: 'Students processed & results synced', count: students.length, errors });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatchDetails = async (req, res) => {
+exports.getBatchDetails = async (req, res, next) => {
     try {
         const batch = await Batch.findById(req.params.batchId).populate('students', '-password');
         if (!batch) return res.status(404).json({ message: 'Batch not found' });
         res.json(batch);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.downloadInternalTemplate = async (req, res) => {
+exports.downloadInternalTemplate = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { subject } = req.query;
@@ -275,11 +280,11 @@ exports.downloadInternalTemplate = async (req, res) => {
         res.send(buffer);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 };
 
-exports.uploadInternalmarks = async (req, res) => {
+exports.uploadInternalmarks = async (req, res, next) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
     const { batchId } = req.params;
@@ -374,6 +379,8 @@ exports.uploadInternalmarks = async (req, res) => {
     } catch (err) {
         console.error(err);
         if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).json({ message: 'Server Error' });
+        next(err);
     }
 };
+
+

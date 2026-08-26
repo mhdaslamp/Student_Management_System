@@ -1,4 +1,28 @@
+# Dependencies
 node_modules/
+
+# Environment variables — NEVER commit these
 .env
+.env.local
+.env.production
+
+# Local data (embedded MongoDB)
+data/
 data/db/
+
+# File uploads (user-submitted files)
 uploads/
+
+# Log files
+*.log
+server.log
+error.log
+db-output.txt
+
+# Debug output files
+debug_pdf_text.txt
+debug_error.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db

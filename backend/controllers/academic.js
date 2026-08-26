@@ -2,12 +2,22 @@ const Result = require('../models/Result');
 const Assignment = require('../models/Assignment');
 const User = require('../models/User');
 const Batch = require('../models/Batch'); // Added
-const { processedData, generateExcel } = require('../utils/resultProcessor');
+const { processedData, generateExcel, calculateManualSGPA } = require('../utils/resultProcessor');
 
 // --- Results ---
-exports.addResult = async (req, res) => {
+exports.addResult = async (req, res, next) => {
     try {
         const { studentId, batchId, type, title, subjects } = req.body;
+
+        // Recalculate SGPA for Manual Uploads inherently
+        let sgpa = 0;
+        let totalCredits = 0;
+
+        if (type === 'university' || type === 'University') {
+            const metrics = calculateManualSGPA(subjects || [], title || '');
+            sgpa = metrics.sgpa;
+            totalCredits = metrics.totalCredits;
+        }
 
         const result = new Result({
             student: studentId,
@@ -15,6 +25,8 @@ exports.addResult = async (req, res) => {
             type,
             title,
             subjects,
+            sgpa,
+            totalCredits,
             publishedBy: req.user.userId
         });
 
@@ -22,11 +34,11 @@ exports.addResult = async (req, res) => {
         res.status(201).json(result);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getResultsByStudent = async (req, res) => {
+exports.getResultsByStudent = async (req, res, next) => {
     try {
         // Find results linked to this student OR matching their registerId
         const student = await User.findById(req.user.userId);
@@ -58,11 +70,11 @@ exports.getResultsByStudent = async (req, res) => {
         res.json(results);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getResultsByBatch = async (req, res) => {
+exports.getResultsByBatch = async (req, res, next) => {
     try {
         // Teacher views results for a specific batch (optional filter)
         const { batchId } = req.query;
@@ -75,12 +87,12 @@ exports.getResultsByBatch = async (req, res) => {
         res.json(results);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // --- Assignments ---
-exports.createAssignment = async (req, res) => {
+exports.createAssignment = async (req, res, next) => {
     try {
         const { title, description, batchId, dueDate } = req.body;
 
@@ -96,11 +108,11 @@ exports.createAssignment = async (req, res) => {
         res.status(201).json(assignment);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getAssignments = async (req, res) => {
+exports.getAssignments = async (req, res, next) => {
     try {
         // Teachers see what they created, Students see what's for their batch
         // Simplified: Teachers see all for now (or filtered by their batches)
@@ -123,12 +135,12 @@ exports.getAssignments = async (req, res) => {
         res.json(assignments);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // --- PDF Upload for Results ---
-const uploadResultPDF = async (req, res) => {
+const uploadResultPDF = async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
@@ -141,7 +153,7 @@ const uploadResultPDF = async (req, res) => {
         // 2. Pre-fetch all student accounts in ONE bulk query and attach names to rawStudents
         const allRegIds = rawStudents.map(s => s.registerId.trim());
         const foundUsers = await User.find({ registerId: { $in: allRegIds } })
-                                     .select('name registerId batch _id');
+            .select('name registerId batch _id');
         // Build lookup map: UPPERCASE registerId → User doc
         const userMap = {};
         foundUsers.forEach(u => { userMap[u.registerId.trim().toUpperCase()] = u; });
@@ -167,12 +179,12 @@ const uploadResultPDF = async (req, res) => {
                 subjects: studentData.subjects
                     ? studentData.subjects.map(s => ({
                         subCode: s.code,
-                        name:    s.name,
-                        grade:   s.grade
+                        name: s.name,
+                        grade: s.grade
                     }))
                     : Object.entries(studentData.grades).map(([code, grade]) => ({
                         subCode: code,
-                        name:    code,
+                        name: code,
                         grade
                     })),
                 sgpa: studentData.sgpa,
@@ -190,8 +202,8 @@ const uploadResultPDF = async (req, res) => {
                 updateOne: {
                     filter: {
                         registerId: resultPayload.registerId,
-                        type:       resultPayload.type,
-                        title:      resultPayload.title
+                        type: resultPayload.type,
+                        title: resultPayload.title
                     },
                     update: { $set: resultPayload },
                     upsert: true
@@ -214,7 +226,7 @@ const uploadResultPDF = async (req, res) => {
         const fs = require('fs');
         const path = require('path');
         fs.appendFileSync(path.join(__dirname, '../debug_error.log'), `${new Date().toISOString()} - Upload Error: ${error.message}\n${error.stack}\n\n`);
-        res.status(500).json({ message: 'Error processing PDF', error: error.message });
+        next(err);
     }
 };
 
@@ -224,7 +236,7 @@ exports.uploadResultPDF = uploadResultPDF;
 
 
 
-exports.downloadBatchResult = async (req, res) => {
+exports.downloadBatchResult = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -242,8 +254,9 @@ exports.downloadBatchResult = async (req, res) => {
 
         const rawStudents = results.map(r => {
             const regId = (r.registerId || r.student?.registerId || '').trim();
-            // Extract dept from registerId e.g. PKD24CE001 → CE (chars index 5-6)
-            const dept = regId.length >= 7 ? regId.substring(5, 7).toUpperCase() : 'XX';
+            // Extract dept from registerId safely using regex (handles LPKD, IDK, etc.)
+            const deptMatch = regId.match(/\d{2}([A-Z]{2,3})\d{3}/i);
+            const dept = deptMatch ? deptMatch[1].toUpperCase() : 'XX';
             const grades = {};
             r.subjects.forEach(sub => { grades[sub.subCode] = sub.grade; });
             const isPass = !r.subjects.some(sub => failedGrades.includes(sub.grade));
@@ -273,12 +286,12 @@ exports.downloadBatchResult = async (req, res) => {
 
     } catch (err) {
         console.error("Error downloading excel:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Download Excel for all students across all batches for a given exam title (for EC + Teachers)
-exports.downloadResultExcelGlobal = async (req, res) => {
+exports.downloadResultExcelGlobal = async (req, res, next) => {
     try {
         const { title, type } = req.query;
         const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
@@ -294,8 +307,9 @@ exports.downloadResultExcelGlobal = async (req, res) => {
 
         const rawStudents = results.map(r => {
             const regId = (r.registerId || r.student?.registerId || '').trim();
-            // Extract dept from registerId e.g. PKD24CE001 → CE (chars index 5-6)
-            const dept = regId.length >= 7 ? regId.substring(5, 7).toUpperCase() : 'XX';
+            // Extract dept from registerId safely using regex (handles LPKD, IDK, etc.)
+            const deptMatch = regId.match(/\d{2}([A-Z]{2,3})\d{3}/i);
+            const dept = deptMatch ? deptMatch[1].toUpperCase() : 'XX';
             // Build grades map for backward-compat AND pass full subjects (with course names)
             const grades = {};
             r.subjects.forEach(sub => { grades[sub.subCode] = sub.grade; });
@@ -310,10 +324,10 @@ exports.downloadResultExcelGlobal = async (req, res) => {
                 grades,
                 // Pass full subjects so generateExcel can use course names in headers
                 subjects: r.subjects.map(sub => ({
-                    code:        sub.subCode,
-                    name:        sub.name || sub.subCode,
-                    grade:       sub.grade,
-                    credit:      0,
+                    code: sub.subCode,
+                    name: sub.name || sub.subCode,
+                    grade: sub.grade,
+                    credit: 0,
                     gradePoints: 0
                 }))
             };
@@ -336,11 +350,11 @@ exports.downloadResultExcelGlobal = async (req, res) => {
 
     } catch (err) {
         console.error("Error downloading global excel:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatchResultOverview = async (req, res) => {
+exports.getBatchResultOverview = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const mongoose = require('mongoose');
@@ -371,12 +385,12 @@ exports.getBatchResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching result overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get overview of ALL published results across all batches (for Exam Controller)
-exports.getAllResultOverview = async (req, res) => {
+exports.getAllResultOverview = async (req, res, next) => {
     try {
         const overview = await Result.aggregate([
             { $match: { published: true } },
@@ -402,12 +416,12 @@ exports.getAllResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching all results overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get overview of ALL DRAFT (unpublished) results across all batches (for Exam Controller Recent Uploads)
-exports.getDraftResultOverview = async (req, res) => {
+exports.getDraftResultOverview = async (req, res, next) => {
     try {
         const overview = await Result.aggregate([
             { $match: { published: false } },
@@ -433,11 +447,11 @@ exports.getDraftResultOverview = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching draft results overview:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.publishResult = async (req, res) => {
+exports.publishResult = async (req, res, next) => {
     try {
         const { batchId, title, type } = req.body;
 
@@ -456,11 +470,11 @@ exports.publishResult = async (req, res) => {
 
     } catch (err) {
         console.error("Error publishing result:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.getBatchResultDetails = async (req, res) => {
+exports.getBatchResultDetails = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -481,12 +495,12 @@ exports.getBatchResultDetails = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching result details:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
 // Get all student details for an exam across ALL batches (for EC dashboard modal)
-exports.getAllResultDetails = async (req, res) => {
+exports.getAllResultDetails = async (req, res, next) => {
     try {
         const { title, type } = req.query;
 
@@ -507,11 +521,11 @@ exports.getAllResultDetails = async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching all result details:", err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };
 
-exports.deleteResult = async (req, res) => {
+exports.deleteResult = async (req, res, next) => {
     try {
         const { title, type } = req.body;
 
@@ -527,11 +541,11 @@ exports.deleteResult = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
-exports.getBatchResultAnalysis = async (req, res) => {
+exports.getBatchResultAnalysis = async (req, res, next) => {
     try {
         const { batchId } = req.params;
         const { title, type } = req.query;
@@ -548,8 +562,22 @@ exports.getBatchResultAnalysis = async (req, res) => {
 
         if (!results.length) return res.json(null);
 
+        // Filter to Regular Students only
+        const yearCounts = {};
+        results.forEach(r => {
+            const yM = (r.registerId || '').match(/\d{2}/);
+            const y = yM ? yM[0] : '00';
+            r.admissionYear = y;
+            yearCounts[y] = (yearCounts[y] || 0) + 1;
+        });
+        let majorityYear = null, maxCount = 0;
+        for (const y in yearCounts) {
+            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
+        }
+        const regularResults = results.filter(r => r.admissionYear === majorityYear);
+
         // 1. Top 10 Performers
-        const topPerformers = [...results]
+        const topPerformers = [...regularResults]
             .sort((a, b) => b.sgpa - a.sgpa)
             .slice(0, 10)
             .map(r => ({
@@ -565,7 +593,7 @@ exports.getBatchResultAnalysis = async (req, res) => {
         // 3. Subject-wise Analysis
         const subjectStats = {};
 
-        results.forEach(r => {
+        regularResults.forEach(r => {
             let isStudentFailed = false;
             r.subjects.forEach(sub => {
                 if (!subjectStats[sub.subCode]) {
@@ -595,11 +623,11 @@ exports.getBatchResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error("Error generating analysis:", err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
-exports.getCollegeResultAnalysis = async (req, res) => {
+exports.getCollegeResultAnalysis = async (req, res, next) => {
     try {
         const { title, type } = req.query;
 
@@ -613,8 +641,22 @@ exports.getCollegeResultAnalysis = async (req, res) => {
 
         if (!results.length) return res.json(null);
 
+        // Filter to Regular Students only
+        const yearCounts = {};
+        results.forEach(r => {
+            const yM = (r.registerId || '').match(/\d{2}/);
+            const y = yM ? yM[0] : '00';
+            r.admissionYear = y;
+            yearCounts[y] = (yearCounts[y] || 0) + 1;
+        });
+        let majorityYear = null, maxCount = 0;
+        for (const y in yearCounts) {
+            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
+        }
+        const regularResults = results.filter(r => r.admissionYear === majorityYear);
+
         // 1. Top 10 Performers (Across Entire College)
-        const topPerformers = [...results]
+        const topPerformers = [...regularResults]
             .filter(r => r.sgpa > 0)
             .sort((a, b) => b.sgpa - a.sgpa)
             .slice(0, 10)
@@ -631,7 +673,7 @@ exports.getCollegeResultAnalysis = async (req, res) => {
         // 3. Per-department breakdown (inferred from registerId: PKD24CE001 → CE)
         const deptStats = {};
 
-        results.forEach(r => {
+        regularResults.forEach(r => {
             let isStudentFailed = false;
 
             r.subjects.forEach(sub => {
@@ -649,9 +691,10 @@ exports.getCollegeResultAnalysis = async (req, res) => {
             if (isStudentFailed) failed++;
             else passed++;
 
-            // Extract dept code from registerId (e.g. PKD24CE001 → CE)
+            // Extract dept code from registerId safely using regex
             const regId = r.registerId || '';
-            const deptCode = regId.length >= 7 ? regId.substring(5, 7) : 'XX';
+            const deptMatch = regId.match(/\d{2}([A-Z]{2,3})\d{3}/i);
+            const deptCode = deptMatch ? deptMatch[1].toUpperCase() : 'XX';
             if (!deptStats[deptCode]) deptStats[deptCode] = { dept: deptCode, pass: 0, fail: 0, total: 0 };
             deptStats[deptCode].total++;
             if (isStudentFailed) deptStats[deptCode].fail++;
@@ -659,7 +702,7 @@ exports.getCollegeResultAnalysis = async (req, res) => {
         });
 
         res.json({
-            totalStudents: results.length,
+            totalStudents: regularResults.length,
             topPerformers,
             passFail: [
                 { name: 'Passed', value: passed },
@@ -671,12 +714,12 @@ exports.getCollegeResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error("Error generating college analysis:", err);
-        res.status(500).send("Server Error");
+        next(err);
     }
 };
 
 
-exports.getDepartmentResultAnalysis = async (req, res) => {
+exports.getDepartmentResultAnalysis = async (req, res, next) => {
     try {
         const { title, type, dept: deptQuery } = req.query;
         const user = await User.findById(req.user.userId);
@@ -708,10 +751,10 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
                 ? Result.find({ ...baseQuery, batch: { $in: batchIds } }).populate('student', 'name registerId').populate('batch', 'name')
                 : Promise.resolve([]),
 
-            // Strategy 2: By registerId pattern — PKD21IT068, LPKD20IT065 both normalised to PKD prefix
+            // Strategy 2: By registerId pattern — Match any prefix (PKD, LPKD, IDK) + 2 digits + department
             Result.find({
                 ...baseQuery,
-                registerId: { $regex: new RegExp(`^PKD\\d{2}${department}\\d+`, 'i') }
+                registerId: { $regex: new RegExp(`^[a-zA-Z]+\\d{2}${department}\\d+`, 'i') }
             }).populate('student', 'name registerId').populate('batch', 'name')
         ]);
 
@@ -727,8 +770,22 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
 
         if (!results.length) return res.json(null);
 
+        // Filter to Regular Students only
+        const yearCounts = {};
+        results.forEach(r => {
+            const yM = (r.registerId || '').match(/\d{2}/);
+            const y = yM ? yM[0] : '00';
+            r.admissionYear = y;
+            yearCounts[y] = (yearCounts[y] || 0) + 1;
+        });
+        let majorityYear = null, maxCount = 0;
+        for (const y in yearCounts) {
+            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
+        }
+        const regularResults = results.filter(r => r.admissionYear === majorityYear);
+
         // 1. Top 10 Performers
-        const topPerformers = [...results]
+        const topPerformers = [...regularResults]
             .filter(r => r.sgpa > 0)
             .sort((a, b) => b.sgpa - a.sgpa)
             .slice(0, 10)
@@ -742,7 +799,7 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
         let passed = 0, failed = 0;
         const subjectStats = {};
 
-        results.forEach(r => {
+        regularResults.forEach(r => {
             let isStudentFailed = false;
             r.subjects.forEach(sub => {
                 if (!subjectStats[sub.subCode]) {
@@ -766,7 +823,7 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
 
         res.json({
             department,
-            totalStudents: results.length,
+            totalStudents: regularResults.length,
             topPerformers,
             passFail: [
                 { name: 'Passed', value: passed },
@@ -777,6 +834,6 @@ exports.getDepartmentResultAnalysis = async (req, res) => {
 
     } catch (err) {
         console.error('Error generating department analysis:', err);
-        res.status(500).send('Server Error');
+        next(err);
     }
 };

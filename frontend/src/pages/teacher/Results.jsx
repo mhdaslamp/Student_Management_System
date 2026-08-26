@@ -6,7 +6,7 @@ import { Eye, X, BarChart2, Globe, Download, GraduationCap } from 'lucide-react'
 
 const TeacherResults = ({ batches }) => {
     const { user } = useAuth();
-    const isExamController = user?.role === 'exam_controller';
+    const isAdmin = user?.role === 'admin';
 
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
@@ -76,7 +76,6 @@ const TeacherResults = ({ batches }) => {
     // Reusable action row for university (global) results
     const UniActions = ({ item }) => (
         <div className="flex items-center gap-2 flex-wrap justify-end">
-            <button onClick={() => handleViewDetails(item, 'global')} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View All Students"><Eye className="h-4 w-4" /></button>
             <button onClick={() => handleDownload(item, true)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Download Excel"><Download className="h-4 w-4" /></button>
             <button onClick={() => handleAnalysis(item, 'department')} className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors" title="Dept Analysis"><BarChart2 className="h-4 w-4" /></button>
             <button onClick={() => handleAnalysis(item, 'college')} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="College Analysis"><Globe className="h-4 w-4" /></button>
@@ -166,7 +165,7 @@ const TeacherResults = ({ batches }) => {
                             )}
                         </div>
 
-                        {isExamController && !viewingResult.published && (
+                        {isAdmin && !viewingResult.published && (
                             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
                                 <button
                                     onClick={() => { fetchUniResults(); setViewingResult(null); }}

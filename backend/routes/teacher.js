@@ -1,31 +1,25 @@
-const express = require('express');
-const router = express.Router();
-const teacherController = require('../controllers/teacher');
-const auth = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
+const express            = require('express');
+const router             = express.Router();
+const teacherController  = require('../controllers/teacher');
+const auth               = require('../middleware/auth');
+const { excelOnly }      = require('../src/middleware/upload');
+const {
+    BATCH_VIEWER_ROLES,
+    APPROVER_ROLES,
+} = require('../src/config/constants');
 
-// Multer setup
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Ensure 'uploads' directory exists
-        const fs = require('fs');
-        if (!fs.existsSync('uploads')) {
-            fs.mkdirSync('uploads');
-        }
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname)
-    }
-});
-const upload = multer({ storage: storage });
+// ─── Batch Management ─────────────────────────────────────────────────────────
+router.post('/batch',                 auth('teacher'),                        teacherController.createBatch);
+router.get('/batch',                  auth(BATCH_VIEWER_ROLES),               teacherController.getBatches);
+router.get('/batch/:batchId',         auth(BATCH_VIEWER_ROLES),               teacherController.getBatchDetails);
+router.post('/batch/:batchId/upload', auth(['teacher', 'admin']),              excelOnly.single('file'), teacherController.uploadStudents);
 
-router.post('/batch', auth('teacher'), teacherController.createBatch);
-router.get('/batch', auth(['teacher', 'admin', 'exam_controller', 'hod']), teacherController.getBatches);
-router.get('/batch/:batchId', auth(['teacher', 'admin', 'exam_controller', 'hod']), teacherController.getBatchDetails);
-router.post('/batch/:batchId/upload', auth(['teacher', 'admin']), upload.single('file'), teacherController.uploadStudents);
-router.put('/student/:studentId', auth('teacher'), teacherController.updateStudent);
-router.delete('/student/:studentId', auth('teacher'), teacherController.deleteStudent);
+// ─── Internal Marks ───────────────────────────────────────────────────────────
+router.get('/internal/template/:batchId', auth('teacher'),                    teacherController.downloadInternalTemplate);
+router.post('/internal/upload/:batchId',  auth('teacher'),                    excelOnly.single('file'), teacherController.uploadInternalmarks);
+
+// ─── Student Management ───────────────────────────────────────────────────────
+router.put('/student/:studentId',    auth('teacher'),                         teacherController.updateStudent);
+router.delete('/student/:studentId', auth('teacher'),                         teacherController.deleteStudent);
 
 module.exports = router;

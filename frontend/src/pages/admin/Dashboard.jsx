@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
 import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Menu, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import samsLogoSmall from '../../assets/SAMS LOGO SMALL.svg';
 
 const AdminDashboard = () => {
     const { logout } = useAuth();
+    const mainContentRef = useRef(null);
     // Reusing teacherData state structure but renaming conceptually
     const [formData, setFormData] = useState({ name: '', email: '', password: '', department: '' });
     const [staffList, setStaffList] = useState([]);
@@ -115,7 +116,9 @@ const AdminDashboard = () => {
             department: staff.department || '',
             password: ''
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const cancelEdit = () => {
@@ -249,7 +252,7 @@ const AdminDashboard = () => {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-6 md:px-10 md:py-8 bg-white">
+                <main ref={mainContentRef} className="flex-1 overflow-y-auto p-6 md:px-10 md:py-8 bg-white">
                     <div className="flex flex-col gap-2 mb-8">
                         <div className="flex items-center gap-2">
                             <p className="font-medium text-black text-2xl" style={{ fontFamily: "'Inter', sans-serif" }}>Welcome, Admin</p>
@@ -337,9 +340,11 @@ const AdminDashboard = () => {
                                                     value={formData.password}
                                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 />
-                                                <button type="button" onClick={() => setShowPwd(!showPwd)} className="shrink-0 text-black outline-none">
-                                                    {showPwd ? <Eye size={20} /> : <EyeOff size={20} />}
-                                                </button>
+                                                {!editingStaff && (
+                                                    <button type="button" onClick={() => setShowPwd(!showPwd)} className="shrink-0 text-black outline-none">
+                                                        {showPwd ? <Eye size={20} /> : <EyeOff size={20} />}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -470,9 +475,7 @@ const AdminDashboard = () => {
                                                         <button onClick={() => startEdit(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Edit">
                                                             <Edit2 size={18} />
                                                         </button>
-                                                        <button className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="View">
-                                                            <Eye size={18} />
-                                                        </button>
+
                                                         <button onClick={() => handleDeleteStaff(staff._id)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete">
                                                             <Trash2 size={18} />
                                                         </button>

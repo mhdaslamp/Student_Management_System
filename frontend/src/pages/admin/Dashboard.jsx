@@ -180,35 +180,46 @@ const AdminDashboard = () => {
     return (
         <div className="flex h-screen bg-white font-sans">
             {/* ── Sidebar ── */}
-            <aside className="w-[260px] shrink-0 h-full flex flex-col border-r border-[#d0d3d9] overflow-y-auto hidden md:flex">
-                <div className="px-4 py-1 h-[85px] flex items-center overflow-hidden">
-                    <img src={samsLogoSmall} alt="SAMS Logo" className="w-[155.637px] h-[58.137px] object-contain" />
+            <aside className="w-[80px] xl:w-[260px] shrink-0 h-full flex flex-col border-r border-[#d0d3d9] overflow-y-auto hidden md:flex transition-all duration-300 bg-white z-10">
+                <div className="px-4 xl:px-4 py-1 h-[85px] flex items-center justify-center xl:justify-start overflow-hidden">
+                    <img src={samsLogoSmall} alt="SAMS Logo" className="w-[155.637px] h-[58.137px] object-contain hidden xl:block" />
+                    <span className="xl:hidden font-bold text-2xl tracking-tighter">S.</span>
                 </div>
-                <div className="px-4 py-4">
+                <div className="px-4 py-4 hidden xl:block">
                     <div className="bg-white border border-[#9c9c9c] flex gap-2 h-11 items-center pl-4 pr-4 rounded-[56px]">
                         <Search size={16} className="text-[#9c9c9c] shrink-0" />
                         <input type="text" placeholder="Search here..." className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]" style={{ fontFamily: "'Inter', sans-serif" }} disabled />
                     </div>
                 </div>
-                <nav className="flex flex-col px-4 gap-1 flex-1">
+                <nav className="flex flex-col px-2 xl:px-4 gap-2 xl:gap-1 flex-1 mt-4 xl:mt-0">
                     <button
                         onClick={() => setActiveTab('results')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'results' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'results' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
+                        title="KTU Result"
                     >
-                        <FileText size={18} /> KTU Result
+                        <FileText size={18} className="shrink-0" />
+                        <span className="hidden xl:inline">KTU Result</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('staff')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'staff' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'staff' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
+                        title="Staff Enrollment"
                     >
-                        <Users size={18} /> Staff Enrollment
+                        <Users size={18} className="shrink-0" />
+                        <span className="hidden xl:inline">Staff Enrollment</span>
                     </button>
                 </nav>
-                <div className="flex flex-col px-4 pb-4 gap-1">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm text-[#333] hover:bg-gray-100 w-full text-left" style={{ fontFamily: "'Inter', sans-serif" }}><Settings size={18} /> Settings</button>
-                    <button onClick={logout} className="flex items-center gap-2 px-4 py-2 rounded-[8px] text-sm text-[#ff3232] hover:bg-red-50 w-full text-left" style={{ fontFamily: "'Inter', sans-serif" }}>Log out <LogOut size={18} /></button>
+                <div className="flex flex-col px-2 xl:px-4 pb-4 gap-2 xl:gap-1">
+                    <button className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#333] hover:bg-gray-100 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Settings">
+                        <Settings size={18} className="shrink-0" />
+                        <span className="hidden xl:inline">Settings</span>
+                    </button>
+                    <button onClick={logout} className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#ff3232] hover:bg-red-50 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Log out">
+                        <LogOut size={18} className="shrink-0" />
+                        <span className="hidden xl:inline">Log out</span>
+                    </button>
                 </div>
             </aside>
 

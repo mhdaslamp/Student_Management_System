@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import TeacherDashboard from './pages/teacher/Dashboard';
+import PrincipalDashboard from './pages/principal/Dashboard';
 import StudentDashboard from './pages/student/Dashboard';
 import VerifyRequest from './pages/VerifyRequest';
 
@@ -16,7 +17,7 @@ const RedirectToDashboard = () => {
   if (user.role === 'teacher')         return <Navigate to="/teacher" />;
   if (user.role === 'student')         return <Navigate to="/student" />;
   if (user.role === 'hod')             return <Navigate to="/teacher" />;
-  if (user.role === 'principal')       return <Navigate to="/teacher" />;
+  if (user.role === 'principal')       return <Navigate to="/principal" />;
   return <Navigate to="/login" />;
 };
 
@@ -36,9 +37,14 @@ function App() {
               <Route path="/admin/*" element={<AdminDashboard />} />
             </Route>
 
-            {/* Teacher / HoD / Principal — all share TeacherDashboard */}
-            <Route element={<ProtectedRoute allowedRoles={['teacher', 'hod', 'principal']} />}>
+            {/* Teacher / HoD — share TeacherDashboard */}
+            <Route element={<ProtectedRoute allowedRoles={['teacher', 'hod']} />}>
               <Route path="/teacher/*" element={<TeacherDashboard />} />
+            </Route>
+
+            {/* Principal — dedicated dashboard */}
+            <Route element={<ProtectedRoute allowedRoles={['principal']} />}>
+              <Route path="/principal/*" element={<PrincipalDashboard />} />
             </Route>
 
             {/* Student */}

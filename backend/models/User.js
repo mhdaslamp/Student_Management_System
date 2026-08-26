@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     },
     designation: {
         type: String,
-        enum: ['teacher', 'tutor', 'hod'],
+        enum: ['teacher', 'tutor', 'hod', 'principal'],
         default: 'teacher'
     },
     phone: {

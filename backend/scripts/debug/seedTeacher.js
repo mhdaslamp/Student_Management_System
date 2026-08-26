@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
-const User = require('./models/User');
+const path = require('path');
+const User = require('../../models/User'); // corrected path from scripts/debug/
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
-dotenv.config();
+// Load .env from the backend root
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/student_management_system')
     .then(() => console.log('MongoDB Connected'))
@@ -11,29 +13,38 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/student_man
 
 const seedTeacher = async () => {
     try {
-        const existingTeacher = await User.findOne({ email: 'teacher@teacher.com' });
+        const teacherEmail = process.env.SEED_TEACHER_EMAIL;
+        const teacherPassword = process.env.SEED_TEACHER_PASSWORD;
+        const teacherDept = process.env.SEED_TEACHER_DEPT || 'CSE';
+
+        if (!teacherEmail || !teacherPassword) {
+            console.error('Error: SEED_TEACHER_EMAIL and SEED_TEACHER_PASSWORD must be set in .env');
+            process.exit(1);
+        }
+
+        const existingTeacher = await User.findOne({ email: teacherEmail });
         if (existingTeacher) {
-            console.log('Teacher teacher@teacher.com already exists. Updating password to teacher123');
+            console.log(`Teacher ${teacherEmail} already exists. Updating password.`);
             const salt = await bcrypt.genSalt(10);
-            existingTeacher.password = await bcrypt.hash('teacher123', salt);
+            existingTeacher.password = await bcrypt.hash(teacherPassword, salt);
             await existingTeacher.save();
-            console.log('Password reset to teacher123');
+            console.log('Password reset successfully.');
             process.exit();
         }
 
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('teacher123', salt);
+        const hashedPassword = await bcrypt.hash(teacherPassword, salt);
 
         const teacher = new User({
             name: 'Test Teacher',
-            email: 'teacher@teacher.com',
+            email: teacherEmail,
             password: hashedPassword,
             role: 'teacher',
-            department: 'CSE'
+            department: teacherDept
         });
 
         await teacher.save();
-        console.log('Teacher created: teacher@teacher.com / teacher123');
+        console.log(`Teacher created: ${teacherEmail}`);
         process.exit();
     } catch (err) {
         console.error(err);

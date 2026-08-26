@@ -2,6 +2,7 @@ const express      = require('express');
 const router       = express.Router();
 const rateLimit    = require('express-rate-limit');
 const authController = require('../controllers/auth');
+const { IS_PRODUCTION } = require('../src/config/env');
 
 /**
  * Rate limiter for auth endpoints.
@@ -18,7 +19,12 @@ const authLimiter = rateLimit({
     },
 });
 
-router.post('/login',       authLimiter, authController.login);
-router.post('/setup-admin', authController.createInitialAdmin);
+router.post('/login', authLimiter, authController.login);
+
+// /setup-admin is disabled in production to prevent unauthorized first-admin creation.
+// Only available in development/staging environments.
+if (!IS_PRODUCTION) {
+    router.post('/setup-admin', authController.createInitialAdmin);
+}
 
 module.exports = router;

@@ -14,6 +14,18 @@ const TeacherDashboard = () => {
     const [activeTab, setActiveTab] = useState(isPrincipal ? 'university-results' : 'manage-batches');
     const [batches, setBatches] = useState([]);
 
+    const fetchBatches = async () => {
+        try {
+            const res = await axios.get('/teacher/batch');
+            setBatches(res.data);
+        } catch (error) {
+            console.error('Error fetching batches:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchBatches();
+    }, []);
 
     const renderContent = () => {
         switch (activeTab) {

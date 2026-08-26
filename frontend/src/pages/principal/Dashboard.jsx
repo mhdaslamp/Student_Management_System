@@ -388,7 +388,7 @@ const PrincipalDashboard = () => {
 
     // UI state
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [mobileTab, setMobileTab] = useState('results');
+    const [activeTab, setActiveTab] = useState('results');
 
     // Data state
     const [publishedResults, setPublishedResults] = useState([]);
@@ -542,11 +542,21 @@ const PrincipalDashboard = () => {
                 </div>
             </div>
             <nav className="flex flex-col px-2 xl:px-4 gap-2 xl:gap-1 flex-1 mt-4 xl:mt-0">
-                <button className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm bg-black text-white font-semibold w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="KTU Result Analysis">
+                <button 
+                    onClick={() => setActiveTab('results')}
+                    className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm font-semibold w-full text-left transition-colors ${activeTab === 'results' ? 'bg-black text-white' : 'text-[#333] hover:bg-gray-100'}`} 
+                    style={{ fontFamily: "'Inter', sans-serif" }} 
+                    title="KTU Result Analysis"
+                >
                     <FileText size={18} className="shrink-0" />
                     <span className="hidden xl:inline">KTU Result Analysis</span>
                 </button>
-                <button className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#333] hover:bg-gray-100 font-medium w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Approvals">
+                <button 
+                    onClick={() => setActiveTab('approvals')}
+                    className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm font-medium w-full text-left transition-colors ${activeTab === 'approvals' ? 'bg-black text-white' : 'text-[#333] hover:bg-gray-100'}`} 
+                    style={{ fontFamily: "'Inter', sans-serif" }} 
+                    title="Approvals"
+                >
                     <CheckSquare size={18} className="shrink-0" />
                     <span className="hidden xl:inline">Approvals</span>
                 </button>
@@ -629,74 +639,84 @@ const PrincipalDashboard = () => {
                             </div>
                             <p className="font-semibold text-[#616161] text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>College-wide KTU result analysis and performance overview.</p>
                         </div>
-                        <div className="flex items-center gap-3 bg-gray-50 border border-[#d0d3d9] rounded-xl px-4 py-2 shrink-0">
-                            <Building2 size={18} className="text-gray-500" />
-                            <select
-                                value={selectedScope}
-                                onChange={(e) => setSelectedScope(e.target.value)}
-                                className="bg-transparent text-sm font-semibold text-black outline-none cursor-pointer"
-                                style={{ fontFamily: "'Inter', sans-serif" }}
-                            >
-                                <option value="college">College-Wide</option>
-                                <option value="CS">Computer Science (CSE)</option>
-                                <option value="EC">Electronics (ECE)</option>
-                                <option value="EE">Electrical (EEE)</option>
-                                <option value="ME">Mechanical (ME)</option>
-                                <option value="CE">Civil (CE)</option>
-                                <option value="IT">Information Tech (IT)</option>
-                            </select>
-                        </div>
+                        {activeTab === 'results' && (
+                            <div className="flex items-center gap-3 bg-gray-50 border border-[#d0d3d9] rounded-xl px-4 py-2 shrink-0">
+                                <Building2 size={18} className="text-gray-500" />
+                                <select
+                                    value={selectedScope}
+                                    onChange={(e) => setSelectedScope(e.target.value)}
+                                    className="bg-transparent text-sm font-semibold text-black outline-none cursor-pointer"
+                                    style={{ fontFamily: "'Inter', sans-serif" }}
+                                >
+                                    <option value="college">College-Wide</option>
+                                    <option value="CS">Computer Science (CSE)</option>
+                                    <option value="EC">Electronics (ECE)</option>
+                                    <option value="EE">Electrical (EEE)</option>
+                                    <option value="ME">Mechanical (ME)</option>
+                                    <option value="CE">Civil (CE)</option>
+                                    <option value="IT">Information Tech (IT)</option>
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     {/* Mobile tabs */}
                     <div className="flex md:hidden gap-2 mb-6">
-                        <button onClick={() => setMobileTab('results')} className={`flex-1 py-3 px-4 rounded-[56px] border text-sm font-semibold transition-colors ${mobileTab === 'results' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`} style={{ fontFamily: "'Inter', sans-serif" }}>KTU Result</button>
-                        <button onClick={() => setMobileTab('approvals')} className={`flex-1 py-3 px-4 rounded-[56px] border text-sm font-semibold transition-colors ${mobileTab === 'approvals' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`} style={{ fontFamily: "'Inter', sans-serif" }}>Approvals</button>
+                        <button onClick={() => setActiveTab('results')} className={`flex-1 py-3 px-4 rounded-[56px] border text-sm font-semibold transition-colors ${activeTab === 'results' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`} style={{ fontFamily: "'Inter', sans-serif" }}>KTU Result</button>
+                        <button onClick={() => setActiveTab('approvals')} className={`flex-1 py-3 px-4 rounded-[56px] border text-sm font-semibold transition-colors ${activeTab === 'approvals' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`} style={{ fontFamily: "'Inter', sans-serif" }}>Approvals</button>
                     </div>
 
                     {/* ── DESKTOP layout (md+) ───────────────────────────── */}
                     <div className="hidden md:flex flex-col gap-6">
-                        {/* Row 1: Published Results | Performance Pie */}
-                        <div className="flex gap-6 items-stretch">
-                            <div className="flex-[2_1_0%] min-w-0">{publishedCard}</div>
-                            <div className="shrink-0 flex flex-col" style={{ width: 300, minHeight: 342 }}>
-                                {loadingAnalysis ? (
-                                    <div className="border border-[#d0d3d9] rounded-[16px] animate-pulse bg-gray-50 h-full" />
-                                ) : analysisData ? (
-                                    <PerformanceCard passRate={passPercent} failRate={failPercent} />
-                                ) : (
-                                    <div className="border border-[#d0d3d9] rounded-[16px] flex items-center justify-center h-full">
-                                        <p className="text-[#9c9c9c] text-xs text-center px-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                            {activeResult ? 'No data available' : 'Select a result to view performance'}
+                        {activeTab === 'results' ? (
+                            <>
+                                {/* Row 1: Published Results | Performance Pie */}
+                                <div className="flex gap-6 items-stretch">
+                                    <div className="flex-[2_1_0%] min-w-0">{publishedCard}</div>
+                                    <div className="shrink-0 flex flex-col" style={{ width: 300, minHeight: 342 }}>
+                                        {loadingAnalysis ? (
+                                            <div className="border border-[#d0d3d9] rounded-[16px] animate-pulse bg-gray-50 h-full" />
+                                        ) : analysisData ? (
+                                            <PerformanceCard passRate={passPercent} failRate={failPercent} />
+                                        ) : (
+                                            <div className="border border-[#d0d3d9] rounded-[16px] flex items-center justify-center h-full">
+                                                <p className="text-[#9c9c9c] text-xs text-center px-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                                    {activeResult ? 'No data available' : 'Select a result to view performance'}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Row 2: Department Chart (left) | Top Performers (right) */}
+                                {analysisData ? (
+                                    <div className="flex flex-col xl:flex-row gap-6 xl:items-stretch" style={{ minHeight: 490 }}>
+                                        <div className="w-full xl:flex-[615_1_0%] min-w-0">
+                                            {selectedScope === 'college' ? (
+                                                <DepartmentCard deptData={deptData} chartHeight={432} />
+                                            ) : (
+                                                <SubjectCard subjectData={subjectData} chartHeight={432} />
+                                            )}
+                                        </div>
+                                        <div className="w-full xl:flex-[490_1_0%] min-w-0 flex flex-col min-h-0">
+                                            <TopPerformersCard performers={performers} />
+                                        </div>
+                                    </div>
+                                ) : !loadingAnalysis && (
+                                    <div className="border border-[#d0d3d9] rounded-[16px] flex items-center justify-center py-16">
+                                        <p className="text-[#9c9c9c] text-sm text-center px-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                            {publishedResults.length === 0
+                                                ? 'No published results available.'
+                                                : activeResult
+                                                    ? `No data found for ${selectedScope === 'college' ? 'this exam' : 'the selected department'} in this result.`
+                                                    : 'Select a result above to view analytics and top performers.'}
                                         </p>
                                     </div>
                                 )}
-                            </div>
-                        </div>
-
-                        {/* Row 2: Department Chart (left) | Top Performers (right) */}
-                        {analysisData ? (
-                            <div className="flex flex-col xl:flex-row gap-6 xl:items-stretch" style={{ minHeight: 490 }}>
-                                <div className="w-full xl:flex-[615_1_0%] min-w-0">
-                                    {selectedScope === 'college' ? (
-                                        <DepartmentCard deptData={deptData} chartHeight={432} />
-                                    ) : (
-                                        <SubjectCard subjectData={subjectData} chartHeight={432} />
-                                    )}
-                                </div>
-                                <div className="w-full xl:flex-[490_1_0%] min-w-0 flex flex-col min-h-0">
-                                    <TopPerformersCard performers={performers} />
-                                </div>
-                            </div>
-                        ) : !loadingAnalysis && (
-                            <div className="border border-[#d0d3d9] rounded-[16px] flex items-center justify-center py-16">
-                                <p className="text-[#9c9c9c] text-sm text-center px-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                    {publishedResults.length === 0
-                                        ? 'No published results available.'
-                                        : activeResult
-                                            ? `No data found for ${selectedScope === 'college' ? 'this exam' : 'the selected department'} in this result.`
-                                            : 'Select a result above to view analytics and top performers.'}
-                                </p>
+                            </>
+                        ) : (
+                            <div className="py-16 text-center text-[#9c9c9c] text-sm font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                Approvals coming soon...
                             </div>
                         )}
                         {loadingAnalysis && (
@@ -709,7 +729,7 @@ const PrincipalDashboard = () => {
 
                     {/* ── MOBILE layout ─────────────────────────────────── */}
                     <div className="flex md:hidden flex-col gap-6 pb-20">
-                        {mobileTab === 'results' ? (
+                        {activeTab === 'results' ? (
                             <>
                                 {/* Mobile: published results list */}
                                 <div>

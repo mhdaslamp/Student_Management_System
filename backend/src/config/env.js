@@ -46,6 +46,7 @@ const IS_DEVELOPMENT = NODE_ENV === 'development';
 const ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://contacts.google.com',
     FRONTEND_URL,
     DOMAIN_URL,
 ].filter(Boolean);

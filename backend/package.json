@@ -9,7 +9,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "start:local": "node server.js"
+    "start:local": "node server.js",
+    "sync:contacts": "node scripts/sync_contacts_browser.js",
+    "sync:python": "python scripts/sync_contacts.py"
   },
   "keywords": [],
   "author": "",
@@ -22,13 +24,16 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "firebase-admin": "^14.3.0",
     "form-data": "^4.0.5",
+    "googleapis": "^176.0.0",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.0",
     "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
     "pdfkit": "^0.18.0",
+    "puppeteer": "^25.9.0",
     "qrcode": "^1.5.4",
     "xlsx": "^0.18.5"
   },

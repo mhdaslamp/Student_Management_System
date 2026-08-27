@@ -254,7 +254,6 @@ const processedData = async (buffer) => {
         }
 
         return { rawStudents, metadata: { semester, scheme, examName, examTitle } };
-
     } catch (error) {
         console.error("Processing Error:", error);
         const fs = require('fs');

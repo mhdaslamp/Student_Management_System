@@ -131,23 +131,21 @@ exports.uploadStudents = async (req, res, next) => {
         const errors = [];
 
         for (const row of sheetData) {
-            const admissionNo = row['Admission No'] || row['admission no'] || row['AdmissionNo'];
-            const registerId = row['Registerid'] || row['registerid'] || row['RegisterId'];
+            const registerId = row['Registerid'] || row['registerid'] || row['RegisterId'] || row['Register No'] || row['Roll No'] || row['Admission No'];
             const name = row['Full Name'] || row['Name'] || row['name'];
 
-            if (!admissionNo || !registerId || !name) {
+            if (!registerId || !name) {
                 errors.push(`Missing data for row: ${JSON.stringify(row)}`);
                 continue;
             }
 
-            // Find or create student
-            let student = await User.findOne({ admissionNo });
+            // Find or create student by registerId
+            let student = await User.findOne({ registerId: String(registerId) });
             if (student) {
-                // Ensure batch and registerId are set
                 if (!student.batch || student.batch.toString() !== batchId) {
                     student.batch = batchId;
                 }
-                if (!student.registerId) student.registerId = String(registerId);
+                student.name = name;
                 await student.save();
                 students.push(student._id);
             } else {
@@ -157,7 +155,6 @@ exports.uploadStudents = async (req, res, next) => {
                 student = new User({
                     name,
                     role: 'student',
-                    admissionNo,
                     registerId: String(registerId),
                     password: hashedPassword,
                     batch: batchId

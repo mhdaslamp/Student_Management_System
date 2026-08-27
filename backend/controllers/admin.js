@@ -12,7 +12,7 @@ exports.addStaff = async (req, res, next) => {
         }
 
         // Validate Role
-        const validRoles = [ROLES.TEACHER, ROLES.HOD, ROLES.PRINCIPAL];
+        const validRoles = [ROLES.TEACHER, ROLES.HOD, ROLES.PRINCIPAL, ROLES.ADMIN];
         if (!validRoles.includes(role)) {
             return res.status(400).json({ success: false, message: 'Invalid role specified' });
         }
@@ -39,7 +39,7 @@ exports.addStaff = async (req, res, next) => {
 exports.getStaff = async (req, res, next) => {
     try {
         const { role } = req.query;
-        let query = { role: { $in: [ROLES.TEACHER, ROLES.HOD, ROLES.PRINCIPAL] } };
+        let query = { role: { $in: [ROLES.TEACHER, ROLES.HOD, ROLES.PRINCIPAL, ROLES.ADMIN] } };
 
         if (role) {
             query.role = role;

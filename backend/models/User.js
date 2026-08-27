@@ -13,15 +13,14 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        // Only required for admin (staff use Google Sign-In, students use Google Sign-In)
+        required: function () { return this.role === 'admin'; }
     },
     department: {
         type: String,
     },
     designation: {
         type: String,
-        enum: ['teacher', 'tutor', 'hod', 'principal'],
-        default: 'teacher'
     },
     phone: {
         type: String,
@@ -32,18 +31,30 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     // Specific to students
-    admissionNo: {
+    registerId: {
         type: String,
         unique: true,
         sparse: true
     },
-    registerId: {
-        type: String, // Used as password initially, but stored hashed
-    },
     batch: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Batch'
-    }
+    },
+    // ─── Google / Firebase fields ───────────────────────────────────────────
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true,           // allows multiple null values
+    },
+    syncedFromDirectory: {
+        type: Boolean,
+        default: false,         // true = auto-synced from Google directory
+    },
+    studentType: {
+        type: String,
+        enum: ['regular', 'lateral'],
+        default: 'regular',
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

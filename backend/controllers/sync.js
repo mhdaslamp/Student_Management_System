@@ -261,17 +261,18 @@ exports.automatedBrowserSync = async (req, res, next) => {
  */
 exports.getSyncStatus = async (req, res, next) => {
     try {
-        const [totalStudents, totalBatches, lastSyncedBatch] = await Promise.all([
-            User.countDocuments({ role: 'student', syncedFromDirectory: true }),
-            Batch.countDocuments({ lastSyncedAt: { $exists: true } }),
+        const [totalStudents, totalBatches, lastSyncedBatch, allBatches] = await Promise.all([
+            User.countDocuments({ role: 'student' }),
+            Batch.countDocuments({}),
             Batch.findOne({ lastSyncedAt: { $exists: true } })
                  .sort({ lastSyncedAt: -1 })
                  .select('lastSyncedAt'),
+            Batch.find({}).sort({ admissionYear: 1, branch: 1 }).populate('students', 'name registerId email')
         ]);
 
         // Per-department breakdown
         const deptBreakdown = await User.aggregate([
-            { $match: { role: 'student', syncedFromDirectory: true } },
+            { $match: { role: 'student' } },
             { $group: { _id: '$department', count: { $sum: 1 } } },
             { $sort: { _id: 1 } },
         ]);
@@ -291,6 +292,7 @@ exports.getSyncStatus = async (req, res, next) => {
             lastSyncedAt:   lastSyncedBatch?.lastSyncedAt || null,
             totalStudents,
             totalBatches,
+            batches:        allBatches,
             byDepartment:   deptBreakdown.map(d => ({ dept: d._id, count: d.count })),
             byYear:         yearBreakdown.map(y => ({ year: y._id, batches: y.batches, students: y.studentCount })),
         });

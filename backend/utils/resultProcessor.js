@@ -485,19 +485,19 @@ const generateExcel = async (processedData) => {
 
         currentRow++;
         worksheet.getCell(`A${currentRow}`).value = "Rank & Reg No";
-        worksheet.getCell(`B${currentRow}`).value = "SGPA";
-        worksheet.getCell(`C${currentRow}`).value = "Student Name";
+        worksheet.getCell(`B${currentRow}`).value = "Student Name";
+        worksheet.getCell(`C${currentRow}`).value = "CGPA";
         ['A', 'B', 'C'].forEach(col => {
             worksheet.getCell(`${col}${currentRow}`).font = { bold: true };
             worksheet.getCell(`${col}${currentRow}`).border = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } };
         });
 
-        const toppers = regularStudents.filter(s => s.isPass).sort((a, b) => b.sgpa - a.sgpa).slice(0, 10);
+        const toppers = regularStudents.filter(s => s.isPass).sort((a, b) => (b.cgpa || b.sgpa) - (a.cgpa || a.sgpa)).slice(0, 10);
         toppers.forEach((t, i) => {
             currentRow++;
             worksheet.getCell(`A${currentRow}`).value = `${i + 1}. ${t.registerId}`;
-            worksheet.getCell(`B${currentRow}`).value = t.sgpa;
-            worksheet.getCell(`C${currentRow}`).value = t.name || 'Name not found';
+            worksheet.getCell(`B${currentRow}`).value = t.name || 'Name not found';
+            worksheet.getCell(`C${currentRow}`).value = t.cgpa || t.sgpa;
         });
 
         // --- Subject Failure Analysis ---

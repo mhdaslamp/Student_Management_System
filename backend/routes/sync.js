@@ -24,6 +24,14 @@ router.post('/paste', (req, res, next) => {
     if (req.header('Authorization')) return auth('admin')(req, res, next);
     next();
 }, sync.syncFromText);
-router.get('/status', auth('admin'), sync.getSyncStatus);
+router.post('/stream-chunk', (req, res, next) => {
+    if (req.header('Authorization')) return auth('admin')(req, res, next);
+    next();
+}, sync.streamChunk);
+router.get('/checkpoint',        auth('admin'), sync.getSyncCheckpoint);
+router.get('/status',            auth('admin'), sync.getSyncStatus);
+router.get('/prefixes',          auth('admin'), sync.getPrefixes);
+router.post('/prefixes',         auth('admin'), sync.addPrefix);
+router.delete('/prefixes/:prefix', auth('admin'), sync.removePrefix);
 
 module.exports = router;

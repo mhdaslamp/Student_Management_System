@@ -1,7 +1,7 @@
 """
 Google Contacts Prefix Search Sync Script for SAMS
 Searches Google Contacts Directory by batch prefix (pkd21, pkd22, pkd23, pkd24, pkd25, lpkd)
-to load all student batches instantly without hitting infinite scroll rate limits.
+Scoped scrolling per prefix with immediate per-batch streaming and checkpoint recovery.
 """
 
 import sys
@@ -13,6 +13,8 @@ import random
 import requests
 import io
 import shutil
+import csv
+import signal
 
 # Force UTF-8 on Windows
 if sys.platform == 'win32':
@@ -28,20 +30,64 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-# Configure backend target URL
-BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:5000/api/sync/paste')
+# Configure paths & endpoints
+BACKEND_URL = os.environ.get('BACKEND_URL', 'http://localhost:5000/api/sync/stream-chunk')
 USER_DATA_DIR = os.path.join(os.environ.get('LOCALAPPDATA', os.path.dirname(__file__)), 'SAMS-Chrome-Profile')
+DATA_DIR = os.path.join(os.path.dirname(__file__), '../data')
+os.makedirs(DATA_DIR, exist_ok=True)
 
-# Focus 100% on B.Tech student batches (2023, 2024, 2025) using '0' prefix (pkd23cs0, etc.)
+STATE_FILE_PATH = os.path.join(DATA_DIR, 'sync_state.json')
+CSV_BACKUP_PATH = os.path.join(DATA_DIR, 'gecskp_students_backup.csv')
+JSON_BACKUP_PATH = os.path.join(DATA_DIR, 'gecskp_students_backup.json')
+
+# Batch configurations (from 2023 onwards: 2023, 2024, 2025)
 STUDENT_YEARS = ['23', '24', '25']
 BRANCHES = ['cs', 'ec', 'ee', 'it', 'me', 'ce']
 
-STUDENT_PREFIXES = (
-    [f"pkd{y}{b}0" for y in STUDENT_YEARS for b in BRANCHES] +
-    [f"lpkd{y}{b}" for y in STUDENT_YEARS for b in BRANCHES]
-)
+# Regular 0-prefix: isolates 2-letter branch rolls (pkd23cs001-pkd23cs065) avoiding cscl/other branches
+REGULAR_PREFIXES = [f"pkd{y}{b}0" for y in STUDENT_YEARS for b in BRANCHES]
+LATERAL_PREFIXES = [f"lpkd{y}{b}" for y in ['23', '24', '25'] for b in BRANCHES]
 
-PREFIXES = STUDENT_PREFIXES
+ALL_PREFIXES = REGULAR_PREFIXES + LATERAL_PREFIXES
+
+PREFIXES_FILE_PATH = os.path.join(DATA_DIR, 'prefixes.json')
+if os.path.exists(PREFIXES_FILE_PATH):
+    try:
+        with open(PREFIXES_FILE_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                # Append custom prefixes that are not already in ALL_PREFIXES
+                for p in data:
+                    if p not in ALL_PREFIXES:
+                        ALL_PREFIXES.append(p)
+    except Exception as e:
+        print(f"[WARN] Could not read custom prefixes.json, using defaults: {e}")
+
+
+def load_sync_state():
+    """Loads the sync checkpoint state."""
+    default_state = {
+        "lastUpdated": None,
+        "completed": {},   # prefix -> { count: int, timestamp: str }
+        "failed": {}
+    }
+    if os.path.exists(STATE_FILE_PATH):
+        try:
+            with open(STATE_FILE_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data
+        except Exception:
+            return default_state
+    return default_state
+
+def save_sync_state(state):
+    """Persists sync checkpoint state to JSON."""
+    try:
+        state["lastUpdated"] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        with open(STATE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(state, f, indent=2)
+    except Exception as e:
+        print(f"[WARN] Could not save sync state: {e}")
 
 def clean_lock_files(profile_dir):
     """Removes leftover Chrome Singleton lock files."""
@@ -65,252 +111,268 @@ def get_driver(options):
         os.makedirs(USER_DATA_DIR, exist_ok=True)
         return webdriver.Chrome(options=options)
 
-import csv
-
-CSV_BACKUP_PATH = os.path.join(os.path.dirname(__file__), '../data/gecskp_students_backup.csv')
-JSON_BACKUP_PATH = os.path.join(os.path.dirname(__file__), '../data/gecskp_students_backup.json')
-
-def save_local_backup(contacts_map):
+def save_local_backup(all_contacts_map):
     try:
-        os.makedirs(os.path.dirname(CSV_BACKUP_PATH), exist_ok=True)
         with open(CSV_BACKUP_PATH, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow(['Name', 'Email'])
-            for email, name in sorted(contacts_map.items()):
+            for email, name in sorted(all_contacts_map.items()):
                 writer.writerow([name, email])
         with open(JSON_BACKUP_PATH, 'w', encoding='utf-8') as f:
-            json.dump(contacts_map, f, indent=2, ensure_ascii=False)
-        print(f"[BACKUP] Saved local CSV backup to: {CSV_BACKUP_PATH}")
+            json.dump(all_contacts_map, f, indent=2, ensure_ascii=False)
     except Exception as e:
-        print(f"[WARN] Could not write CSV backup: {e}")
+        print(f"[WARN] Could not write backup files: {e}")
+
+def stream_chunk_to_backend(prefix, contacts_dict):
+    """Immediately streams a batch's contacts to the SAMS backend."""
+    if not contacts_dict:
+        print(f"[STREAM] No new contacts found for '{prefix}'.")
+        return True
+
+    payload = {
+        "prefix": prefix,
+        "contacts": [{"name": name, "email": email} for email, name in contacts_dict.items()]
+    }
+
+    try:
+        res = requests.post(BACKEND_URL, json=payload, headers={"Content-Type": "application/json"}, timeout=45)
+        if res.status_code == 200:
+            sum_info = res.json().get('summary', {})
+            print(f"[STREAM SUCCESS] '{prefix}': {len(contacts_dict)} sent | Added: {sum_info.get('studentsCreated', 0)} | Updated: {sum_info.get('studentsUpdated', 0)}")
+            return True
+        else:
+            print(f"[STREAM ERROR] Backend error on '{prefix}' ({res.status_code}): {res.text}")
+            return False
+    except Exception as e:
+        print(f"[STREAM ERROR] Failed to stream '{prefix}' to backend: {e}")
+        return False
 
 def main():
     print("=" * 60)
-    print("[INFO] SAMS Google Contacts Fast Prefix-Search Sync")
+    print("[INFO] SAMS Google Contacts Resilient Prefix Sync Engine")
     print("=" * 60)
 
-    # 0. Check if offline cached mode is requested
-    contacts_map = {}
-    if '--offline' in sys.argv or '--cached' in sys.argv:
-        if os.path.exists(JSON_BACKUP_PATH):
-            with open(JSON_BACKUP_PATH, 'r', encoding='utf-8') as f:
-                contacts_map = json.load(f)
-            print(f"[OFFLINE] Loaded {len(contacts_map)} contacts from cached file: {JSON_BACKUP_PATH}")
-        elif os.path.exists(CSV_BACKUP_PATH):
-            with open(CSV_BACKUP_PATH, 'r', encoding='utf-8') as f:
-                reader = csv.reader(f)
-                next(reader, None) # skip header
-                for row in reader:
-                    if len(row) >= 2:
-                        contacts_map[row[1].strip().lower()] = row[0].strip()
-            print(f"[OFFLINE] Loaded {len(contacts_map)} contacts from CSV file: {CSV_BACKUP_PATH}")
+    # 1. Determine execution mode
+    is_fresh = '--fresh' in sys.argv
+    state = load_sync_state()
 
-    if not contacts_map:
-        clean_lock_files(USER_DATA_DIR)
+    if is_fresh:
+        print("[MODE] Fresh Sync Requested: Resetting previous checkpoints.")
+        state = {"lastUpdated": None, "completed": {}, "failed": {}}
+        save_sync_state(state)
+    else:
+        completed_count = len(state.get("completed", {}))
+        print(f"[MODE] Resuming Balance: {completed_count}/{len(ALL_PREFIXES)} prefixes already completed.")
 
-        chrome_options = Options()
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument(f"--user-data-dir={USER_DATA_DIR}")
-        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument("--disable-session-crashed-bubble")
-        chrome_options.add_argument("--hide-crash-restore-bubble")
-        chrome_options.add_argument("--log-level=3")
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
-        chrome_options.add_experimental_option('useAutomationExtension', False)
-
-        print("[INFO] Launching native Google Chrome window...")
-        driver = get_driver(chrome_options)
-
+    # Load cumulative contacts map from JSON backup if available
+    all_contacts_map = {}
+    if os.path.exists(JSON_BACKUP_PATH):
         try:
-            # 1. Open Google Contacts Directory
-            driver.get("https://contacts.google.com/directory")
-            print("[INFO] Checking Google login status...")
-            print("[TIP] If prompted, please sign in with your @gecskp.ac.in account in the opened window.")
+            with open(JSON_BACKUP_PATH, 'r', encoding='utf-8') as f:
+                all_contacts_map = json.load(f)
+        except Exception:
+            all_contacts_map = {}
 
-            # Wait until user is authenticated
-            auth_detected = False
-            start_wait = time.time()
+    clean_lock_files(USER_DATA_DIR)
 
-            while time.time() - start_wait < 300:
-                current_url = driver.current_url
-                if "contacts.google.com" in current_url and "accounts.google.com" not in current_url:
-                    auth_detected = True
-                    print("[OK] Authenticated successfully on Google Contacts!")
-                    break
-                time.sleep(2)
+    chrome_options = Options()
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument(f"--user-data-dir={USER_DATA_DIR}")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_argument("--disable-session-crashed-bubble")
+    chrome_options.add_argument("--hide-crash-restore-bubble")
+    chrome_options.add_argument("--log-level=3")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
 
-            if not auth_detected:
-                print("[ERROR] Timed out waiting for Google sign-in.")
-                return
+    print("[INFO] Launching native Google Chrome window...")
+    driver = get_driver(chrome_options)
 
+    # Graceful shutdown handler
+    def handle_interrupt(signum, frame):
+        print("\n[WARN] Interrupted! Safely saving state and closing driver...")
+        save_sync_state(state)
+        save_local_backup(all_contacts_map)
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, handle_interrupt)
+
+    try:
+        # Step 1: Open Google Contacts Directory
+        driver.get("https://contacts.google.com/directory")
+        print("[INFO] Checking Google login status...")
+        print("[TIP] If prompted, please sign in with your @gecskp.ac.in account.")
+
+        auth_detected = False
+        start_wait = time.time()
+        while time.time() - start_wait < 300:
+            current_url = driver.current_url
+            if "contacts.google.com" in current_url and "accounts.google.com" not in current_url:
+                auth_detected = True
+                print("[OK] Authenticated successfully on Google Contacts!")
+                break
             time.sleep(2)
 
-            def grab_visible_contacts():
-                try:
-                    text = driver.find_element(By.TAG_NAME, "body").text
-                    lines = text.split("\n")
-                    for i, line in enumerate(lines):
-                        line = line.strip()
-                        m = re.search(r'([a-zA-Z0-9._%+-]+@gecskp\.ac\.in)', line, re.IGNORECASE)
-                        if m:
-                            email = m.group(1).lower()
-                            # Exclude Computational Linguistics (cscl) or M.Tech programs
-                            if 'cscl' in email or 'mtech' in email or 'vlsi' in email:
-                                continue
+        if not auth_detected:
+            print("[ERROR] Timed out waiting for Google sign-in.")
+            return
 
-                            name = ""
-                            if i > 0 and "@" not in lines[i-1] and len(lines[i-1]) < 60:
-                                name = lines[i-1].strip()
-                            elif line.replace(email, '').strip():
-                                name = line.replace(email, '').strip()
+        time.sleep(2)
 
-                            if email not in contacts_map:
-                                contacts_map[email] = name
-                except Exception:
-                    pass
-
-            # 2. Iterate through each batch prefix query with bulletproof stability
-            # 2. Iterate through each batch prefix query using Organic Human Typing
-            print("[INFO] Starting organic human batch prefix search...")
-
-            def human_type_batch(query):
-                try:
-                    inputs = driver.find_elements(By.CSS_SELECTOR, 'input[aria-label*="Search"], input[type="text"], input[role="combobox"]')
-                    if inputs:
-                        box = inputs[0]
-                        box.click()
-                        time.sleep(random.uniform(0.25, 0.55))
-                        
-                        # Natural select-all and backspace
-                        box.send_keys(Keys.CONTROL, 'a')
-                        time.sleep(random.uniform(0.12, 0.25))
-                        box.send_keys(Keys.BACKSPACE)
-                        time.sleep(random.uniform(0.15, 0.35))
-
-                        # Human character-by-character typing with natural jitter
-                        for ch in query:
-                            box.send_keys(ch)
-                            # Slightly longer pause on numbers
-                            if ch.isdigit():
-                                time.sleep(random.uniform(0.14, 0.28))
-                            else:
-                                time.sleep(random.uniform(0.09, 0.21))
-
-                        # Natural hesitation before hitting Enter
-                        time.sleep(random.uniform(0.35, 0.75))
-                        box.send_keys(Keys.ENTER)
-                        return True
-                except Exception:
-                    pass
-                
-                # Fallback to direct search URL if DOM input lost
-                try:
-                    driver.get(f"https://contacts.google.com/search/{query}")
-                    return True
-                except Exception:
-                    pass
-                return False
-
-            next_break_target = random.randint(4, 7)
-            queries_since_break = 0
-
-            for idx, prefix in enumerate(PREFIXES):
-                try:
-                    print(f"[SEARCH] ({idx+1}/{len(PREFIXES)}) Querying batch: '{prefix}' ...")
-                    
-                    human_type_batch(prefix)
-                    
-                    # Organic human visual reading pause (varies per query)
-                    time.sleep(random.uniform(1.9, 3.3))
-
-                    # Smooth human kinetic scrolls on the result list
-                    scroll_steps = random.randint(3, 5)
-                    for _ in range(scroll_steps):
-                        scroll_chunk = random.randint(380, 520)
-                        driver.execute_script(f"""
-                            const all = document.querySelectorAll('*');
-                            for (const el of all) {{
-                                if (el.scrollHeight > el.clientHeight + 20) {{
-                                    const s = window.getComputedStyle(el);
-                                    if (s.overflowY === 'auto' || s.overflowY === 'scroll') {{
-                                        el.scrollTop += {scroll_chunk};
-                                    }}
-                                }}
-                            }}
-                            window.scrollBy(0, {scroll_chunk});
-                        """)
-                        time.sleep(random.uniform(0.45, 0.85))
-                        grab_visible_contacts()
-
-                    print(f"[PROGRESS] Total unique students captured so far: {len(contacts_map)}")
-
-                    # Natural human pause before moving to the next class
-                    time.sleep(random.uniform(1.4, 2.9))
-
-                    # Organic randomized micro-breaks (e.g. every 4-7 queries, take a 3.5s - 6.5s rest)
-                    queries_since_break += 1
-                    if queries_since_break >= next_break_target and (idx + 1) < len(PREFIXES):
-                        break_dur = random.uniform(3.8, 6.2)
-                        print(f"[COOLDOWN] Taking an organic {break_dur:.1f}s human reading pause...")
-                        time.sleep(break_dur)
-                        queries_since_break = 0
-                        next_break_target = random.randint(4, 7)
-
-                except Exception as q_err:
-                    print(f"[WARN] Hiccup on prefix '{prefix}': {q_err}. Continuing...")
-                    time.sleep(random.uniform(1.5, 2.5))
-
-            # Also grab initial directory view
+        def extract_contacts_from_results():
+            """Extracts matching @gecskp.ac.in contacts from current view."""
+            found = {}
             try:
-                driver.get("https://contacts.google.com/directory")
-                time.sleep(2.5)
-                grab_visible_contacts()
+                text = driver.find_element(By.TAG_NAME, "body").text
+                lines = text.split("\n")
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    m = re.search(r'([a-zA-Z0-9._%+-]+@gecskp\.ac\.in)', line, re.IGNORECASE)
+                    if m:
+                        email = m.group(1).lower()
+                        # Exclude unintended programs like cscl or mtech
+                        if 'cscl' in email or 'mtech' in email or 'vlsi' in email:
+                            continue
+
+                        name = ""
+                        if i > 0 and "@" not in lines[i-1] and len(lines[i-1]) < 60:
+                            name = lines[i-1].strip()
+                        elif line.replace(email, '').strip():
+                            name = line.replace(email, '').strip()
+
+                        found[email] = name
             except Exception:
                 pass
+            return found
 
-            print("=" * 60)
-            print(f"[OK] Total unique college contacts extracted: {len(contacts_map)}")
-            print("=" * 60)
+        def human_type_batch(query):
+            """Simulates natural human typing into the search bar."""
+            try:
+                inputs = driver.find_elements(By.CSS_SELECTOR, 'input[aria-label*="Search"], input[type="text"], input[role="combobox"]')
+                if inputs:
+                    box = inputs[0]
+                    box.click()
+                    time.sleep(random.uniform(0.2, 0.4))
+                    
+                    box.send_keys(Keys.CONTROL, 'a')
+                    time.sleep(random.uniform(0.1, 0.2))
+                    box.send_keys(Keys.BACKSPACE)
+                    time.sleep(random.uniform(0.15, 0.3))
 
-            # Automatically save local backup CSV and JSON files!
-            save_local_backup(contacts_map)
+                    for ch in query:
+                        box.send_keys(ch)
+                        time.sleep(random.uniform(0.08, 0.18))
 
-        except Exception as e:
-            print(f"[ERROR] during sync: {e}")
-        finally:
-            print("[INFO] Closing browser in 3 seconds...")
-            time.sleep(3)
+                    time.sleep(random.uniform(0.3, 0.6))
+                    box.send_keys(Keys.ENTER)
+                    return True
+            except Exception:
+                pass
+            
+            # Fallback direct search URL
+            try:
+                driver.get(f"https://contacts.google.com/search/{query}")
+                return True
+            except Exception:
+                pass
+            return False
+
+        # Step 2: Iterate through prefixes
+        print("\n[INFO] Starting scoped prefix search with per-batch streaming...\n")
+
+        total_prefixes = len(ALL_PREFIXES)
+        for idx, prefix in enumerate(ALL_PREFIXES):
+            # Check if this prefix is already completed (in balance mode)
+            if not is_fresh and prefix in state.get("completed", {}):
+                prev_count = state["completed"][prefix].get("count", 0)
+                print(f"[SKIP] ({idx+1}/{total_prefixes}) '{prefix}' already synced ({prev_count} students).")
+                continue
+
+            try:
+                print(f"[SEARCH] ({idx+1}/{total_prefixes}) Scanning batch: '{prefix}' ...")
+                human_type_batch(prefix)
+                
+                # Wait for search results container
+                time.sleep(random.uniform(1.8, 2.8))
+
+                # Scoped scrolls inside search results pane (3-5 scrolls max)
+                prefix_contacts = {}
+                scroll_steps = random.randint(3, 5)
+                for s_idx in range(scroll_steps):
+                    scroll_chunk = random.randint(380, 520)
+                    driver.execute_script(f"""
+                        const all = document.querySelectorAll('*');
+                        for (const el of all) {{
+                            if (el.scrollHeight > el.clientHeight + 20) {{
+                                const s = window.getComputedStyle(el);
+                                if (s.overflowY === 'auto' || s.overflowY === 'scroll') {{
+                                    el.scrollTop += {scroll_chunk};
+                                }}
+                            }}
+                        }}
+                        window.scrollBy(0, {scroll_chunk});
+                    """)
+                    time.sleep(random.uniform(0.4, 0.7))
+                    new_found = extract_contacts_from_results()
+                    prefix_contacts.update(new_found)
+
+                # Filter contacts specifically relevant to this prefix pattern
+                clean_batch_contacts = {}
+                prefix_core = prefix.lower()
+                for em, nm in prefix_contacts.items():
+                    if em.startswith(prefix_core):
+                        clean_batch_contacts[em] = nm
+                        all_contacts_map[em] = nm
+
+                print(f"[FOUND] '{prefix}': Extracted {len(clean_batch_contacts)} students.")
+
+                # Immediately stream this batch chunk to the SAMS backend (Zero data loss on interrupt!)
+                stream_ok = stream_chunk_to_backend(prefix, clean_batch_contacts)
+
+                # Update Checkpoint State
+                if stream_ok:
+                    state.setdefault("completed", {})[prefix] = {
+                        "count": len(clean_batch_contacts),
+                        "timestamp": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                    }
+                    if prefix in state.get("failed", {}):
+                        del state["failed"][prefix]
+                else:
+                    state.setdefault("failed", {})[prefix] = "Stream error"
+
+                save_sync_state(state)
+                save_local_backup(all_contacts_map)
+
+                # Short human cooldown between queries
+                time.sleep(random.uniform(1.2, 2.2))
+
+            except Exception as q_err:
+                print(f"[ERROR] Batch '{prefix}' encountered issue: {q_err}. Saving state and continuing...")
+                state.setdefault("failed", {})[prefix] = str(q_err)
+                save_sync_state(state)
+                time.sleep(2)
+
+        print("\n" + "=" * 60)
+        print(f"[COMPLETED] Total unique student contacts synchronized: {len(all_contacts_map)}")
+        print("=" * 60)
+
+    except Exception as e:
+        print(f"[CRITICAL ERROR] during sync: {e}")
+    finally:
+        save_sync_state(state)
+        save_local_backup(all_contacts_map)
+        print("[INFO] Closing browser in 3 seconds...")
+        time.sleep(3)
+        try:
             driver.quit()
-
-    if len(contacts_map) == 0:
-        print("[WARN] No contacts found to send.")
-        return
-
-    # Prepare payload for SAMS backend
-    lines_payload = [f"{name} {email}" for email, name in contacts_map.items()]
-    raw_text = "\n".join(lines_payload)
-
-    print(f"[INFO] Sending {len(contacts_map)} contacts to SAMS backend ({BACKEND_URL})...")
-    res = requests.post(
-        BACKEND_URL,
-        json={"text": raw_text},
-        headers={"Content-Type": "application/json"},
-        timeout=180
-    )
-
-    if res.status_code == 200:
-        data = res.json()
-        sum_info = data.get('summary', {})
-        print("=" * 60)
-        print("[SUCCESS] SAMS SYNC COMPLETED SUCCESSFULLY!")
-        print(f"   Students Added:    {sum_info.get('studentsCreated', 0)}")
-        print(f"   Students Updated:  {sum_info.get('studentsUpdated', 0)}")
-        print(f"   Batches Created:   {sum_info.get('batchesCreated', 0)}")
-        print(f"   Batches Updated:   {sum_info.get('batchesUpdated', 0)}")
-        print("=" * 60)
-    else:
-        print(f"[ERROR] SAMS API responded with error ({res.status_code}): {res.text}")
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()
+

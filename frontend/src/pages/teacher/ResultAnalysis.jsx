@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { X, Trophy, AlertCircle, BookOpen, Building2 } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
+import { PerformanceCard, DepartmentCard, SubjectCard, TopPerformersCard } from '../../components/CleanAnalysisCards';
 
 const ResultAnalysis = ({ batchId, title, type, onClose, mode: initialMode = 'batch', deptOverride: initialDept = null }) => {
     const [data, setData] = useState(null);
@@ -33,48 +33,72 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode: initialMode = 'ba
     }, [batchId, title, type, currentMode, currentDept]);
 
     if (loading) return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-2xl animate-pulse text-gray-700 font-semibold">Loading Analysis...</div>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white p-6 rounded-2xl animate-pulse text-gray-700 font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>Loading Analysis...</div>
         </div>
     );
 
     if (!data) return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="bg-gray-800 p-8 rounded-2xl text-white text-center space-y-3 max-w-sm">
-                <AlertCircle className="h-10 w-10 text-red-400 mx-auto" />
-                <p className="font-bold text-lg">No Data Available</p>
-                <p className="text-gray-400 text-sm">No results found for this exam.</p>
-                <button onClick={onClose} className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition">Close</button>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white p-8 rounded-[16px] text-center space-y-3 max-w-sm shadow-2xl border border-[#d0d3d9]">
+                <AlertCircle className="h-10 w-10 text-red-500 mx-auto" />
+                <p className="font-semibold text-lg text-black" style={{ fontFamily: "Inter, sans-serif" }}>No Data Available</p>
+                <p className="text-[#616161] text-sm" style={{ fontFamily: "Inter, sans-serif" }}>No results found for this exam.</p>
+                <button onClick={onClose} className="mt-4 px-6 py-2 bg-black text-white hover:bg-neutral-800 rounded-[56px] font-semibold transition" style={{ fontFamily: "Inter, sans-serif" }}>Close</button>
             </div>
         </div>
     );
 
-    const COLORS = ['#10B981', '#EF4444'];
     const isCollege = currentMode === 'college';
-    const totalPassRate = data.passFail
-        ? ((data.passFail[0].value / (data.passFail[0].value + data.passFail[1].value)) * 100).toFixed(1)
-        : 0;
+    
+    // Derived values for the clean cards
+    const passRate = data.passFail?.[0]?.value ?? 0;
+    const failRate = data.passFail?.[1]?.value ?? 0;
+    const totalStudents = (passRate + failRate) || 0;
+    const passPercent = totalStudents ? Math.round((passRate / totalStudents) * 100) : 0;
+    const failPercent = totalStudents ? Math.round((failRate / totalStudents) * 100) : 0;
+
+    const deptData = (data.deptBreakdown || []).map(d => ({
+        dept: d.dept,
+        pass: d.pass || 0,
+        fail: d.fail || 0,
+        total: (d.pass || 0) + (d.fail || 0),
+    }));
+
+    const subjectData = (data.subjectAnalysis || []).map(s => ({
+        code: s.code,
+        name: s.name,
+        pass: s.pass || 0,
+        fail: s.fail || 0,
+        total: (s.pass || 0) + (s.fail || 0),
+    }));
+
+    const performers = data.topPerformers || [];
+
+    const displayTitle = currentMode === 'department' && (data.department || currentDept)
+        ? `${data.department || currentDept} Department`
+        : 'Result Analysis';
 
     return (
-        <div className="fixed inset-0 bg-gray-900/95 backdrop-blur-md z-50 overflow-y-auto animate-in fade-in duration-300">
-            <div className="min-h-screen p-4 md:p-8">
-
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 lg:p-8 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="flex justify-between items-start mb-8 text-white max-w-7xl mx-auto">
+                <div className="px-6 py-4 border-b border-[#d0d3d9] flex justify-between items-start shrink-0">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${isCollege ? 'bg-blue-500/20 text-blue-300' :
-                                currentMode === 'department' ? 'bg-violet-500/20 text-violet-300' :
-                                    'bg-gray-500/20 text-gray-300'
-                                }`}>
-                                {isCollege ? '🌐 College-Wide' :
-                                    currentMode === 'department' ? `🏢 ${data.department || currentDept || ''} Department` :
-                                        '📋 Batch'}
+                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${isCollege ? 'bg-blue-50 text-blue-600' :
+                                currentMode === 'department' ? 'bg-violet-50 text-violet-600' :
+                                    'bg-gray-100 text-gray-600'
+                                }`} style={{ fontFamily: "Inter, sans-serif" }}>
+                                {isCollege ? 'College-Wide' :
+                                    currentMode === 'department' ? `${data.department || currentDept || ''} Dept` :
+                                        'Batch'}
                             </span>
 
                             {(initialMode === 'college' || initialMode === 'department') && (
                                 <select 
-                                    className="ml-3 bg-gray-800/80 border border-gray-700 text-white rounded-lg px-2 py-0.5 text-xs font-medium outline-none focus:border-violet-400 cursor-pointer"
+                                    className="ml-2 bg-white border border-[#d0d3d9] text-[#616161] rounded-[8px] px-2 py-0.5 text-xs font-medium outline-none focus:border-black cursor-pointer hover:border-gray-400 transition-colors"
+                                    style={{ fontFamily: "Inter, sans-serif" }}
                                     value={currentMode === 'college' ? 'college' : currentDept}
                                     onChange={(e) => {
                                         const val = e.target.value;
@@ -97,150 +121,44 @@ const ResultAnalysis = ({ batchId, title, type, onClose, mode: initialMode = 'ba
                                 </select>
                             )}
                         </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                            {currentMode === 'department' && (data.department || currentDept)
-                                ? `${data.department || currentDept} Department Analysis`
-                                : 'Result Analysis'}
-                        </h1>
-                        <p className="text-gray-400 mt-1 text-sm">{title} &nbsp;|&nbsp; {type?.toUpperCase()}
-                            {data.totalStudents && <span className="ml-2 text-gray-500">• {data.totalStudents} students</span>}
+                        <h1 className="text-xl font-semibold text-black" style={{ fontFamily: "Inter, sans-serif" }}>{displayTitle}</h1>
+                        <p className="text-[#616161] mt-0.5 text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
+                            {title} &nbsp;|&nbsp; {type?.toUpperCase()}
+                            {data.totalStudents && <span className="ml-2">• {data.totalStudents} students</span>}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors mt-1">
-                        <X className="h-6 w-6" />
+                    <button onClick={onClose} className="size-10 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors shrink-0">
+                        <X size={18} />
                     </button>
                 </div>
 
-                <div className="max-w-7xl mx-auto space-y-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        {/* Top Performers */}
-                        <div className="bg-gray-800/50 border border-gray-700 rounded-3xl p-6 shadow-xl backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
-                                    <Trophy className="h-6 w-6" />
-                                </div>
-                                <h2 className="text-xl font-bold text-white">Top 10 Performers</h2>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6" style={{ scrollbarWidth: 'none' }}>
+                    <div className="flex flex-col gap-6">
+                        {/* Top row: Top Performers + Pass/Fail Pie Chart */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 min-h-[350px]">
+                                <TopPerformersCard performers={performers} />
                             </div>
-                            <div className="h-[400px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart layout="vertical" data={data.topPerformers} margin={{ left: 40, right: 40 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#374151" />
-                                        <XAxis type="number" domain={[0, 10]} stroke="#9CA3AF" />
-                                        <YAxis type="category" dataKey="name" stroke="#E5E7EB" width={110} tick={{ fontSize: 11 }} />
-                                        <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }} cursor={{ fill: '#374151' }} />
-                                        <Bar dataKey="sgpa" name="SGPA" fill="#8B5CF6" radius={[0, 4, 4, 0]} barSize={20} label={{ position: 'right', fill: '#E5E7EB', fontSize: 12 }} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                            <div className="min-h-[350px]">
+                                <PerformanceCard passRate={passPercent} failRate={failPercent} />
                             </div>
                         </div>
 
-                        {/* Pass/Fail Overview */}
-                        <div className="bg-gray-800/50 border border-gray-700 rounded-3xl p-6 shadow-xl backdrop-blur-sm flex flex-col">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
-                                    <AlertCircle className="h-6 w-6" />
-                                </div>
-                                <h2 className="text-xl font-bold text-white">Pass / Fail Overview</h2>
+                        {/* Middle row: Department Breakdown (only if college-wide and data exists) */}
+                        {isCollege && deptData.length > 0 && (
+                            <div className="h-[432px]">
+                                <DepartmentCard deptData={deptData} chartHeight={432} />
                             </div>
-                            <div className="flex-1 min-h-[400px] flex items-center justify-center relative">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={data.passFail}
-                                            cx="50%" cy="50%"
-                                            innerRadius={100} outerRadius={140}
-                                            paddingAngle={5} dataKey="value"
-                                        >
-                                            {data.passFail.map((_, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(0,0,0,0)" />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }} />
-                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-4xl font-bold text-white">{totalPassRate}%</span>
-                                    <span className="text-gray-400 text-sm font-medium uppercase tracking-widest mt-1">Pass Rate</span>
-                                </div>
+                        )}
+
+                        {/* Bottom row: Subject Breakdown */}
+                        {subjectData.length > 0 && (
+                            <div className="h-[432px]">
+                                <SubjectCard subjectData={subjectData} chartHeight={432} />
                             </div>
-                        </div>
+                        )}
                     </div>
-
-                    {/* Department Breakdown — only in College mode */}
-                    {isCollege && data.deptBreakdown?.length > 0 && (
-                        <div className="bg-gray-800/50 border border-gray-700 rounded-3xl p-6 shadow-xl backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-                                    <Building2 className="h-6 w-6" />
-                                </div>
-                                <h2 className="text-xl font-bold text-white">Department-wise Breakdown</h2>
-                                <span className="ml-2 text-xs text-gray-500 bg-gray-700 px-2 py-0.5 rounded-full">All Departments</span>
-                            </div>
-                            <div className="h-[350px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={data.deptBreakdown} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
-                                        <XAxis dataKey="dept" stroke="#9CA3AF" />
-                                        <YAxis stroke="#9CA3AF" />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                            cursor={{ fill: '#374151' }}
-                                            formatter={(value, name) => [value, name.charAt(0).toUpperCase() + name.slice(1)]}
-                                        />
-                                        <Legend iconType="circle" />
-                                        <Bar dataKey="pass" name="Passed" stackId="a" fill="#10B981" radius={[0, 0, 4, 4]} />
-                                        <Bar dataKey="fail" name="Failed" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                            {/* Stats Table */}
-                            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                {data.deptBreakdown.map(d => {
-                                    const rate = d.total > 0 ? ((d.pass / d.total) * 100).toFixed(0) : 0;
-                                    return (
-                                        <div key={d.dept} className="bg-gray-900/50 rounded-xl p-3 text-center border border-gray-700">
-                                            <p className="text-white font-bold text-lg">{d.dept}</p>
-                                            <p className="text-gray-400 text-xs mt-1">{d.total} students</p>
-                                            <p className={`text-sm font-bold mt-1 ${rate >= 80 ? 'text-green-400' : rate >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{rate}% Pass</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Subject-wise Analysis */}
-                    <div className="bg-gray-800/50 border border-gray-700 rounded-3xl p-6 shadow-xl backdrop-blur-sm">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-pink-500/10 rounded-lg text-pink-500">
-                                <BookOpen className="h-6 w-6" />
-                            </div>
-                            <h2 className="text-xl font-bold text-white">Subject-wise Performance</h2>
-                        </div>
-                        <div className="h-[400px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data.subjectAnalysis} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
-                                    <XAxis dataKey="code" stroke="#9CA3AF" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
-                                    <YAxis stroke="#9CA3AF" />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', color: '#F3F4F6' }}
-                                        cursor={{ fill: '#374151' }}
-                                        labelFormatter={(code) => {
-                                            const subj = data.subjectAnalysis?.find(s => s.code === code);
-                                            return subj?.name && subj.name !== code ? `${code} – ${subj.name}` : code;
-                                        }}
-                                    />
-                                    <Legend iconType="circle" />
-                                    <Bar dataKey="pass" name="Passed" stackId="a" fill="#10B981" radius={[0, 0, 4, 4]} />
-                                    <Bar dataKey="fail" name="Failed" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>

@@ -195,24 +195,153 @@ exports.syncFromText = async (req, res, next) => {
 };
 
 /**
+ * POST /api/sync/stream-chunk
+ * Processes a single prefix batch stream of contacts from the Python scraper.
+ * Ensures immediate MongoDB upsert so no data is lost on interrupts.
+ */
+exports.streamChunk = async (req, res, next) => {
+    try {
+        const { prefix, contacts } = req.body;
+        if (!contacts || !Array.isArray(contacts)) {
+            return res.status(400).json({ success: false, message: 'Invalid contacts list in stream chunk.' });
+        }
+
+        let adminId = req.user?.userId;
+        if (!adminId) {
+            const defaultAdmin = await User.findOne({ role: 'admin' });
+            adminId = defaultAdmin?._id;
+        }
+
+        const summary = await processContactsList(contacts, adminId);
+        console.log(`📥 [STREAM CHUNK RECEIVED] Prefix: ${prefix || 'N/A'} | Students: ${contacts.length} | Created: ${summary.studentsCreated} | Updated: ${summary.studentsUpdated}`);
+        
+        res.json({ success: true, prefix, summary });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * Helper to get active prefixes
+ */
+const getActivePrefixes = () => {
+    const STUDENT_YEARS = ['23', '24', '25'];
+    const BRANCHES = ['cs', 'ec', 'ee', 'it', 'me', 'ce'];
+    const REGULAR_PREFIXES = STUDENT_YEARS.flatMap(y => BRANCHES.map(b => `pkd${y}${b}0`));
+    const LATERAL_PREFIXES = ['23', '24', '25'].flatMap(y => BRANCHES.map(b => `lpkd${y}${b}`));
+    const defaultPrefixes = [...REGULAR_PREFIXES, ...LATERAL_PREFIXES];
+
+    const fs = require('fs');
+    const path = require('path');
+    const prefixesPath = path.join(__dirname, '../data/prefixes.json');
+    
+    let customPrefixes = [];
+    if (fs.existsSync(prefixesPath)) {
+        try {
+            const data = JSON.parse(fs.readFileSync(prefixesPath, 'utf-8'));
+            if (Array.isArray(data)) {
+                customPrefixes = data;
+            }
+        } catch (e) {
+            console.warn('Failed to parse prefixes.json:', e);
+        }
+    }
+    
+    // Merge defaults with custom, removing duplicates
+    return [...new Set([...defaultPrefixes, ...customPrefixes])];
+};
+
+/**
+ * Helper to get only default prefixes
+ */
+const getDefaultPrefixes = () => {
+    const STUDENT_YEARS = ['23', '24', '25'];
+    const BRANCHES = ['cs', 'ec', 'ee', 'it', 'me', 'ce'];
+    const REGULAR_PREFIXES = STUDENT_YEARS.flatMap(y => BRANCHES.map(b => `pkd${y}${b}0`));
+    const LATERAL_PREFIXES = ['23', '24', '25'].flatMap(y => BRANCHES.map(b => `lpkd${y}${b}`));
+    return [...REGULAR_PREFIXES, ...LATERAL_PREFIXES];
+};
+
+/**
+ * GET /api/sync/checkpoint
+ * Reads and returns the current state of prefix checkpoints (completed vs pending).
+ */
+exports.getSyncCheckpoint = async (req, res, next) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const statePath = path.join(__dirname, '../data/sync_state.json');
+
+        const ALL_PREFIXES = getActivePrefixes();
+
+        let state = { completed: {}, failed: {}, lastUpdated: null };
+        if (fs.existsSync(statePath)) {
+            try {
+                state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+            } catch (e) {
+                console.warn('Failed to parse sync_state.json:', e);
+            }
+        }
+
+        const completedMap = state.completed || {};
+        const failedMap = state.failed || {};
+
+        const prefixDetails = ALL_PREFIXES.map(prefix => {
+            const isCompleted = !!completedMap[prefix];
+            const isFailed = !!failedMap[prefix];
+            return {
+                prefix,
+                status: isCompleted ? 'completed' : isFailed ? 'failed' : 'pending',
+                count: completedMap[prefix]?.count || 0,
+                syncedAt: completedMap[prefix]?.timestamp || null,
+                error: failedMap[prefix] || null
+            };
+        });
+
+        const completedCount = prefixDetails.filter(p => p.status === 'completed').length;
+        const pendingCount = prefixDetails.filter(p => p.status === 'pending').length;
+        const failedCount = prefixDetails.filter(p => p.status === 'failed').length;
+
+        res.json({
+            success: true,
+            totalPrefixes: ALL_PREFIXES.length,
+            completedCount,
+            pendingCount,
+            failedCount,
+            lastUpdated: state.lastUpdated,
+            prefixes: prefixDetails
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
  * POST /api/sync/automate-browser
  * Spawns the native Python Selenium script to open a visible Chrome window,
  * scroll through Google Contacts Directory, extract contacts, and build batches.
+ * Supports mode: 'balance' (default, resumes pending) or 'fresh' (full rescan).
  */
 exports.automatedBrowserSync = async (req, res, next) => {
     try {
         const { spawn } = require('child_process');
         const path = require('path');
         const pythonScript = path.join(__dirname, '../scripts/sync_contacts.py');
+        const mode = req.body?.mode || 'balance';
         
-        console.log('🐍 Launching Python Selenium Directory Sync:', pythonScript);
+        console.log(`🐍 Launching Python Selenium Directory Sync (Mode: ${mode}):`, pythonScript);
 
-        const pyProcess = spawn('python', [pythonScript], {
+        const args = [pythonScript];
+        if (mode === 'fresh') {
+            args.push('--fresh');
+        }
+
+        const pyProcess = spawn('python', args, {
             env: {
                 ...process.env,
                 PYTHONIOENCODING: 'utf-8',
                 PYTHONUTF8: '1',
-                BACKEND_URL: `http://localhost:${process.env.PORT || 5000}/api/sync/paste`
+                BACKEND_URL: `http://localhost:${process.env.PORT || 5000}/api/sync/stream-chunk`
             }
         });
 
@@ -234,7 +363,7 @@ exports.automatedBrowserSync = async (req, res, next) => {
             if (code === 0) {
                 res.json({
                     success: true,
-                    message: 'Python Google Contacts sync completed successfully!'
+                    message: `Python Google Contacts sync (${mode}) completed successfully!`
                 });
             } else {
                 res.status(500).json({
@@ -250,6 +379,103 @@ exports.automatedBrowserSync = async (req, res, next) => {
             success: false,
             message: err.message || 'Automated Python sync failed.'
         });
+    }
+};
+
+/**
+ * GET /api/sync/prefixes
+ * Returns the active list of prefixes.
+ */
+exports.getPrefixes = (req, res) => {
+    try {
+        const prefixes = getActivePrefixes();
+        const defaultPrefixes = getDefaultPrefixes();
+        res.json({ success: true, prefixes, defaultPrefixes });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to get prefixes' });
+    }
+};
+
+/**
+ * POST /api/sync/prefixes
+ * Adds a new prefix.
+ */
+exports.addPrefix = (req, res) => {
+    try {
+        const { prefix } = req.body;
+        if (!prefix || typeof prefix !== 'string') {
+            return res.status(400).json({ success: false, message: 'Invalid prefix provided' });
+        }
+        
+        const fs = require('fs');
+        const path = require('path');
+        const prefixesPath = path.join(__dirname, '../data/prefixes.json');
+        
+        let customPrefixes = [];
+        if (fs.existsSync(prefixesPath)) {
+            try {
+                const data = JSON.parse(fs.readFileSync(prefixesPath, 'utf-8'));
+                if (Array.isArray(data)) {
+                    customPrefixes = data;
+                }
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+        
+        const p = prefix.trim().toLowerCase();
+        
+        if (!customPrefixes.includes(p)) {
+            customPrefixes.push(p);
+            fs.writeFileSync(prefixesPath, JSON.stringify(customPrefixes, null, 2), 'utf-8');
+        }
+        
+        res.json({ success: true, prefixes: getActivePrefixes(), defaultPrefixes: getDefaultPrefixes(), message: `Prefix '${p}' added successfully.` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to add prefix' });
+    }
+};
+
+/**
+ * DELETE /api/sync/prefixes/:prefix
+ * Removes a prefix.
+ */
+exports.removePrefix = (req, res) => {
+    try {
+        const { prefix } = req.params;
+        if (!prefix) {
+            return res.status(400).json({ success: false, message: 'Prefix not provided' });
+        }
+        
+        const defaultPrefixes = getDefaultPrefixes();
+        const p = prefix.trim().toLowerCase();
+        
+        if (defaultPrefixes.includes(p)) {
+             return res.status(400).json({ success: false, message: 'Cannot remove a default prefix' });
+        }
+        
+        const fs = require('fs');
+        const path = require('path');
+        const prefixesPath = path.join(__dirname, '../data/prefixes.json');
+        
+        let customPrefixes = [];
+        if (fs.existsSync(prefixesPath)) {
+            try {
+                const data = JSON.parse(fs.readFileSync(prefixesPath, 'utf-8'));
+                if (Array.isArray(data)) {
+                    customPrefixes = data;
+                }
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+        
+        customPrefixes = customPrefixes.filter(x => x !== p);
+        fs.writeFileSync(prefixesPath, JSON.stringify(customPrefixes, null, 2), 'utf-8');
+        
+        res.json({ success: true, prefixes: getActivePrefixes(), defaultPrefixes: getDefaultPrefixes(), message: `Prefix '${p}' removed successfully.` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to remove prefix' });
     }
 };
 

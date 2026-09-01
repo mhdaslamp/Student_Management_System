@@ -7,34 +7,8 @@ import {
 } from "lucide-react";
 import ResultAnalysis from "../teacher/ResultAnalysis";
 
-const formatResultTitle = (rawTitle) => {
-    if (!rawTitle) return "";
-    // Matches patterns like "B.Tech S6 (R, S) Exam April 2026 (2019 Scheme)"
-    let type = "";
-    const typeMatch = rawTitle.match(/\((R|S|R,\s*S|R,S)\)/i);
-    if (typeMatch) {
-        type = "(" + typeMatch[1].replace(/\s/g, '').toUpperCase() + ")";
-    } else if (rawTitle.match(/Supplementary/i)) {
-        type = "(S)";
-    } else if (rawTitle.match(/Regular/i)) {
-        type = "(R)";
-    }
+import { formatResultTitle } from '../../utils/formatters';
 
-    let date = "";
-    const dateMatch = rawTitle.match(/(?:Exam|Examination|Exam\.)\s+([a-zA-Z]+\s+\d{4})/i);
-    if (dateMatch) {
-        date = dateMatch[1].charAt(0).toUpperCase() + dateMatch[1].slice(1).toLowerCase();
-    }
-
-    let semester = "";
-    const semMatch = rawTitle.match(/\b(S[1-8])\b/i);
-    if (semMatch) semester = semMatch[1].toUpperCase();
-
-    if (semester || type || date) {
-        return `B.Tech ${semester} ${type} ${date}`.replace(/\s+/g, ' ').trim();
-    }
-    return rawTitle; // Fallback if it doesn't match
-};
 
 function UploadFileIcon() {
     return (

@@ -1,0 +1,14 @@
+{
+  "verbose": false,
+  "ignore": [
+    "data/*",
+    "data/**",
+    "uploads/*",
+    "uploads/**",
+    "logs/*",
+    "logs/**",
+    "*.log",
+    "node_modules/**"
+  ],
+  "ext": "js,json"
+}

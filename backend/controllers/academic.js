@@ -1,8 +1,14 @@
 const Result = require('../models/Result');
 const Assignment = require('../models/Assignment');
 const User = require('../models/User');
-const Batch = require('../models/Batch'); // Added
+const Batch = require('../models/Batch');
 const { processedData, generateExcel, calculateManualSGPA } = require('../utils/resultProcessor');
+const {
+    filterRegularStudents,
+    calculateTopPerformers,
+    calculatePassFailStats,
+    calculateDeptBreakdown
+} = require('../utils/analyticsHelper');
 
 // --- Results ---
 exports.addResult = async (req, res, next) => {
@@ -562,55 +568,9 @@ exports.getBatchResultAnalysis = async (req, res, next) => {
 
         if (!results.length) return res.json(null);
 
-        // Filter to Regular Students only
-        const yearCounts = {};
-        results.forEach(r => {
-            const yM = (r.registerId || '').match(/\d{2}/);
-            const y = yM ? yM[0] : '00';
-            r.admissionYear = y;
-            yearCounts[y] = (yearCounts[y] || 0) + 1;
-        });
-        let majorityYear = null, maxCount = 0;
-        for (const y in yearCounts) {
-            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
-        }
-        const regularResults = results.filter(r => r.admissionYear === majorityYear);
-
-        // 1. Top 10 Performers
-        const topPerformers = [...regularResults]
-            .sort((a, b) => b.sgpa - a.sgpa)
-            .slice(0, 10)
-            .map(r => ({
-                name: r.student?.name || r.registerId,
-                sgpa: r.sgpa
-            }));
-
-        // 2. Pass/Fail Analysis
-        let passed = 0;
-        let failed = 0;
-        const failedGrades = ['F', 'FE', 'I', 'Absent'];
-
-        // 3. Subject-wise Analysis
-        const subjectStats = {};
-
-        regularResults.forEach(r => {
-            let isStudentFailed = false;
-            r.subjects.forEach(sub => {
-                if (!subjectStats[sub.subCode]) {
-                    subjectStats[sub.subCode] = { code: sub.subCode, pass: 0, fail: 0 };
-                }
-
-                if (failedGrades.includes(sub.grade)) {
-                    subjectStats[sub.subCode].fail++;
-                    isStudentFailed = true;
-                } else {
-                    subjectStats[sub.subCode].pass++;
-                }
-            });
-
-            if (isStudentFailed) failed++;
-            else passed++;
-        });
+        const regularResults = filterRegularStudents(results);
+        const topPerformers = calculateTopPerformers(regularResults);
+        const { passed, failed, subjectStats } = calculatePassFailStats(regularResults);
 
         res.json({
             topPerformers,
@@ -641,65 +601,17 @@ exports.getCollegeResultAnalysis = async (req, res, next) => {
 
         if (!results.length) return res.json(null);
 
-        // Filter to Regular Students only
-        const yearCounts = {};
-        results.forEach(r => {
-            const yM = (r.registerId || '').match(/\d{2}/);
-            const y = yM ? yM[0] : '00';
-            r.admissionYear = y;
-            yearCounts[y] = (yearCounts[y] || 0) + 1;
-        });
-        let majorityYear = null, maxCount = 0;
-        for (const y in yearCounts) {
-            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
-        }
-        const regularResults = results.filter(r => r.admissionYear === majorityYear);
+        const regularResults = filterRegularStudents(results);
+        const topPerformers = calculateTopPerformers(regularResults);
+        const { passed, failed, subjectStats } = calculatePassFailStats(regularResults);
 
-        // 1. Top 10 Performers (Across Entire College)
-        const topPerformers = [...regularResults]
-            .filter(r => r.sgpa > 0)
-            .sort((a, b) => b.sgpa - a.sgpa)
-            .slice(0, 10)
-            .map(r => ({
-                name: r.student?.name || r.registerId,
-                sgpa: r.sgpa
-            }));
-
-        // 2. Pass/Fail + Subject-wise Analysis
-        const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
-        let passed = 0, failed = 0;
-        const subjectStats = {};
-
-        // 3. Per-department breakdown (inferred from registerId: PKD24CE001 → CE)
-        const deptStats = {};
-
+        // Build per-student fail map for dept breakdown
+        const studentFailMap = new Map();
         regularResults.forEach(r => {
-            let isStudentFailed = false;
-
-            r.subjects.forEach(sub => {
-                if (!subjectStats[sub.subCode]) {
-                    subjectStats[sub.subCode] = { code: sub.subCode, pass: 0, fail: 0 };
-                }
-                if (failedGrades.includes(sub.grade)) {
-                    subjectStats[sub.subCode].fail++;
-                    isStudentFailed = true;
-                } else {
-                    subjectStats[sub.subCode].pass++;
-                }
-            });
-
-            if (isStudentFailed) failed++;
-            else passed++;
-
-            // Extract dept code from registerId safely using regex
-            const regId = r.registerId || '';
-            const deptMatch = regId.match(/\d{2}([A-Z]{2,3})\d{3}/i);
-            const deptCode = deptMatch ? deptMatch[1].toUpperCase() : 'XX';
-            if (!deptStats[deptCode]) deptStats[deptCode] = { dept: deptCode, pass: 0, fail: 0, total: 0 };
-            deptStats[deptCode].total++;
-            if (isStudentFailed) deptStats[deptCode].fail++;
-            else deptStats[deptCode].pass++;
+            const hasFail = r.subjects.some(sub => ['F', 'FE', 'I', 'ABSENT', 'Absent'].includes(sub.grade));
+            studentFailMap.set(r.registerId, hasFail);
         });
+        const deptBreakdown = calculateDeptBreakdown(regularResults, studentFailMap);
 
         res.json({
             totalStudents: regularResults.length,
@@ -709,7 +621,7 @@ exports.getCollegeResultAnalysis = async (req, res, next) => {
                 { name: 'Failed', value: failed }
             ],
             subjectAnalysis: Object.values(subjectStats),
-            deptBreakdown: Object.values(deptStats).sort((a, b) => a.dept.localeCompare(b.dept))
+            deptBreakdown
         });
 
     } catch (err) {
@@ -770,56 +682,9 @@ exports.getDepartmentResultAnalysis = async (req, res, next) => {
 
         if (!results.length) return res.json(null);
 
-        // Filter to Regular Students only
-        const yearCounts = {};
-        results.forEach(r => {
-            const yM = (r.registerId || '').match(/\d{2}/);
-            const y = yM ? yM[0] : '00';
-            r.admissionYear = y;
-            yearCounts[y] = (yearCounts[y] || 0) + 1;
-        });
-        let majorityYear = null, maxCount = 0;
-        for (const y in yearCounts) {
-            if (yearCounts[y] > maxCount) { maxCount = yearCounts[y]; majorityYear = y; }
-        }
-        const regularResults = results.filter(r => r.admissionYear === majorityYear);
-
-        // 1. Top 10 Performers
-        const topPerformers = [...regularResults]
-            .filter(r => r.sgpa > 0)
-            .sort((a, b) => b.sgpa - a.sgpa)
-            .slice(0, 10)
-            .map(r => ({
-                name: r.student?.name || r.registerId,
-                sgpa: r.sgpa
-            }));
-
-        // 2. Pass/Fail + Subject-wise Analysis
-        const failedGrades = ['F', 'FE', 'I', 'ABSENT', 'Absent'];
-        let passed = 0, failed = 0;
-        const subjectStats = {};
-
-        regularResults.forEach(r => {
-            let isStudentFailed = false;
-            r.subjects.forEach(sub => {
-                if (!subjectStats[sub.subCode]) {
-                    subjectStats[sub.subCode] = {
-                        code: sub.subCode,
-                        name: sub.name && sub.name !== sub.subCode ? sub.name : sub.subCode,
-                        pass: 0,
-                        fail: 0
-                    };
-                }
-                if (failedGrades.includes(sub.grade)) {
-                    subjectStats[sub.subCode].fail++;
-                    isStudentFailed = true;
-                } else {
-                    subjectStats[sub.subCode].pass++;
-                }
-            });
-            if (isStudentFailed) failed++;
-            else passed++;
-        });
+        const regularResults = filterRegularStudents(results);
+        const topPerformers = calculateTopPerformers(regularResults);
+        const { passed, failed, subjectStats } = calculatePassFailStats(regularResults);
 
         res.json({
             department,

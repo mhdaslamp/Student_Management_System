@@ -55,6 +55,7 @@ app.use('/api/teacher',  require('./routes/teacher'));
 app.use('/api/student',  require('./routes/student'));
 app.use('/api/academic', require('./routes/academic'));
 app.use('/api/request',  require('./routes/request'));
+app.use('/api/sync',     require('./routes/sync'));
 
 // ─── 404 + Global Error Handler ───────────────────────────────────────────────
 // Order matters: notFound must come before errorHandler

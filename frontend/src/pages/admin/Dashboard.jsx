@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
-import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Menu, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Menu, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AdminResultsPage from './ResultsPage';
+import SyncPanel from './SyncPanel';
 import samsLogoSmall from '../../assets/SAMS LOGO SMALL.svg';
 
 const AdminDashboard = () => {
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
 
             const payload = { ...formData, role: backendRole, designation };
             // If Principal is selected, we don't send department (or send empty)
-            if (activeRole === 'Principal') payload.department = undefined;
+            if (activeRole === 'Principal' || activeRole === 'Admin') payload.department = undefined;
 
             const res = await axios.post('/admin/staff', payload);
             setMessage(`${activeRole} added successfully`);
@@ -210,6 +211,15 @@ const AdminDashboard = () => {
                         <Users size={18} className="shrink-0" />
                         <span className="hidden xl:inline">Staff Enrollment</span>
                     </button>
+                    <button
+                        onClick={() => setActiveTab('sync')}
+                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'sync' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        title="Directory Sync"
+                    >
+                        <RefreshCw size={18} className="shrink-0" />
+                        <span className="hidden xl:inline">Directory Sync</span>
+                    </button>
                 </nav>
                 <div className="flex flex-col px-2 xl:px-4 pb-4 gap-2 xl:gap-1">
                     <button className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#333] hover:bg-gray-100 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Settings">
@@ -229,7 +239,7 @@ const AdminDashboard = () => {
                     {/* Desktop Header */}
                     <div className="hidden md:flex w-full items-center justify-between">
                         <p className="font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            {activeTab === 'results' ? 'KTU Result' : 'Staff Enrollment'}
+                            {activeTab === 'results' ? 'KTU Result' : activeTab === 'sync' ? 'Directory Sync' : 'Staff Enrollment'}
                         </p>
                         <div className="flex items-center gap-[10px]">
                             {/* Notification: 56x56, padding 10px */}
@@ -287,6 +297,13 @@ const AdminDashboard = () => {
                             style={{ fontFamily: "'Inter', sans-serif" }}
                         >
                             Staff Role
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('sync')}
+                            className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'sync' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                        >
+                            Sync
                         </button>
                     </div>
 
@@ -363,7 +380,7 @@ const AdminDashboard = () => {
                                     <div className="flex flex-col gap-2">
                                         <p className="font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>Staff Role</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {['Principal', 'HOD', 'Tutor', 'Professor'].map(role => (
+                                            {['Principal', 'HOD', 'Tutor', 'Professor', 'Admin'].map(role => (
                                                 <button
                                                     type="button"
                                                     key={role}
@@ -377,7 +394,7 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
 
-                                    {activeRole !== 'Principal' && (
+                                    {activeRole !== 'Principal' && activeRole !== 'Admin' && (
                                         <div className="flex flex-col gap-2">
                                             <p className="font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>Department</p>
                                             <div className="flex flex-wrap gap-2">
@@ -529,6 +546,11 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {/* ── Sync Panel ────────────────────────────────────── */}
+                    {activeTab === 'sync' && (
+                        <SyncPanel />
                     )}
                 </main>
             </div >

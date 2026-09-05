@@ -61,8 +61,8 @@ const StudentHome = () => {
                             {profile.name[0]}
                         </div>
                         <div className="flex-1">
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Student ID / Adm No</p>
-                            <p className="text-xl font-bold text-gray-800 font-mono tracking-wide">{profile.admissionNo}</p>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Register No</p>
+                            <p className="text-xl font-bold text-gray-800 font-mono tracking-wide">{profile.registerId || profile.admissionNo}</p>
                             {profile.batch && (
                                 <p className="text-xs font-bold text-primary-600 mt-1">{profile.batch.branch}</p>
                             )}

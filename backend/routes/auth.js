@@ -20,6 +20,7 @@ const authLimiter = rateLimit({
 });
 
 router.post('/login', authLimiter, authController.login);
+router.post('/google', authLimiter, authController.googleLogin);
 
 // /setup-admin is disabled in production to prevent unauthorized first-admin creation.
 // Only available in development/staging environments.

@@ -22,7 +22,19 @@ const BatchSchema = new mongoose.Schema({
     students: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    // ─── Directory Sync fields ──────────────────────────────────────────
+    admissionYear: {
+        type: String,               // e.g. '2023'
+    },
+    studentType: {
+        type: String,
+        enum: ['regular', 'lateral'],
+        default: 'regular',
+    },
+    lastSyncedAt: {
+        type: Date,                 // timestamp of last directory sync
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Batch', BatchSchema);

@@ -288,7 +288,7 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
                                         </h3>
                                         <button type="button" onClick={() => setEditingStudent(null)} className="text-xs text-gray-500 hover:text-gray-900 font-bold uppercase">Cancel</button>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="text-xs font-bold text-gray-400 uppercase mb-1 block">Full Name</label>
                                             <input
@@ -299,16 +299,7 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase mb-1 block">Admission No</label>
-                                            <input
-                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
-                                                placeholder="Admission No"
-                                                value={studentForm.admissionNo}
-                                                onChange={e => setStudentForm({ ...studentForm, admissionNo: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase mb-1 block">Register ID</label>
+                                            <label className="text-xs font-bold text-gray-400 uppercase mb-1 block">Register No / KTU ID</label>
                                             <input
                                                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
                                                 placeholder="Register ID"
@@ -326,9 +317,8 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
                             <table className="w-full text-left">
                                 <thead className="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase rounded-l-xl">Roll No</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase rounded-l-xl">Register No</th>
                                         <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Name</th>
-                                        <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Adm No</th>
                                         <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase text-right rounded-r-xl">Actions</th>
                                     </tr>
                                 </thead>
@@ -337,7 +327,6 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
                                         <tr key={student._id} className="hover:bg-gray-50/80 transition-colors group">
                                             <td className="px-4 py-3.5 font-mono text-xs text-gray-500 font-bold">{student.registerId}</td>
                                             <td className="px-4 py-3.5 font-medium text-gray-900">{student.name}</td>
-                                            <td className="px-4 py-3.5 text-gray-500 font-mono text-xs">{student.admissionNo}</td>
                                             <td className="px-4 py-3.5 text-right">
                                                 {isTeacher && (
                                                 <div className="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">

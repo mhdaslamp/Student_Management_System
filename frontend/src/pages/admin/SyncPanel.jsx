@@ -1,385 +1,499 @@
-import { useState, useEffect } from 'react';
-import axios from '../../api/axios';
-import { RefreshCw, Users, Database, Bot, CheckCircle2, GraduationCap, AlertCircle, Play, RotateCcw, Clock, Plus, X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import axios from "../../api/axios";
+import {
+    RefreshCw, Users, Database, CheckCircle2,
+    GraduationCap, AlertCircle, Play,
+    ChevronDown, Edit2, Trash2, Search, SlidersHorizontal,
+    Clock
+} from "lucide-react";
 
+/** Years from current down to 2023 */
+function getAvailableYears() {
+    const cur = new Date().getFullYear();
+    const years = [];
+    for (let y = cur; y >= 2023; y--) years.push(y);
+    return years;
+}
+
+/** Format a date string to DD-MM-YYYY */
+function formatDate(dateStr) {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "—";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+}
+
+// ─── Stat Card ─────────────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, suffix }) {
+    return (
+        <div
+            className="flex items-center gap-4 bg-white border border-[#d0d3d9] rounded-2xl px-5 py-4 w-full"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+            {/* Icon box — light blue */}
+            <div className="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "#EFF6FF" }}>
+                <Icon size={24} style={{ color: "#3B82F6" }} />
+            </div>
+            {/* Text */}
+            <div className="flex flex-col gap-0.5">
+                <p className="text-xs font-semibold text-[#616161] leading-tight">{label}</p>
+                <p className="text-2xl font-bold text-black leading-tight">
+                    {value}
+                    {suffix && <span className="text-sm font-semibold text-[#616161] ml-1">{suffix}</span>}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// ─── Batch List Item (Mobile) ────────────────────────────────────────────────────────
+function BatchItem({ batch, isLast, onEdit, onDelete }) {
+    const name = batch.name || "—";
+    const studentCount = batch.students ? batch.students.length : (batch.studentCount ?? 0);
+    const scheme = batch.scheme || "2019";
+    const uploadedDate = formatDate(batch.updatedAt || batch.createdAt);
+
+    return (
+        <div
+            className={`flex items-start justify-between py-10 gap-4 ${!isLast ? "border-b border-[#d0d3d9]" : ""}`}
+            style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+            {/* Left info */}
+            <div className="flex-1 min-w-0 flex flex-col gap-5">
+                {/* Batch name + student count */}
+                <div className="flex items-baseline gap-1 flex-wrap">
+                    <p className="font-bold text-black text-2xl leading-tight">{name}</p>
+                    <p className="text-sm text-[#616161] font-medium">· {studentCount} students</p>
+                </div>
+                {/* Details */}
+                <div className="flex flex-col gap-1">
+                    <p className="font-semibold text-black text-base">Scheme: {scheme}</p>
+                    <p className="text-sm text-[#616161] font-medium">Uploaded: {uploadedDate}</p>
+                </div>
+            </div>
+
+            {/* Right action buttons — aligned to center */}
+            <div className="flex gap-[10px] items-center shrink-0 self-center">
+                <button
+                    onClick={() => onEdit && onEdit(batch)}
+                    className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors"
+                    title="Edit"
+                >
+                    <Edit2 size={18} />
+                </button>
+                <button
+                    onClick={() => onDelete && onDelete(batch._id)}
+                    className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors"
+                    title="Delete"
+                >
+                    <Trash2 size={18} />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────────
 export default function SyncPanel() {
-    const [status, setStatus] = useState(null);
-    const [checkpoint, setCheckpoint] = useState(null);
-    const [batches, setBatches] = useState([]);
-    const [prefixes, setPrefixes] = useState([]);
-    const [defaultPrefixes, setDefaultPrefixes] = useState([]);
-    const [newPrefix, setNewPrefix] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [browserSyncing, setBrowserSyncing] = useState(false);
-    const [syncMode, setSyncMode] = useState('');
-    const [message, setMessage] = useState('');
+    const [status,       setStatus]       = useState(null);
+    const [checkpoint,   setCheckpoint]   = useState(null);
+    const [batches,      setBatches]      = useState([]);
+    const [loading,      setLoading]      = useState(true);
+    const [isSyncing,    setIsSyncing]    = useState(false);
+    const [syncMode,     setSyncMode]     = useState("");
+    const [message,      setMessage]      = useState("");
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [gapResult,    setGapResult]    = useState(null);
+    const [searchQuery,  setSearchQuery]  = useState("");
+    const [visibleCount, setVisibleCount] = useState(6);
+    const [showYearPicker, setShowYearPicker] = useState(false);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { loadData(); }, []);
 
     const loadData = async () => {
         try {
-            const [statusRes, checkpointRes, prefixesRes] = await Promise.all([
-                axios.get('/sync/status'),
-                axios.get('/sync/checkpoint').catch(() => ({ data: null })),
-                axios.get('/sync/prefixes').catch(() => ({ data: { prefixes: [], defaultPrefixes: [] } }))
+            const [statusRes, checkpointRes] = await Promise.all([
+                axios.get("/sync/status"),
+                axios.get("/sync/checkpoint").catch(() => ({ data: null })),
             ]);
             setStatus(statusRes.data);
             setBatches(statusRes.data?.batches || []);
-            if (checkpointRes?.data) {
-                setCheckpoint(checkpointRes.data);
-            }
-            if (prefixesRes?.data?.prefixes) {
-                setPrefixes(prefixesRes.data.prefixes);
-            }
-            if (prefixesRes?.data?.defaultPrefixes) {
-                setDefaultPrefixes(prefixesRes.data.defaultPrefixes);
-            }
-        } catch (error) {
-            console.error('Error fetching sync data:', error);
+            if (checkpointRes?.data) setCheckpoint(checkpointRes.data);
+        } catch (err) {
+            console.error("Error fetching sync data:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSync = async (mode = 'balance') => {
-        setBrowserSyncing(true);
-        setSyncMode(mode);
-        setMessage('');
+    const pendingCount   = checkpoint?.pendingCount   ?? 0;
+    const completedCount = checkpoint?.completedCount ?? 0;
+    const totalPrefixes  = checkpoint?.totalPrefixes  ?? 0;
+    const allPrefixesDone = completedCount > 0 && completedCount >= totalPrefixes;
+    const hasPending     = pendingCount > 0;
+
+    const handleSync = async () => {
+        setIsSyncing(true);
+        setGapResult(null);
+        setMessage("");
 
         try {
-            const res = await axios.post('/sync/automate-browser', { mode }, { timeout: 360000 });
-            setMessage(res.data.message || '✅ Google Contacts Sync completed successfully!');
+            if (allPrefixesDone) {
+                setSyncMode("gaps");
+                const res = await axios.post("/sync/fill-gaps", { year: String(selectedYear) }, { timeout: 120000 });
+                setGapResult(res.data);
+                setMessage(res.data.message || "✅ Gap fill complete.");
+            } else {
+                setSyncMode("balance");
+                const res = await axios.post(
+                    "/sync/automate-browser",
+                    { mode: "balance", year: String(selectedYear) },
+                    { timeout: 360000 }
+                );
+                setMessage(res.data.message || "✅ Google Contacts Sync completed successfully!");
+            }
             await loadData();
-        } catch (error) {
-            console.error(error);
-            setMessage(error.response?.data?.message || 'Sync failed. Please check terminal logs.');
+        } catch (err) {
+            console.error(err);
+            setMessage(err.response?.data?.message || "Sync failed. Please check terminal logs.");
         } finally {
-            setBrowserSyncing(false);
-            setSyncMode('');
+            setIsSyncing(false);
+            setSyncMode("");
             loadData();
         }
     };
 
-    const handleAddPrefix = async (e) => {
-        e.preventDefault();
-        if (!newPrefix.trim()) return;
+    const handleSyncDirectory = async () => {
+        setIsSyncing(true);
+        setSyncMode("directory");
+        setMessage("");
         try {
-            const res = await axios.post('/sync/prefixes', { prefix: newPrefix });
-            setPrefixes(res.data.prefixes);
-            setDefaultPrefixes(res.data.defaultPrefixes);
-            setNewPrefix('');
-            setMessage(res.data.message || 'Prefix added successfully.');
-            // Reload checkpoint to reflect new total if necessary
-            loadData();
-        } catch (error) {
-            setMessage(error.response?.data?.message || 'Failed to add prefix.');
+            const res = await axios.post(
+                "/sync/automate-browser",
+                { mode: "balance", year: String(selectedYear) },
+                { timeout: 360000 }
+            );
+            setMessage(res.data.message || "✅ Directory sync completed!");
+            await loadData();
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Sync failed.");
+        } finally {
+            setIsSyncing(false);
+            setSyncMode("");
         }
     };
 
-    const handleRemovePrefix = async (prefix) => {
-        if (!window.confirm(`Are you sure you want to remove the custom prefix '${prefix}'?`)) return;
-        try {
-            const res = await axios.delete(`/sync/prefixes/${prefix}`);
-            setPrefixes(res.data.prefixes);
-            setDefaultPrefixes(res.data.defaultPrefixes);
-            setMessage(res.data.message || 'Prefix removed successfully.');
-            loadData();
-        } catch (error) {
-            setMessage(error.response?.data?.message || 'Failed to remove prefix.');
-        }
-    };
+    // Filtered + paginated batches
+    const filteredBatches = batches.filter(b => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return (
+            b.name?.toLowerCase().includes(q) ||
+            b.branch?.toLowerCase().includes(q) ||
+            String(b.admissionYear).includes(q)
+        );
+    });
+    const visibleBatches = filteredBatches.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredBatches.length;
 
     if (loading) {
         return (
             <div className="flex items-center justify-center p-16">
-                <RefreshCw size={28} className="animate-spin text-blue-600 mr-3" />
-                <span className="font-semibold text-gray-700">Loading Directory Sync Status...</span>
+                <RefreshCw size={28} className="animate-spin text-gray-700 mr-3" />
+                <span className="font-semibold text-gray-700" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Loading sync status…
+                </span>
             </div>
         );
     }
 
-    const pendingCount = checkpoint?.pendingCount ?? 0;
-    const completedCount = checkpoint?.completedCount ?? 0;
-    const totalPrefixes = checkpoint?.totalPrefixes ?? 0;
-    const hasPendingBalance = pendingCount > 0 && completedCount > 0;
-
     return (
-        <div className="max-w-6xl w-full mx-auto p-6 flex flex-col gap-8">
-            {/* Page Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Directory Sync &amp; Batch Auto-Creation
+        <div className="flex flex-col gap-0 w-full" style={{ fontFamily: "'Inter', sans-serif" }}>
+
+            {/* ── Page Title ─────────────────────────────────────────── */}
+            <div className="flex flex-col gap-1 mb-8 md:mb-10">
+                <h1 className="font-bold text-black text-2xl md:text-[28px] leading-tight">
+                    Directory Sync &amp; Batch Auto - Creation
                 </h1>
-                <p className="text-gray-600 font-medium">
-                    Prefix-targeted Google Contacts synchronization with resilient streaming, instant checkpointing, and balance recovery.
+                <p className="text-sm md:text-base text-[#616161] font-medium leading-snug">
+                    Seamless Google Contacts Sync with Real-Time Progress and Reliable Recovery
                 </p>
             </div>
 
-            {/* Notification Banner */}
+            {/* ── Notification ───────────────────────────────────────── */}
             {message && (
-                <div className={`p-4 font-medium rounded-2xl border flex items-center gap-3 ${
-                    message.startsWith('✅') 
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
-                        : 'bg-rose-50 border-rose-200 text-rose-700'
+                <div className={`mb-6 px-4 py-3 rounded-2xl border flex items-center gap-3 text-sm font-medium ${
+                    message.startsWith("✅")
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        : "bg-rose-50 border-rose-200 text-rose-700"
                 }`}>
-                    {message.startsWith('✅') ? (
-                        <CheckCircle2 size={20} className="shrink-0 text-emerald-600" />
-                    ) : (
-                        <AlertCircle size={20} className="shrink-0 text-rose-600" />
-                    )}
+                    {message.startsWith("✅")
+                        ? <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
+                        : <AlertCircle  size={18} className="shrink-0 text-rose-600" />}
                     <span>{message}</span>
                 </div>
             )}
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-                    <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
-                        <Users size={28} />
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Synced Students</p>
-                        <p className="text-3xl font-black text-gray-900 mt-0.5">{status?.totalStudents || 0}</p>
-                    </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-                    <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
-                        <Database size={28} />
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Managed Batches</p>
-                        <p className="text-3xl font-black text-gray-900 mt-0.5">{status?.totalBatches || batches.length || 0}</p>
-                    </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-                    <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
-                        <Clock size={28} />
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Prefix Sync Progress</p>
-                        <p className="text-2xl font-black text-gray-900 mt-0.5">
-                            {completedCount} / {totalPrefixes || 36} <span className="text-xs text-gray-500 font-semibold">Done</span>
-                        </p>
-                    </div>
-                </div>
+            {/* ── Stat Cards (stacked mobile, horizontal desktop) ────── */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-10">
+                <StatCard
+                    icon={Users}
+                    label="Total Synced Students"
+                    value={status?.totalStudents ?? 0}
+                />
+                <StatCard
+                    icon={Database}
+                    label="Active Managed Batches"
+                    value={status?.totalBatches ?? batches.length ?? 0}
+                />
+                <StatCard
+                    icon={Clock}
+                    label="Prefix Sync Progress"
+                    value={`${completedCount}/${totalPrefixes || 36}`}
+                    suffix="Done"
+                />
             </div>
 
-            {/* 🤖 Automated Sync Trigger Card with Dual Modes */}
-            <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-start gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
-                        <Bot size={30} className="text-white" />
-                    </div>
-                    <div className="flex flex-col gap-1.5 max-w-xl">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold tracking-tight">
-                                Automated Prefix Sync Engine
-                            </h2>
-                            {hasPendingBalance && (
-                                <span className="bg-amber-400 text-amber-950 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                                    {pendingCount} Balance Pending
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-blue-100 text-sm leading-relaxed">
-                            Queries each class prefix (`pkd23cs0`, `lpkd23cs`), scrolls only results to prevent rate limits, and streams each batch directly into MongoDB with zero data loss on interrupts.
-                        </p>
-                    </div>
+            {/* ── Automated Prefix Sync Engine Card (Black) ───────────── */}
+            <div className="bg-black rounded-[16px] md:rounded-[24px] p-5 md:p-8 flex flex-col gap-5 md:gap-8 mb-8 md:mb-12">
+                {/* Title + description */}
+                <div className="flex flex-col gap-2">
+                    <h2 className="text-white font-bold text-xl md:text-2xl leading-snug">
+                        Automated Prefix Sync Engine
+                    </h2>
+                    <p className="text-[#d0d3d9] md:text-[#e0e0e0] text-sm md:text-base leading-relaxed md:max-w-3xl">
+                        Queries each class prefix ( ‘PKD23CS’, ‘LPKD23CS’ ), scrolls only results to
+                        prevent rate limits, and stream each batch directly into MongoDB with zero
+                        data loss on interrupts.
+                    </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-                    {/* Primary Button: Resume Balance if interrupted / pending, otherwise Start Sync */}
-                    <button
-                        type="button"
-                        onClick={() => handleSync('balance')}
-                        disabled={browserSyncing}
-                        className="w-full sm:w-auto h-13 px-6 rounded-2xl bg-white hover:bg-blue-50 text-blue-700 font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 active:scale-95 cursor-pointer"
-                    >
-                        {browserSyncing && syncMode === 'balance' ? (
-                            <RefreshCw size={18} className="animate-spin" />
-                        ) : hasPendingBalance ? (
-                            <Play size={18} className="text-amber-600 fill-amber-600" />
-                        ) : (
-                            <Play size={18} />
-                        )}
-                        {browserSyncing && syncMode === 'balance' 
-                            ? 'Syncing Balance...' 
-                            : hasPendingBalance 
-                                ? `Resume Pending Balance (${pendingCount})` 
-                                : 'Sync Directory Now'}
-                    </button>
-
-                    {/* Secondary Button: Start Fresh Full Sync */}
-                    <button
-                        type="button"
-                        onClick={() => handleSync('fresh')}
-                        disabled={browserSyncing}
-                        className="w-full sm:w-auto h-13 px-5 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 cursor-pointer"
-                        title="Resets all batch checkpoints and rescans everything from the beginning"
-                    >
-                        <RotateCcw size={16} className={browserSyncing && syncMode === 'fresh' ? 'animate-spin' : ''} />
-                        {browserSyncing && syncMode === 'fresh' ? 'Resetting & Syncing...' : 'Fresh Full Sync'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Prefix Management Section */}
-            <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col gap-4">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div>
-                        <h2 className="text-lg font-bold text-gray-900">Manage Prefix List</h2>
-                        <p className="text-xs text-gray-500 font-medium">Add or remove prefixes used for Google Contacts synchronization.</p>
-                    </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 mb-2">
-                    <form onSubmit={handleAddPrefix} className="flex gap-2 w-full sm:w-auto">
-                        <input
-                            type="text"
-                            value={newPrefix}
-                            onChange={(e) => setNewPrefix(e.target.value)}
-                            placeholder="e.g. pkd23cs0"
-                            className="border border-gray-300 rounded-xl px-4 py-2 text-sm flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                {/* Action buttons */}
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 flex-wrap">
+                    {/* Academic Year pill */}
+                    <div className="relative w-full md:w-auto">
                         <button
-                            type="submit"
-                            disabled={!newPrefix.trim()}
-                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
+                            type="button"
+                            onClick={() => setShowYearPicker(!showYearPicker)}
+                            className="flex items-center justify-between md:justify-center gap-2 h-14 w-full md:w-auto px-5 md:px-8 rounded-[56px] border border-white bg-transparent text-white font-semibold transition-colors hover:bg-white/10 disabled:opacity-50"
+                            disabled={isSyncing}
                         >
-                            <Plus size={16} /> Add
+                            <span>Academic Year</span>
+                            <span className="font-bold text-white ml-2">{selectedYear}</span>
+                            <ChevronDown size={18} className="text-white ml-1" />
                         </button>
-                    </form>
-                </div>
-
-                <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
-                    {prefixes.map((p) => {
-                        const isDefault = defaultPrefixes.includes(p);
-                        return (
-                            <div key={p} className={`border px-3 py-1.5 rounded-lg text-sm font-mono flex items-center gap-2 ${isDefault ? 'bg-gray-50 border-gray-200 text-gray-500' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
-                                <span>{p}</span>
-                                {!isDefault && (
+                        {showYearPicker && (
+                            <div className="absolute top-16 left-0 w-full md:w-48 z-50 bg-[#1a1a1a] border border-[#3f3f3f] rounded-2xl overflow-hidden shadow-xl">
+                                {getAvailableYears().map(y => (
                                     <button
-                                        onClick={() => handleRemovePrefix(p)}
-                                        className="text-blue-400 hover:text-rose-600 transition-colors"
-                                        title="Remove Custom Prefix"
+                                        key={y}
+                                        onClick={() => { setSelectedYear(y); setShowYearPicker(false); }}
+                                        className={`w-full text-left px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#2a2a2a] ${
+                                            y === selectedYear ? "text-white" : "text-[#9c9c9c]"
+                                        }`}
                                     >
-                                        <X size={14} />
+                                        {y}
                                     </button>
-                                )}
+                                ))}
                             </div>
-                        );
-                    })}
-                    {prefixes.length === 0 && (
-                        <div className="text-gray-500 text-sm py-2">No prefixes found.</div>
-                    )}
+                        )}
+                    </div>
+
+                    {/* Sync button (only visible on mobile, per the two designs) */}
+                    <button
+                        type="button"
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="flex md:hidden items-center justify-center gap-2 h-14 px-6 w-full rounded-[56px] bg-white hover:bg-gray-100 text-black font-bold transition-colors disabled:opacity-50"
+                    >
+                        {isSyncing && syncMode !== "directory"
+                            ? <RefreshCw size={18} className="animate-spin" />
+                            : hasPending
+                                ? <Play size={18} className="text-amber-600 fill-amber-600" />
+                                : <Play size={18} />}
+                        {isSyncing && syncMode !== "directory"
+                            ? syncMode === "gaps" ? "Checking Gaps…" : `Syncing ${selectedYear}…`
+                            : hasPending
+                                ? `Resume (${pendingCount} left)`
+                                : "Sync"}
+                    </button>
+
+                    {/* Sync Directory button */}
+                    <button
+                        type="button"
+                        onClick={handleSyncDirectory}
+                        disabled={isSyncing}
+                        className="flex items-center justify-center gap-2 h-14 w-full md:w-auto px-5 md:px-8 rounded-[56px] border border-white bg-transparent hover:bg-white/10 text-white font-semibold transition-colors disabled:opacity-50"
+                    >
+                        {isSyncing && syncMode === "directory"
+                            ? <RefreshCw size={18} className="animate-spin" />
+                            : <RefreshCw size={18} />}
+                        Sync Directory
+                    </button>
                 </div>
             </div>
 
-            {/* Prefix Checkpoint Status Grid */}
-            {checkpoint?.prefixes && checkpoint.prefixes.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-900">Prefix Checkpoint Tracker</h2>
-                            <p className="text-xs text-gray-500 font-medium">Tracks which prefixes are completed vs pending balance.</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-200">
-                                {completedCount} Done
-                            </span>
-                            <span className="text-xs font-bold bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg border border-amber-200">
-                                {pendingCount} Pending
-                            </span>
-                        </div>
+            {/* ── Gap Fill Result ─────────────────────────────────────── */}
+            {gapResult && (
+                <div className="bg-white border border-[#d0d3d9] rounded-2xl p-5 flex flex-col gap-4 mb-8">
+                    <div className="border-b border-[#d0d3d9] pb-3">
+                        <h2 className="font-bold text-black text-base">Gap Fill Report — {selectedYear}</h2>
+                        <p className="text-xs text-[#616161] font-medium mt-0.5">
+                            {gapResult.totalGaps} gap(s) · {gapResult.foundInDirectory} found · {gapResult.addedToDb || 0} added to DB
+                        </p>
                     </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 max-h-64 overflow-y-auto pr-1">
-                        {checkpoint.prefixes.map((p) => (
-                            <div 
-                                key={p.prefix}
-                                className={`p-2.5 rounded-xl border text-xs flex flex-col gap-1 transition-colors ${
-                                    p.status === 'completed'
-                                        ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
-                                        : p.status === 'failed'
-                                            ? 'bg-rose-50 border-rose-200 text-rose-800'
-                                            : 'bg-gray-50 border-gray-200 text-gray-600'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between font-mono font-bold">
-                                    <span>{p.prefix}</span>
-                                    <span>{p.status === 'completed' ? '✓' : '•'}</span>
+                    {gapResult.gapReport && gapResult.gapReport.length > 0 ? (
+                        <div className="flex flex-col gap-3">
+                            {gapResult.gapReport.map((b, i) => (
+                                <div key={i} className="bg-gray-50 border border-[#d0d3d9] rounded-xl p-4 flex flex-col gap-2">
+                                    <p className="font-bold text-black text-sm">{b.batch}</p>
+                                    {b.regular.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-[#616161] mb-1">Regular gaps ({b.regular.length})</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {b.regular.map(r => (
+                                                    <span key={r} className="font-mono text-xs bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-md">{r}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {b.lateral.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-[#616161] mb-1">Lateral gaps ({b.lateral.length})</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {b.lateral.map(r => (
+                                                    <span key={r} className="font-mono text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-md">{r}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="text-[11px] text-gray-500 font-medium">
-                                    {p.status === 'completed' ? `${p.count} students` : 'Pending'}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-center text-emerald-600 font-semibold py-4 text-sm">
+                            ✅ All roll numbers accounted for — no gaps detected!
+                        </p>
+                    )}
                 </div>
             )}
 
-            {/* Live Database Batches Breakdown */}
-            <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm flex flex-col gap-5">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            {/* ── Current Class Batches ───────────────────────────────── */}
+            <div className="flex flex-col gap-4 md:gap-6">
+                {/* Section header */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <h2 className="font-semibold text-black text-xl md:text-2xl">Current Class Batches in SAMS</h2>
+                    
+                    {/* Search bar + filter */}
                     <div className="flex items-center gap-3">
-                        <GraduationCap size={24} className="text-blue-600" />
-                        <h2 className="text-xl font-bold text-gray-900">
-                            Current Class Batches in SAMS
-                        </h2>
+                        <div className="flex-1 md:w-[320px] bg-white border border-[#d0d3d9] flex gap-2 h-14 items-center pl-4 pr-4 rounded-[56px]">
+                            <Search size={18} className="text-[#9c9c9c] shrink-0" />
+                            <input
+                                type="text"
+                                placeholder="Search here"
+                                className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]"
+                                style={{ fontFamily: "'Inter', sans-serif" }}
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        {/* Filter icon button */}
+                        <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white border border-[#d0d3d9] hover:border-black">
+                            <SlidersHorizontal size={18} className="text-black" />
+                        </button>
                     </div>
-                    <span className="text-xs font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                        {batches.length} Batches Active
-                    </span>
                 </div>
 
-                {batches.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 font-medium">
-                        No batches found in database. Click "Sync Directory Now" above to auto-create batches!
+                {/* Batch list - MOBILE (Card List) */}
+                <div className="md:hidden flex flex-col mt-4">
+                    {filteredBatches.length === 0 ? (
+                        <p className="text-[#9c9c9c] text-sm py-6 text-center">
+                            {searchQuery ? "No batches match your search." : "No batches found. Click \"Sync Now\" to auto-create batches."}
+                        </p>
+                    ) : (
+                        visibleBatches.map((batch, i) => (
+                            <BatchItem
+                                key={batch._id || i}
+                                batch={batch}
+                                isLast={i === visibleBatches.length - 1 && !hasMore}
+                            />
+                        ))
+                    )}
+                </div>
+
+                {/* Batch list - DESKTOP (Table) */}
+                <div className="hidden md:block bg-white border border-[#d0d3d9] rounded-[16px] overflow-hidden mt-2">
+                    <div className="flex items-center px-6 py-5 border-b border-[#d0d3d9] bg-white">
+                        <div className="flex-[1.5] min-w-0 font-semibold text-black text-[15px]">Batch Name</div>
+                        <div className="flex-1 min-w-0 font-semibold text-black text-[15px]">Department</div>
+                        <div className="flex-1 min-w-0 font-semibold text-black text-[15px]">Admission Year</div>
+                        <div className="flex-1 min-w-0 font-semibold text-black text-[15px]">Scheme</div>
+                        <div className="flex-1 min-w-0 font-semibold text-black text-[15px]">Students Enrolled</div>
+                        <div className="w-[140px] shrink-0"></div>
                     </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                    <th className="pb-3 px-3">Batch Name</th>
-                                    <th className="pb-3 px-3">Department</th>
-                                    <th className="pb-3 px-3">Admission Year</th>
-                                    <th className="pb-3 px-3">Scheme</th>
-                                    <th className="pb-3 px-3 text-right">Students Enrolled</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 text-sm">
-                                {batches.map((b) => (
-                                    <tr key={b._id} className="hover:bg-gray-50/80 transition-colors">
-                                        <td className="py-3.5 px-3 font-bold text-gray-900">{b.name}</td>
-                                        <td className="py-3.5 px-3 font-medium text-gray-600">{b.branch}</td>
-                                        <td className="py-3.5 px-3 text-gray-500">{b.admissionYear}</td>
-                                        <td className="py-3.5 px-3 text-gray-500">{b.scheme || '2019'}</td>
-                                        <td className="py-3.5 px-3 text-right font-mono font-bold text-blue-600">
-                                            {b.students ? b.students.length : 0} students
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+
+                    {filteredBatches.length === 0 ? (
+                        <div className="px-6 py-12 text-center text-[#9c9c9c] text-base">
+                            {searchQuery ? "No batches match your search." : "No batches found. Click \"Sync Now\" to auto-create batches."}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col">
+                            {visibleBatches.map((batch, i) => {
+                                const studentCount = batch.students ? batch.students.length : (batch.studentCount ?? 0);
+                                return (
+                                    <div key={batch._id || i} className={`flex items-center px-6 py-5 gap-4 ${i < visibleBatches.length - 1 ? 'border-b border-[#d0d3d9]' : ''}`}>
+                                        <div className="flex-[1.5] min-w-0 text-black font-semibold text-base">{batch.name || "—"}</div>
+                                        <div className="flex-1 min-w-0 text-[#616161] font-medium text-sm">{batch.branch?.toUpperCase() || "—"}</div>
+                                        <div className="flex-1 min-w-0 text-[#616161] font-medium text-sm">{batch.admissionYear || "—"}</div>
+                                        <div className="flex-1 min-w-0 text-[#616161] font-medium text-sm">{batch.scheme || "2019"}</div>
+                                        <div className="flex-1 min-w-0 text-[#616161] font-medium text-sm">{studentCount} Students</div>
+                                        <div className="flex gap-3 shrink-0 justify-end w-[140px]">
+                                            <button className="size-[46px] rounded-full bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Edit">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button className="size-[46px] rounded-full bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Load More */}
+                {hasMore && (
+                    <button
+                        type="button"
+                        onClick={() => setVisibleCount(v => v + 6)}
+                        className="flex items-center justify-center gap-2 w-full py-6 md:py-8 text-black font-semibold text-[15px] hover:opacity-70 transition-opacity"
+                    >
+                        Load More
+                        <ChevronDown size={20} />
+                    </button>
                 )}
             </div>
 
-            {/* Full Screen Loading Overlay */}
-            {browserSyncing && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            {/* ── Sync Overlay ────────────────────────────────────────── */}
+            {isSyncing && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100]">
                     <div className="bg-white rounded-3xl p-8 flex flex-col items-center gap-4 max-w-sm w-full mx-4 shadow-2xl">
-                        <RefreshCw size={44} className="text-blue-600 animate-spin" />
-                        <h3 className="text-xl font-bold text-gray-900">
-                            {syncMode === 'fresh' ? 'Fresh Directory Sync...' : 'Syncing Balance Prefixes...'}
+                        <RefreshCw size={44} className="text-black animate-spin" />
+                        <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            {syncMode === "gaps"
+                                ? `Checking Gaps — ${selectedYear}`
+                                : syncMode === "directory"
+                                    ? `Syncing Directory…`
+                                    : `Syncing ${selectedYear}…`}
                         </h3>
-                        <p className="text-gray-500 text-center text-sm leading-relaxed">
-                            Scanning Google Contacts, parsing B.Tech roll numbers, and streaming batches into database. You can safely close or interrupt anytime without losing progress.
+                        <p className="text-[#616161] text-center text-sm leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+                            {syncMode === "gaps"
+                                ? `Scanning for missing roll numbers in ${selectedYear} batches via Google Directory.`
+                                : `Scanning all 6 department prefixes for ${selectedYear}. Progress is checkpointed — safe to interrupt anytime.`}
                         </p>
                     </div>
                 </div>
@@ -387,4 +501,3 @@ export default function SyncPanel() {
         </div>
     );
 }
-

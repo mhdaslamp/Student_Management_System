@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
-import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Menu, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Eye, EyeOff, RefreshCw, BarChart2, Bell, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AdminResultsPage from './ResultsPage';
 import SyncPanel from './SyncPanel';
@@ -9,18 +9,16 @@ import samsLogoSmall from '../../assets/SAMS LOGO SMALL.svg';
 const AdminDashboard = () => {
     const { logout } = useAuth();
     const mainContentRef = useRef(null);
-    // Reusing teacherData state structure but renaming conceptually
     const [formData, setFormData] = useState({ name: '', email: '', password: '', department: '' });
     const [staffList, setStaffList] = useState([]);
     const [editingStaff, setEditingStaff] = useState(null);
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState('results');
+    const [activeTab, setActiveTab] = useState('sync'); // Default to sync as per design
     const [activeRole, setActiveRole] = useState('HOD'); // 'Principal', 'HOD', 'Tutor', 'Professor'
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showPwd, setShowPwd] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Results state (moved from exam_controller)
+    // Results state
     const [drafts, setDrafts] = useState([]);
     const [overview, setOverview] = useState([]);
 
@@ -63,7 +61,6 @@ const AdminDashboard = () => {
             else if (activeRole === 'Professor') { backendRole = 'teacher'; designation = 'teacher'; }
 
             const payload = { ...formData, role: backendRole, designation };
-            // If Principal is selected, we don't send department (or send empty)
             if (activeRole === 'Principal' || activeRole === 'Admin') payload.department = undefined;
 
             const res = await axios.post('/admin/staff', payload);
@@ -127,12 +124,6 @@ const AdminDashboard = () => {
         setFormData({ name: '', email: '', password: '', department: '' });
     };
 
-    const roleLabels = {
-        teacher: 'Teachers',
-        hod: 'HODs',
-        principal: 'Principals'
-    };
-
     const displayRole = (staff) => {
         if (staff.designation === 'tutor') return 'Tutor';
         if (staff.role === 'principal') return 'Principal';
@@ -163,10 +154,9 @@ const AdminDashboard = () => {
         const base = size === "icon"
             ? "relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors"
             : "relative shrink-0 h-14 rounded-[56px] px-8 font-semibold text-base transition-colors";
-        const style = active ? "bg-black text-white" : "bg-white text-black hover:bg-gray-50";
+        const style = active ? "bg-black text-white" : "bg-white text-black hover:bg-gray-50 border border-[#d0d3d9]";
         return (
             <button type="button" onClick={onClick} className={`${base} ${style} ${className}`} style={{ fontFamily: "'Inter', sans-serif" }}>
-                {!active && <div aria-hidden="true" className="absolute border border-black border-solid inset-0 pointer-events-none rounded-[56px]" />}
                 {children}
             </button>
         );
@@ -179,134 +169,83 @@ const AdminDashboard = () => {
     });
 
     return (
-        <div className="flex h-screen bg-white font-sans">
-            {/* ── Sidebar ── */}
-            <aside className="w-[80px] xl:w-[260px] shrink-0 h-full flex flex-col border-r border-[#d0d3d9] overflow-y-auto hidden md:flex transition-all duration-300 bg-white z-10">
-                <div className="px-4 xl:px-4 py-1 h-[85px] flex items-center justify-center xl:justify-start overflow-hidden">
-                    <img src={samsLogoSmall} alt="SAMS Logo" className="w-[155.637px] h-[58.137px] object-contain hidden xl:block" />
-                    <span className="xl:hidden font-bold text-2xl tracking-tighter">S.</span>
+        <div className="flex h-screen bg-white font-sans overflow-hidden">
+            {/* ── Desktop Sidebar ── */}
+            <aside className="w-[180px] shrink-0 h-full flex-col border-r border-[#d0d3d9] bg-white z-10 hidden md:flex">
+                <div className="px-4 py-6 h-[85px] flex items-center justify-start overflow-hidden">
+                    <img src={samsLogoSmall} alt="SAMS Logo" className="w-[120px] object-contain" />
                 </div>
-                <div className="px-4 py-4 hidden xl:block">
-                    <div className="bg-white border border-[#9c9c9c] flex gap-2 h-11 items-center pl-4 pr-4 rounded-[56px]">
+                <div className="px-4 py-2">
+                    <div className="bg-white border border-[#9c9c9c] flex gap-2 h-11 items-center px-4 rounded-[56px]">
                         <Search size={16} className="text-[#9c9c9c] shrink-0" />
                         <input type="text" placeholder="Search here..." className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder-[#9c9c9c]" style={{ fontFamily: "'Inter', sans-serif" }} disabled />
                     </div>
                 </div>
-                <nav className="flex flex-col px-2 xl:px-4 gap-2 xl:gap-1 flex-1 mt-4 xl:mt-0">
+                <nav className="flex flex-col px-4 gap-2 flex-1 mt-4">
                     <button
                         onClick={() => setActiveTab('results')}
-                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'results' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'results' ? 'bg-black text-white font-semibold' : 'text-[#616161] font-medium hover:bg-gray-100'}`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
-                        title="KTU Result"
                     >
                         <FileText size={18} className="shrink-0" />
-                        <span className="hidden xl:inline">KTU Result</span>
+                        <span>KTU Result</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('staff')}
-                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'staff' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'staff' ? 'bg-black text-white font-semibold' : 'text-[#616161] font-medium hover:bg-gray-100'}`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
-                        title="Staff Enrollment"
                     >
                         <Users size={18} className="shrink-0" />
-                        <span className="hidden xl:inline">Staff Enrollment</span>
+                        <span>Staff Enrollment</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('sync')}
-                        className={`flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'sync' ? 'bg-black text-white font-semibold' : 'text-[#333] font-normal hover:bg-gray-100'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm transition-colors w-full text-left ${activeTab === 'sync' ? 'bg-black text-white font-semibold' : 'text-[#616161] font-medium hover:bg-gray-100'}`}
                         style={{ fontFamily: "'Inter', sans-serif" }}
-                        title="Directory Sync"
                     >
                         <RefreshCw size={18} className="shrink-0" />
-                        <span className="hidden xl:inline">Directory Sync</span>
+                        <span>Directory Sync</span>
                     </button>
                 </nav>
-                <div className="flex flex-col px-2 xl:px-4 pb-4 gap-2 xl:gap-1">
-                    <button className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#333] hover:bg-gray-100 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Settings">
+                <div className="flex flex-col px-4 pb-6 gap-2">
+                    <button className="flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm text-[#616161] font-medium hover:bg-gray-100 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }}>
                         <Settings size={18} className="shrink-0" />
-                        <span className="hidden xl:inline">Settings</span>
+                        <span>Settings</span>
                     </button>
-                    <button onClick={logout} className="flex items-center justify-center xl:justify-start gap-2 px-0 xl:px-4 py-3 xl:py-2 rounded-[8px] text-sm text-[#ff3232] hover:bg-red-50 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }} title="Log out">
+                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 rounded-[8px] text-sm text-[#ff3232] font-medium hover:bg-red-50 w-full text-left transition-colors" style={{ fontFamily: "'Inter', sans-serif" }}>
                         <LogOut size={18} className="shrink-0" />
-                        <span className="hidden xl:inline">Log out</span>
+                        <span>Log out</span>
                     </button>
                 </div>
             </aside>
 
             {/* ── Main Content Area ── */}
-            <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-                <header className="flex flex-col justify-center items-start pt-[10px] pr-[16px] pb-[10px] pl-[24px] gap-0 w-full shrink-0 border-b border-[#d0d3d9] bg-white md:min-h-[78px]">
-                    {/* Desktop Header */}
-                    <div className="hidden md:flex w-full items-center justify-between">
-                        <p className="font-semibold text-black text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
-                            {activeTab === 'results' ? 'KTU Result' : activeTab === 'sync' ? 'Directory Sync' : 'Staff Enrollment'}
-                        </p>
-                        <div className="flex items-center gap-[10px]">
-                            {/* Notification: 56x56, padding 10px */}
-                            <button
-                                style={{ display: "flex", width: "56px", height: "56px", padding: "10px", justifyContent: "center", alignItems: "center", gap: "10px", flexShrink: 0, aspectRatio: "1/1", border: "1px solid #d0d3d9", borderRadius: "56px", background: "white" }}
-                                className="hover:border-black transition-colors"
-                            >
-                                <div className="relative">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                                    <span className="absolute -top-1 -right-1 size-[9px] bg-red-500 rounded-full" />
-                                </div>
-                            </button>
-                            {/* Profile: h-56px, padding 10px 10px 10px 8px, gap 10px */}
-                            <button
-                                style={{ display: "flex", height: "56px", padding: "10px 10px 10px 8px", justifyContent: "center", alignItems: "center", gap: "10px", border: "1px solid #d0d3d9", borderRadius: "56px", background: "white" }}
-                                className="hover:border-black transition-colors"
-                            >
-                                <div className="size-[36px] rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center shrink-0">
-                                    <span className="font-bold text-gray-500 text-sm">A</span>
-                                </div>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                        </div>
-                    </div>
-                    {/* Mobile Header */}
-                    <div className="flex md:hidden w-full items-center justify-between py-2">
-                        <img src={samsLogoSmall} alt="SAMS Logo" className="w-[100px] object-contain" />
-                        <button onClick={() => setMobileMenuOpen(true)} className="size-12 rounded-[56px] border border-[#d0d3d9] bg-white flex items-center justify-center">
-                            <Menu size={20} className="text-black" />
+            <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+                {/* Desktop Header */}
+                <header className="hidden md:flex items-center justify-between px-10 py-5 w-full shrink-0 border-b border-[#d0d3d9] bg-white h-[85px]">
+                    <p className="font-semibold text-black text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {activeTab === 'results' ? 'KTU Result' : activeTab === 'sync' ? 'Directory Sync' : 'Staff Enrollment'}
+                    </p>
+                    <div className="flex items-center gap-4">
+                        {/* Notification Bell */}
+                        <button className="relative flex items-center justify-center size-[46px] rounded-full border border-[#d0d3d9] hover:border-black transition-colors bg-white">
+                            <Bell size={20} className="text-black" />
+                            <span className="absolute top-[10px] right-[10px] size-2 bg-red-500 rounded-full border border-white" />
+                        </button>
+                        {/* Profile Dropdown */}
+                        <button className="flex items-center gap-3 h-[46px] pl-2 pr-4 rounded-full border border-[#d0d3d9] hover:border-black transition-colors bg-white">
+                            <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" className="size-8 rounded-full object-cover" />
+                            <ChevronDown size={16} className="text-[#616161]" />
                         </button>
                     </div>
                 </header>
 
-                <main ref={mainContentRef} className="flex-1 overflow-y-auto p-6 md:px-10 md:py-8 bg-white">
-                    <div className="flex flex-col gap-2 mb-8">
-                        <div className="flex items-center gap-2">
-                            <p className="font-medium text-black text-2xl" style={{ fontFamily: "'Inter', sans-serif" }}>Welcome, Admin</p>
-                            <span className="text-2xl">👋</span>
-                        </div>
-                        <p className="font-semibold text-[#616161] text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>Your academic work is now a digital asset.</p>
-                    </div>
+                {/* Mobile Header (Minimal, just for spacing if needed, but the design shows no top header on mobile. We'll add a simple padding to the main content instead) */}
+                <div className="md:hidden w-full px-6 pt-6 pb-2">
+                    {/* Empty or minimal header for mobile if required, but the content usually starts directly. */}
+                </div>
 
-                    {/* Mobile Tabs */}
-                    <div className="flex md:hidden gap-2 mb-8">
-                        <button
-                            onClick={() => setActiveTab('results')}
-                            className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'results' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                        >
-                            KTU Result
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('staff')}
-                            className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'staff' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                        >
-                            Staff Role
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('sync')}
-                            className={`flex-1 py-3 px-4 rounded-[56px] border text-[15px] font-semibold text-center transition-colors ${activeTab === 'sync' ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}`}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                        >
-                            Sync
-                        </button>
-                    </div>
-
+                <main ref={mainContentRef} className="flex-1 overflow-y-auto px-6 pb-28 md:px-10 md:py-8 bg-white md:pb-8">
                     {/* ── Results Panel ─────────────────────────────────── */}
                     {activeTab === 'results' && (
                         <AdminResultsPage drafts={drafts} overview={overview} refreshAll={fetchResults} />
@@ -444,13 +383,6 @@ const AdminDashboard = () => {
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
-                                        {/*}  <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
-                                            <div aria-hidden className="absolute border border-[#d0d3d9] border-solid inset-0 pointer-events-none rounded-[56px]" />
-                                            <div className="flex gap-[2px] items-center rotate-90">
-                                                <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] left-0"></div></div>
-                                                <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] right-0"></div></div>
-                                            </div>
-                                        </button>*/}
                                     </div>
                                 </div>
 
@@ -469,13 +401,6 @@ const AdminDashboard = () => {
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
-                                        {/*}   <button className="relative shrink-0 size-14 rounded-[56px] flex items-center justify-center transition-colors bg-white">
-                                            <div aria-hidden className="absolute border border-[#d0d3d9] border-solid inset-0 pointer-events-none rounded-[56px]" />
-                                            <div className="flex gap-[2px] items-center rotate-90">
-                                                <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] left-0"></div></div>
-                                                <div className="w-[14px] h-[1px] bg-black relative"><div className="size-1 bg-black rounded-full absolute -top-[1.5px] right-0"></div></div>
-                                            </div>
-                                        </button>*/}
                                     </div>
                                 </div>
 
@@ -494,7 +419,7 @@ const AdminDashboard = () => {
                                         <div className="flex flex-col">
                                             {filteredStaff.map((staff, i) => (
                                                 <div key={staff._id} className={`flex items-center px-6 py-4 gap-4 ${i < filteredStaff.length - 1 ? 'border-b border-[#d0d3d9]' : ''}`} style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", color: "#616161" }}>
-                                                    <div className="flex-1 min-w-0">{staff.name}</div>
+                                                    <div className="flex-1 min-w-0 text-black font-medium">{staff.name}</div>
                                                     <div className="flex-1 min-w-0">{displayRole(staff)}</div>
                                                     <div className="flex-1 min-w-0">
                                                         <DeptTag dept={staff.department} />
@@ -503,7 +428,6 @@ const AdminDashboard = () => {
                                                         <button onClick={() => startEdit(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Edit">
                                                             <Edit2 size={18} />
                                                         </button>
-
                                                         <button onClick={() => handleDeleteStaff(staff._id)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-red-400 hover:text-red-500 transition-colors" title="Delete">
                                                             <Trash2 size={18} />
                                                         </button>
@@ -522,7 +446,7 @@ const AdminDashboard = () => {
                                         filteredStaff.map((staff, i) => (
                                             <div key={staff._id} className={`flex gap-2 items-start pb-4 pt-10 ${i > 0 ? "border-t border-[#d0d3d9]" : ""}`}>
                                                 <div className="flex-1 min-w-0 flex flex-col gap-6">
-                                                    <p className="font-medium text-black text-2xl" style={{ fontFamily: "'Inter', sans-serif" }}>{staff.name}</p>
+                                                    <p className="font-bold text-black text-2xl leading-tight" style={{ fontFamily: "'Inter', sans-serif" }}>{staff.name}</p>
                                                     <div>
                                                         <p className="font-semibold text-black text-base mb-[-2px]" style={{ fontFamily: "'Inter', sans-serif" }}>Role: {displayRole(staff)}</p>
                                                         {staff.department && (
@@ -553,30 +477,50 @@ const AdminDashboard = () => {
                         <SyncPanel />
                     )}
                 </main>
-            </div >
 
-            {/* Mobile Menu Overlay */}
-            {
-                mobileMenuOpen && (
-                    <div className="fixed inset-0 bg-white z-[100] flex flex-col md:hidden">
-                        <div className="flex justify-between items-center p-4 py-6 border-b border-[#d0d3d9]">
-                            <img src={samsLogoSmall} alt="SAMS Logo" className="w-[100px] object-contain ml-2" />
-                            <button onClick={() => setMobileMenuOpen(false)} className="size-12 rounded-[56px] border border-[#d0d3d9] bg-white flex items-center justify-center mr-2">
-                                <X size={20} className="text-black" />
+                {/* ── Mobile Bottom Nav Bar ── */}
+                <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+                    <div className="bg-[rgba(116,116,116,0.46)] backdrop-blur-md p-2 rounded-[120px] flex items-center gap-[9px] shadow-lg border border-white/20">
+                        {/* Results Tab */}
+                        {activeTab === 'results' ? (
+                            <button className="bg-black text-white h-[51px] px-6 rounded-[56px] flex items-center gap-2 font-medium text-sm transition-all shadow-sm">
+                                <BarChart2 size={24} />
+                                <span>Results</span>
                             </button>
-                        </div>
-                        <div className="flex-1 flex flex-col items-center justify-end pb-16 gap-6">
-                            <button className="flex items-center gap-2 text-[#333] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                <Settings size={20} /> Settings
+                        ) : (
+                            <button onClick={() => setActiveTab('results')} className="bg-white text-black size-[51px] rounded-[56px] flex items-center justify-center transition-all hover:bg-gray-100 shadow-sm shrink-0">
+                                <BarChart2 size={24} />
                             </button>
-                            <button onClick={logout} className="flex items-center gap-2 text-[#ff3232] font-medium text-lg" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                <LogOut size={20} /> Log out
+                        )}
+
+                        {/* Staff Tab */}
+                        {activeTab === 'staff' ? (
+                            <button className="bg-black text-white h-[51px] px-6 rounded-[56px] flex items-center gap-2 font-medium text-sm transition-all shadow-sm">
+                                <Users size={24} />
+                                <span>Staff</span>
                             </button>
-                        </div>
+                        ) : (
+                            <button onClick={() => setActiveTab('staff')} className="bg-white text-black size-[51px] rounded-[56px] flex items-center justify-center transition-all hover:bg-gray-100 shadow-sm shrink-0">
+                                <Users size={24} />
+                            </button>
+                        )}
+
+                        {/* Sync Tab */}
+                        {activeTab === 'sync' ? (
+                            <button className="bg-black text-white h-[51px] px-6 rounded-[56px] flex items-center gap-2 font-medium text-sm transition-all shadow-sm">
+                                <RefreshCw size={24} />
+                                <span>Sync</span>
+                            </button>
+                        ) : (
+                            <button onClick={() => setActiveTab('sync')} className="bg-white text-black size-[51px] rounded-[56px] flex items-center justify-center transition-all hover:bg-gray-100 shadow-sm shrink-0">
+                                <RefreshCw size={24} />
+                            </button>
+                        )}
                     </div>
-                )
-            }
-        </div >
+                </div>
+
+            </div>
+        </div>
     );
 };
 

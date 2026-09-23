@@ -63,6 +63,14 @@ if os.path.exists(PREFIXES_FILE_PATH):
     except Exception as e:
         print(f"[WARN] Could not read custom prefixes.json, using defaults: {e}")
 
+# If a specific admission year is requested, filter to only that year's prefixes.
+# SYNC_YEAR is a 4-digit year string e.g. "2026" -> yy = "26"
+_sync_year_env = os.environ.get('SYNC_YEAR', '').strip()
+if _sync_year_env and len(_sync_year_env) >= 2:
+    _yy = _sync_year_env[-2:]  # last 2 digits
+    ALL_PREFIXES = [p for p in ALL_PREFIXES if _yy in p]
+    print(f"[INFO] Year filter active: syncing only {_sync_year_env} prefixes ({len(ALL_PREFIXES)} total) — yy={_yy}")
+
 
 def load_sync_state():
     """Loads the sync checkpoint state."""
@@ -134,8 +142,15 @@ def stream_chunk_to_backend(prefix, contacts_dict):
         "contacts": [{"name": name, "email": email} for email, name in contacts_dict.items()]
     }
 
+    # Token is forwarded by the Node.js spawner from the admin's active session.
+    # No separate login step is needed.
+    auth_token = os.environ.get('SYNC_AUTH_TOKEN', '')
+    headers = {"Content-Type": "application/json"}
+    if auth_token:
+        headers["Authorization"] = f"Bearer {auth_token}"
+
     try:
-        res = requests.post(BACKEND_URL, json=payload, headers={"Content-Type": "application/json"}, timeout=45)
+        res = requests.post(BACKEND_URL, json=payload, headers=headers, timeout=45)
         if res.status_code == 200:
             sum_info = res.json().get('summary', {})
             print(f"[STREAM SUCCESS] '{prefix}': {len(contacts_dict)} sent | Added: {sum_info.get('studentsCreated', 0)} | Updated: {sum_info.get('studentsUpdated', 0)}")

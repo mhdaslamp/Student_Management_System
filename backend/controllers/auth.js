@@ -14,7 +14,12 @@ exports.login = async (req, res, next) => {
             user = await User.findOne({ email });
         } else if (registerId || admissionNo) {
             const reg = registerId || admissionNo;
+            // Primary lookup by registerId (current field)
             user = await User.findOne({ registerId: reg });
+            // Fallback: legacy records may still have the old admissionNo field
+            if (!user) {
+                user = await User.findOne({ admissionNo: reg });
+            }
         }
 
         if (!user) {

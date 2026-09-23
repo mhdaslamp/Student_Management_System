@@ -20,14 +20,9 @@ router.get('/oauth/callback', sync.handleOAuthCallback);
 router.post('/directory',        auth('admin'), sync.triggerSync);
 router.post('/automate-browser', auth('admin'), sync.automatedBrowserSync);
 router.post('/upload',           auth('admin'), upload.single('file'), sync.uploadCSV);
-router.post('/paste', (req, res, next) => {
-    if (req.header('Authorization')) return auth('admin')(req, res, next);
-    next();
-}, sync.syncFromText);
-router.post('/stream-chunk', (req, res, next) => {
-    if (req.header('Authorization')) return auth('admin')(req, res, next);
-    next();
-}, sync.streamChunk);
+router.post('/paste',        auth('admin'), sync.syncFromText);
+router.post('/stream-chunk', auth('admin'), sync.streamChunk);
+router.post('/fill-gaps',    auth('admin'), sync.fillGaps);
 router.get('/checkpoint',        auth('admin'), sync.getSyncCheckpoint);
 router.get('/status',            auth('admin'), sync.getSyncStatus);
 router.get('/prefixes',          auth('admin'), sync.getPrefixes);

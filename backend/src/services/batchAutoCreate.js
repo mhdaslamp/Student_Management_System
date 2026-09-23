@@ -18,6 +18,7 @@
 const User    = require('../../models/User');
 const Batch   = require('../../models/Batch');
 const { parseStudentEmail, toBatchName, isStudentEmail, isStaffEmail } = require('./emailParser');
+const { fetchAllDirectoryContacts } = require('./googlePeopleApi');
 
 /**
  * Groups an array of parsed students into a Map keyed by batch key.
@@ -171,15 +172,16 @@ async function processContactsList(contacts, createdByUserId) {
                 const lowerStr = (name + ' ' + email).toLowerCase();
 
                 let role = 'teacher';
-                let designation = 'Faculty';
+                let designation = 'faculty';
 
                 if (lowerStr.includes('principal')) {
                     role = 'principal';
-                    designation = 'Principal';
+                    designation = 'principal';
                 } else if (lowerStr.includes('hod') || lowerStr.includes('head of department')) {
-                    designation = 'HOD';
+                    role = 'hod';
+                    designation = 'hod';
                 } else if (lowerStr.includes('tutor') || lowerStr.includes('advisor')) {
-                    designation = 'Tutor';
+                    designation = 'tutor';
                 }
 
                 let department = 'General';

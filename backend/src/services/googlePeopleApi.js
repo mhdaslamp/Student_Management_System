@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file googlePeopleApi.js
  * @description Fetches all contacts from the Google Workspace directory
  * using the People API with a stored OAuth2 refresh token.
@@ -116,8 +116,51 @@ async function fetchAllDirectoryContacts() {
     return contacts;
 }
 
+/**
+ * Searches the Google Workspace directory for a single person by their exact email.
+ * Used by the gap-fill pipeline to verify a missing roll number exists in the directory.
+ *
+ * @param {string} email - e.g. "pkd23cs047@gecskp.ac.in"
+ * @returns {Promise<{name: string, email: string}|null>} contact or null if not found
+ */
+async function searchDirectoryContact(email) {
+    const auth   = getAuthenticatedClient();
+    const people = google.people({ version: 'v1', auth });
+
+    try {
+        const res = await people.people.searchDirectoryPeople({
+            query:    email,
+            readMask: 'names,emailAddresses',
+            sources:  ['DIRECTORY_SOURCE_TYPE_DOMAIN_PROFILE'],
+            pageSize: 10,
+        });
+
+        const persons = res.data.people || [];
+
+        // Find the person whose email exactly matches (query may return partial matches)
+        for (const person of persons) {
+            const emailObj = (person.emailAddresses || []).find(
+                e => e.value?.toLowerCase() === email.toLowerCase()
+            );
+            if (emailObj) {
+                const nameObj = (person.names || []).find(n => n.metadata?.primary)
+                             || (person.names || [])[0];
+                return {
+                    name:  nameObj?.displayName || '',
+                    email: emailObj.value.toLowerCase().trim(),
+                };
+            }
+        }
+        return null; // Not found in directory
+    } catch (err) {
+        console.warn(`[searchDirectoryContact] Lookup failed for ${email}:`, err.message);
+        return null;
+    }
+}
+
 module.exports = {
     getOAuthUrl,
     exchangeCodeForTokens,
     fetchAllDirectoryContacts,
+    searchDirectoryContact,
 };

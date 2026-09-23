@@ -5,7 +5,7 @@
 
 'use strict';
 
-const { getOAuthUrl, exchangeCodeForTokens } = require('../src/services/googlePeopleApi');
+const { getOAuthUrl, exchangeCodeForTokens, searchDirectoryContact } = require('../src/services/googlePeopleApi');
 const { runDirectorySync, processContactsList } = require('../src/services/batchAutoCreate');
 const { runAutomatedBrowserSync } = require('../src/services/browserDirectoryScraper');
 const XLSX  = require('xlsx');
@@ -328,20 +328,28 @@ exports.automatedBrowserSync = async (req, res, next) => {
         const path = require('path');
         const pythonScript = path.join(__dirname, '../scripts/sync_contacts.py');
         const mode = req.body?.mode || 'balance';
+        const year = req.body?.year ? String(req.body.year) : '';
         
-        console.log(`🐍 Launching Python Selenium Directory Sync (Mode: ${mode}):`, pythonScript);
+        console.log(`🐍 Launching Python Selenium Directory Sync (Mode: ${mode}, Year: ${year || 'ALL'}):`, pythonScript);
 
         const args = [pythonScript];
         if (mode === 'fresh') {
             args.push('--fresh');
         }
 
+        // Reuse the admin's existing JWT — no second login required.
+        // The token is already present in the Authorization header of this request.
+        const rawAuthHeader = req.headers['authorization'] || '';
+        const adminToken = rawAuthHeader.startsWith('Bearer ') ? rawAuthHeader.slice(7) : rawAuthHeader;
+
         const pyProcess = spawn('python', args, {
             env: {
                 ...process.env,
                 PYTHONIOENCODING: 'utf-8',
                 PYTHONUTF8: '1',
-                BACKEND_URL: `http://localhost:${process.env.PORT || 5000}/api/sync/stream-chunk`
+                BACKEND_URL: `http://localhost:${process.env.PORT || 5000}/api/sync/stream-chunk`,
+                SYNC_AUTH_TOKEN: adminToken,
+                ...(year && { SYNC_YEAR: year }),
             }
         });
 
@@ -521,6 +529,145 @@ exports.getSyncStatus = async (req, res, next) => {
             batches:        allBatches,
             byDepartment:   deptBreakdown.map(d => ({ dept: d._id, count: d.count })),
             byYear:         yearBreakdown.map(y => ({ year: y._id, batches: y.batches, students: y.studentCount })),
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ─── Gap-Fill Sync ────────────────────────────────────────────────────────────
+
+/**
+ * POST /api/sync/fill-gaps
+ * Detects missing roll numbers in each batch (001–080) by comparing
+ * existing DB records, then searches Google Directory for the missing
+ * emails and adds only those found. Much faster than a full re-sync.
+ */
+exports.fillGaps = async (req, res, next) => {
+    try {
+        const year            = req.body?.year ? String(req.body.year) : null;
+        const COLLEGE_DOMAIN  = process.env.COLLEGE_DOMAIN || 'gecskp.ac.in';
+        const MAX_ROLL        = 80; // maximum possible roll number in a batch
+        const API_DELAY_MS    = 200; // delay between Google API calls to avoid rate-limiting
+
+        if (!process.env.GOOGLE_REFRESH_TOKEN) {
+            return res.status(400).json({
+                success: false,
+                message: 'Google not connected. Please complete OAuth setup first.',
+            });
+        }
+
+        // 1. Load batches (optionally filtered by year)
+        const batchQuery = year ? { admissionYear: year } : {};
+        const batches = await Batch.find(batchQuery).populate('students', 'registerId email name');
+
+        if (batches.length === 0) {
+            return res.json({ success: true, message: 'No batches found for the selected year.', gapReport: [] });
+        }
+
+        const gapReport    = [];  // per-batch summary
+        const toSearch     = [];  // { email, expectedRegisterId, batchName }
+
+        // 2. For each batch, figure out which roll numbers are missing
+        for (const batch of batches) {
+            const { admissionYear, branch, name: batchName } = batch;
+            const yy        = String(admissionYear).slice(-2);
+            const branchLC  = branch.toLowerCase();
+
+            // Separate regular vs lateral students by registerId prefix
+            const regularIds = new Set();
+            const lateralIds = new Set();
+
+            for (const student of batch.students) {
+                const rid = student.registerId || '';
+                const numMatch = rid.match(/(\d+)$/);
+                if (!numMatch) continue;
+                const num = parseInt(numMatch[1], 10);
+                if (rid.startsWith('lpkd')) {
+                    lateralIds.add(num);
+                } else {
+                    regularIds.add(num);
+                }
+            }
+
+            const batchGaps = { batch: batchName, regular: [], lateral: [] };
+
+            // Regular: probe 001 → MAX_ROLL
+            if (regularIds.size > 0) {
+                const regularPrefix = `pkd${yy}${branchLC}`;
+                for (let i = 1; i <= MAX_ROLL; i++) {
+                    if (!regularIds.has(i)) {
+                        const registerId = `${regularPrefix}${String(i).padStart(3, '0')}`;
+                        const email      = `${registerId}@${COLLEGE_DOMAIN}`;
+                        batchGaps.regular.push(registerId);
+                        toSearch.push({ email, expectedRegisterId: registerId, batchName });
+                    }
+                }
+            }
+
+            // Lateral: probe min → MAX_ROLL (only if laterals already exist)
+            if (lateralIds.size > 0) {
+                const lateralPrefix = `lpkd${yy}${branchLC}`;
+                const minLateral    = Math.min(...lateralIds);
+                for (let i = minLateral; i <= MAX_ROLL; i++) {
+                    if (!lateralIds.has(i)) {
+                        const registerId = `${lateralPrefix}${String(i).padStart(3, '0')}`;
+                        const email      = `${registerId}@${COLLEGE_DOMAIN}`;
+                        batchGaps.lateral.push(registerId);
+                        toSearch.push({ email, expectedRegisterId: registerId, batchName });
+                    }
+                }
+            }
+
+            if (batchGaps.regular.length > 0 || batchGaps.lateral.length > 0) {
+                gapReport.push(batchGaps);
+            }
+        }
+
+        const totalGaps = toSearch.length;
+
+        if (totalGaps === 0) {
+            return res.json({
+                success: true,
+                message: '✅ No gaps found! All roll numbers are present in the database.',
+                gapReport: [],
+                totalGaps: 0,
+                foundInDirectory: 0,
+            });
+        }
+
+        console.log(`[GAP-FILL] Detected ${totalGaps} gap(s) across ${gapReport.length} batch(es). Searching Google Directory...`);
+
+        // 3. Search Google Directory for each missing email (with rate-limit delay)
+        const foundContacts = [];
+        for (const item of toSearch) {
+            const contact = await searchDirectoryContact(item.email);
+            if (contact) {
+                foundContacts.push(contact);
+                console.log(`[GAP-FILL] Found: ${item.email}`);
+            }
+            // Small delay to respect Google API rate limits
+            await new Promise(r => setTimeout(r, API_DELAY_MS));
+        }
+
+        // 4. Upsert only the found contacts into the DB
+        let summary = { studentsCreated: 0, studentsUpdated: 0, errors: [] };
+        if (foundContacts.length > 0) {
+            summary = await processContactsList(foundContacts, req.user.userId);
+        }
+
+        console.log(`[GAP-FILL] Done. Found ${foundContacts.length}/${totalGaps} missing students. Added: ${summary.studentsCreated}, Updated: ${summary.studentsUpdated}`);
+
+        res.json({
+            success:           true,
+            message:           foundContacts.length > 0
+                                   ? `✅ Gap fill complete! Found ${foundContacts.length} missing student(s).`
+                                   : `ℹ️ Gaps detected (${totalGaps}) but none found in Google Directory — they may not have accounts yet.`,
+            totalGaps,
+            foundInDirectory:  foundContacts.length,
+            addedToDb:         summary.studentsCreated,
+            updatedInDb:       summary.studentsUpdated,
+            gapReport,
         });
     } catch (err) {
         next(err);

@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import axios from '../../api/axios';
-import { Upload, Plus, Users, ChevronRight, CheckSquare, Edit2, Trash2, X, FileText } from 'lucide-react';
+import { Users, ChevronRight, Edit2, Trash2, X, UserPlus } from 'lucide-react';
 
 const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
-    const [newBatch, setNewBatch] = useState({ name: '', scheme: '2024' });
-    const [selectedBatch, setSelectedBatch] = useState('');
-    const [file, setFile] = useState(null);
-    const [uploadMessage, setUploadMessage] = useState('');
-    const [loading, setLoading] = useState(false);
+    const totalBatches = batches?.length || 0;
+
 
     // Student Management State
     const [viewingBatch, setViewingBatch] = useState(null);
@@ -15,41 +12,11 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
     const [editingStudent, setEditingStudent] = useState(null);
     const [studentForm, setStudentForm] = useState({ name: '', admissionNo: '', registerId: '' });
 
-    const totalBatches = batches?.length || 0;
-
-    const handleCreateBatch = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await axios.post('/teacher/batch', newBatch);
-            setNewBatch({ name: '', scheme: '2024' });
-            fetchBatches();
-        } catch (error) { console.error(error); }
-        setLoading(false);
-    };
-
-    const handleFileUpload = async (e) => {
-        e.preventDefault();
-        if (!file || !selectedBatch) return;
-
-        const formData = new FormData();
-        formData.append('file', file);
-        setUploadMessage('Uploading...');
-
-        try {
-            const res = await axios.post(`/teacher/batch/${selectedBatch}/upload`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setUploadMessage(`SUCCESS: ${res.data.count} students uploaded & credentials generated!`);
-            setFile(null);
-            fetchBatches();
-        } catch (error) {
-            console.error(error);
-            const msg = error.response?.data?.message || 'Upload failed. Check format.';
-            const details = error.response?.data?.errors ? ` (${error.response.data.errors[0]})` : '';
-            setUploadMessage(`ERROR: ${msg}${details}`);
-        }
-    };
+    // Add Student State
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [addForm, setAddForm] = useState({ name: '', email: '', admissionNo: '', registerId: '' });
+    const [addError, setAddError] = useState('');
+    const [addLoading, setAddLoading] = useState(false);
 
     const openBatchDetails = async (batch) => {
         setViewingBatch(batch);
@@ -81,6 +48,23 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
         });
     };
 
+    const handleAddStudent = async (e) => {
+        e.preventDefault();
+        setAddError('');
+        setAddLoading(true);
+        try {
+            const res = await axios.post(`/teacher/batch/${viewingBatch._id}/student`, addForm);
+            setBatchStudents(prev => [...prev, res.data.student]);
+            setAddForm({ name: '', email: '', admissionNo: '', registerId: '' });
+            setShowAddForm(false);
+            fetchBatches();
+        } catch (err) {
+            setAddError(err.response?.data?.message || 'Failed to add student.');
+        } finally {
+            setAddLoading(false);
+        }
+    };
+
     const handleUpdateStudent = async (e) => {
         e.preventDefault();
         try {
@@ -93,128 +77,21 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Actions */}
-            {isTeacher && (
-            <div className="lg:col-span-1 space-y-8">
-                {/* Create Batch Card */}
-                <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 bg-gradient-to-r from-[#1A8AE5] to-[#0066CC]">
-                        <h2 className="text-lg font-bold text-white flex items-center">
-                            <Plus className="mr-2 h-5 w-5 opacity-80" />
-                            New Batch
-                        </h2>
-                        <p className="text-white/80 text-sm mt-1">Initialize a new student group</p>
-                    </div>
-                    <div className="p-6">
-                        <form onSubmit={handleCreateBatch} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">New Batch Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Class of 2025"
-                                    className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-[#1A8AE5] focus:ring-4 focus:ring-[#1A8AE5]/10 transition-all font-medium"
-                                    value={newBatch.name}
-                                    onChange={(e) => setNewBatch({ ...newBatch, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Scheme</label>
-                                <select
-                                    className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:bg-white focus:border-[#1A8AE5] focus:ring-4 focus:ring-[#1A8AE5]/10 transition-all font-medium"
-                                    value={newBatch.scheme}
-                                    onChange={(e) => setNewBatch({ ...newBatch, scheme: e.target.value })}
-                                    required
-                                >
-                                    <option value="2024">2024</option>
-                                    <option value="2019">2019</option>
-                                </select>
-                            </div>
-                            <button
-                                disabled={loading}
-                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors shadow-lg shadow-gray-200"
-                            >
-                                {loading ? 'Creating...' : 'Create Batch'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                {/* Upload Card */}
-                <div className="bg-white rounded-[24px] shadow-lg shadow-[#1A8AE5]/5 border border-[#1A8AE5]/10 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Upload className="h-24 w-24 text-[#1A8AE5]" />
-                    </div>
-                    <div className="p-6">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center mb-4">
-                            <Upload className="mr-2 h-5 w-5 text-[#1A8AE5]" />
-                            Bulk Upload
-                        </h2>
-
-                        <form onSubmit={handleFileUpload} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Target Batch</label>
-                                <select
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:ring-4 focus:ring-[#1A8AE5]/10 outline-none cursor-pointer"
-                                    onChange={(e) => setSelectedBatch(e.target.value)}
-                                    value={selectedBatch}
-                                    required
-                                >
-                                    <option value="">Select a batch...</option>
-                                    {batches.map(b => <option key={b._id} value={b._id}>{b.name} ({b.branch})</option>)}
-                                </select>
-                            </div>
-
-                            <div className="border-2 border-dashed border-[#1A8AE5]/20 rounded-2xl p-6 text-center hover:bg-[#1A8AE5]/5 transition-colors group cursor-pointer relative">
-                                <input
-                                    type="file"
-                                    accept=".xlsx, .xls, .csv"
-                                    onChange={(e) => setFile(e.target.files[0])}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <div className="flex flex-col items-center">
-                                    <div className="h-10 w-10 bg-[#1A8AE5]/10 text-[#1A8AE5] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <FileText className="h-5 w-5" />
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-600 group-hover:text-[#1A8AE5]">
-                                        {file ? file.name : 'Drop Excel file here'}
-                                    </span>
-                                    <span className="text-xs text-gray-400 mt-1">.xlsx or .csv</span>
-                                </div>
-                            </div>
-
-                            {uploadMessage && (
-                                <div className={`text-xs font-bold p-3 rounded-lg text-center ${uploadMessage.includes('SUCCESS') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {uploadMessage}
-                                </div>
-                            )}
-
-                            <button
-                                disabled={!file || !selectedBatch}
-                                className="w-full py-3 bg-[#1A8AE5] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold hover:bg-[#1570B9] transition-all shadow-lg shadow-[#1A8AE5]/20"
-                            >
-                                Process & Generate Logins
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            )}
-
-            {/* Right Column: Batches List */}
-            <div className={`lg:col-span-2 ${!isTeacher ? 'lg:col-span-3' : ''}`}>
+        <div className="w-full">
+            {/* Batches List */}
+            <div>
                 <div className="flex justify-between items-end mb-6">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Active Batches</h2>
-                        <p className="text-gray-500">Overview of all student groups under your management.</p>
+                        <h2 className="text-2xl font-bold text-gray-900">Assigned Batches</h2>
+                        <p className="text-gray-500">Click a batch to view and manage its students.</p>
                     </div>
                     <span className="bg-[#1A8AE5]/10 text-[#1A8AE5] px-3 py-1 rounded-full text-xs font-bold">
                         {totalBatches} Total
                     </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                     {Array.isArray(batches) && batches.map(batch => (
                         <div
                             key={batch._id}
@@ -273,12 +150,90 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
                                 <h2 className="text-xl font-bold text-gray-900">{viewingBatch.name}</h2>
                                 <p className="text-sm text-gray-500">{batchStudents.length} Students Enrolled</p>
                             </div>
-                            <button onClick={() => setViewingBatch(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                                <X className="h-6 w-6 text-gray-500" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {isTeacher && (
+                                    <button
+                                        onClick={() => { setShowAddForm(f => !f); setEditingStudent(null); setAddError(''); }}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                                            showAddForm
+                                                ? 'bg-gray-200 text-gray-700'
+                                                : 'bg-[#1A8AE5] text-white hover:bg-[#1570B9] shadow-md shadow-[#1A8AE5]/20'
+                                        }`}
+                                    >
+                                        <UserPlus className="h-4 w-4" />
+                                        {showAddForm ? 'Cancel' : 'Add Student'}
+                                    </button>
+                                )}
+                                <button onClick={() => { setViewingBatch(null); setShowAddForm(false); }} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                    <X className="h-6 w-6 text-gray-500" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="overflow-y-auto flex-1 p-6">
+
+                            {/* Add Student Form */}
+                            {showAddForm && (
+                                <form onSubmit={handleAddStudent} className="space-y-4 bg-blue-50 border border-blue-100 p-5 rounded-2xl mb-6">
+                                    <h3 className="font-bold text-[#1A8AE5] flex items-center gap-2">
+                                        <UserPlus className="h-4 w-4" /> Add New Student
+                                    </h3>
+                                    {addError && (
+                                        <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 font-medium">{addError}</p>
+                                    )}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Full Name *</label>
+                                            <input
+                                                required
+                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
+                                                placeholder="e.g. John Doe"
+                                                value={addForm.name}
+                                                onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">College Email *</label>
+                                            <input
+                                                required
+                                                type="email"
+                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
+                                                placeholder="student@gecskp.ac.in"
+                                                value={addForm.email}
+                                                onChange={e => setAddForm({ ...addForm, email: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Register No / KTU ID</label>
+                                            <input
+                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
+                                                placeholder="e.g. PKD23CS038"
+                                                value={addForm.registerId}
+                                                onChange={e => setAddForm({ ...addForm, registerId: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Admission No</label>
+                                            <input
+                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-[#1A8AE5] focus:border-transparent outline-none transition-all"
+                                                placeholder="e.g. TVE23CS001"
+                                                value={addForm.admissionNo}
+                                                onChange={e => setAddForm({ ...addForm, admissionNo: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={addLoading}
+                                            className="px-6 py-2.5 bg-[#1A8AE5] disabled:opacity-50 text-white rounded-xl font-bold hover:bg-[#1570B9] transition-all shadow-lg shadow-[#1A8AE5]/20"
+                                        >
+                                            {addLoading ? 'Addingâ€¦' : 'Add to Batch'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
                             {editingStudent ? (
                                 <form onSubmit={handleUpdateStudent} className="space-y-4 bg-gray-50 p-6 rounded-2xl mb-6 border border-gray-100">
                                     <div className="flex justify-between items-center mb-2">
@@ -363,3 +318,4 @@ const ManageBatches = ({ batches, fetchBatches, isTeacher }) => {
 };
 
 export default ManageBatches;
+

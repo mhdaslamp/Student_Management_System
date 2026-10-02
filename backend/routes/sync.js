@@ -18,6 +18,7 @@ router.get('/oauth/callback', sync.handleOAuthCallback);
 
 // ─── Sync operations (admin only) ─────────────────────────────────────────────
 router.post('/directory',        auth('admin'), sync.triggerSync);
+router.post('/fresh',            auth('admin'), sync.freshSync);
 router.post('/automate-browser', auth('admin'), sync.automatedBrowserSync);
 router.post('/upload',           auth('admin'), upload.single('file'), sync.uploadCSV);
 router.post('/paste',        auth('admin'), sync.syncFromText);

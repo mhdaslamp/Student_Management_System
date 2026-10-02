@@ -13,6 +13,8 @@
 const multer  = require('multer');
 const path    = require('path');
 const fs      = require('fs');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const {
     MAX_FILE_SIZE_BYTES,
     ALLOWED_EXCEL_MIMETYPES,
@@ -119,4 +121,64 @@ const excelFileFilter = (req, file, cb) => {
 };
 const excelOnly = multer({ storage: diskStorage, fileFilter: excelFileFilter, limits });
 
-module.exports = { diskUpload, memoryUpload, pdfOnly, excelOnly };
+/**
+ * evidenceFileFilter — accepts PDF, JPG, JPEG, PNG only.
+ * Used for KTU Activity Points evidence uploads.
+ */
+const evidenceFileFilter = (req, file, cb) => {
+    const extValid  = /\.(pdf|jpg|jpeg|png)$/i.test(path.extname(file.originalname));
+    const mimeValid = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+    ].includes(file.mimetype);
+    if (extValid && mimeValid) {
+        cb(null, true);
+    } else {
+        cb(
+            Object.assign(
+                new Error('Invalid file type. Only PDF, JPG, JPEG, and PNG files are allowed.'),
+                { statusCode: 400 },
+            ),
+            false,
+        );
+    }
+};
+
+/**
+ * evidenceDir — used for local legacy logic if any, but Cloudinary replaces this.
+ */
+const evidenceDir = path.join(__dirname, '../../uploads/evidence');
+if (!fs.existsSync(evidenceDir)) {
+    fs.mkdirSync(evidenceDir, { recursive: true });
+}
+
+// Initialize Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const cloudinaryEvidenceStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'sams_evidence', // Cloudinary folder name
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
+        resource_type: 'auto'
+    },
+});
+
+/**
+ * evidenceUpload — uploads directly to Cloudinary.
+ * Use for: KTU Activity Points certificate/evidence uploads.
+ * Accepts: PDF, JPG, JPEG, PNG. Max: 10 MB.
+ */
+const evidenceUpload = multer({
+    storage:    cloudinaryEvidenceStorage,
+    fileFilter: evidenceFileFilter,
+    limits,
+});
+
+module.exports = { diskUpload, memoryUpload, pdfOnly, excelOnly, evidenceUpload };

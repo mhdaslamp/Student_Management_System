@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from '../../api/axios';
-import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Eye, EyeOff, RefreshCw, BarChart2, Bell, ChevronDown } from 'lucide-react';
+import { UserPlus, LogOut, Users, Search, Trash2, Edit2, X, FileText, Settings, Eye, EyeOff, RefreshCw, BarChart2, Bell, ChevronDown, Link } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AdminResultsPage from './ResultsPage';
 import SyncPanel from './SyncPanel';
+import AssignBatchModal from './AssignBatchModal';
 import samsLogoSmall from '../../assets/SAMS LOGO SMALL.svg';
 
 const AdminDashboard = () => {
@@ -12,6 +13,7 @@ const AdminDashboard = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', department: '' });
     const [staffList, setStaffList] = useState([]);
     const [editingStaff, setEditingStaff] = useState(null);
+    const [assignBatchStaff, setAssignBatchStaff] = useState(null);
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('sync'); // Default to sync as per design
     const [activeRole, setActiveRole] = useState('HOD'); // 'Principal', 'HOD', 'Tutor', 'Professor'
@@ -425,6 +427,11 @@ const AdminDashboard = () => {
                                                         <DeptTag dept={staff.department} />
                                                     </div>
                                                     <div className="flex gap-3 shrink-0 justify-end w-[180px]">
+                                                        {['teacher', 'hod'].includes(staff.role) && (
+                                                            <button onClick={() => setAssignBatchStaff(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Assign Batches">
+                                                                <Link size={18} />
+                                                            </button>
+                                                        )}
                                                         <button onClick={() => startEdit(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Edit">
                                                             <Edit2 size={18} />
                                                         </button>
@@ -457,6 +464,11 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-[10px] items-end h-24 shrink-0">
+                                                    {['teacher', 'hod'].includes(staff.role) && (
+                                                        <button onClick={() => setAssignBatchStaff(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors" title="Assign Batches">
+                                                            <Link size={18} />
+                                                        </button>
+                                                    )}
                                                     <button onClick={() => startEdit(staff)} className="size-14 rounded-[56px] bg-white border border-[#d0d3d9] flex items-center justify-center hover:border-black transition-colors">
                                                         <Edit2 size={18} />
                                                     </button>
@@ -520,6 +532,14 @@ const AdminDashboard = () => {
                 </div>
 
             </div>
+            {/* Assign Batch Modal */}
+            {assignBatchStaff && (
+                <AssignBatchModal 
+                    staff={assignBatchStaff} 
+                    onClose={() => setAssignBatchStaff(null)} 
+                    onAssign={fetchStaff} 
+                />
+            )}
         </div>
     );
 };

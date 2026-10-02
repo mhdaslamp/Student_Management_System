@@ -9,5 +9,6 @@ router.post('/staff', auth('admin'), adminController.addStaff);
 router.get('/staff', auth('admin'), adminController.getStaff);
 router.put('/staff/:id', auth('admin'), adminController.updateStaff);
 router.delete('/staff/:id', auth('admin'), adminController.deleteStaff);
+router.put('/staff/:id/batches', auth('admin'), adminController.assignBatches);
 
 module.exports = router;

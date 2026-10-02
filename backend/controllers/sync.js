@@ -78,7 +78,82 @@ exports.triggerSync = async (req, res, next) => {
     }
 };
 
+// ─── Fresh Sync ────────────────────────────────────────────────────────────────
+
 /**
+ * POST /api/sync/fresh
+ * Body: { year: "2023" }
+ *
+ * Performs a complete additive re-sync using the browser scraper (Selenium/Python).
+ * Passes mode='fresh' so the script does a full rescan (not a resume).
+ * Does NOT delete any existing records — only adds missing students.
+ */
+exports.freshSync = async (req, res, next) => {
+    try {
+        const { spawn } = require('child_process');
+        const path      = require('path');
+
+        const year        = req.body?.year ? String(req.body.year) : '';
+        const pythonScript = path.join(__dirname, '../scripts/sync_contacts.py');
+
+        console.log(`[FRESH-SYNC] Launching browser sync — Year: ${year || 'ALL'}, Mode: fresh`);
+
+        const rawAuthHeader = req.headers['authorization'] || '';
+        const adminToken    = rawAuthHeader.startsWith('Bearer ') ? rawAuthHeader.slice(7) : rawAuthHeader;
+
+        const pyProcess = spawn('python', [pythonScript, '--fresh'], {
+            env: {
+                ...process.env,
+                PYTHONIOENCODING: 'utf-8',
+                PYTHONUTF8:       '1',
+                BACKEND_URL:      `http://localhost:${process.env.PORT || 5000}/api/sync/stream-chunk`,
+                SYNC_AUTH_TOKEN:  adminToken,
+                ...(year && { SYNC_YEAR: year }),
+            }
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        pyProcess.stdout.on('data', (data) => {
+            const str = data.toString();
+            stdout += str;
+            process.stdout.write(str);
+        });
+
+        pyProcess.stderr.on('data', (data) => {
+            const str = data.toString();
+            stderr += str;
+            process.stderr.write(str);
+        });
+
+        pyProcess.on('close', (code) => {
+            if (code === 0) {
+                res.json({
+                    success: true,
+                    message: `✅ Fresh sync complete for ${year || 'all years'}. Any missing students have been added.`,
+                    stdout: stdout.trim(),
+                });
+            } else {
+                res.status(500).json({
+                    success: false,
+                    message: 'Browser sync process exited with an error. Check server logs.',
+                    stderr:  stderr.trim(),
+                });
+            }
+        });
+
+        pyProcess.on('error', (err) => {
+            next(new Error(`Failed to start browser sync: ${err.message}`));
+        });
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+
  * POST /api/sync/csv
  * Imports contacts from an uploaded CSV or Excel file exported from Google Contacts.
  */

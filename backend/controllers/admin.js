@@ -94,3 +94,32 @@ exports.deleteStaff = async (req, res, next) => {
         next(err);
     }
 };
+
+const Batch = require('../models/Batch');
+
+exports.assignBatches = async (req, res, next) => {
+    const { batchIds } = req.body;
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: 'Teacher not found' });
+
+        if (!Array.isArray(batchIds)) {
+            return res.status(400).json({ success: false, message: 'batchIds must be an array' });
+        }
+
+        // Only allow assigning batches to teachers or HODs
+        if (user.role !== ROLES.TEACHER && user.role !== ROLES.HOD) {
+            return res.status(400).json({ success: false, message: 'Can only assign batches to teachers or HODs' });
+        }
+
+        // Update all provided batches to have this user as createdBy
+        await Batch.updateMany(
+            { _id: { $in: batchIds } },
+            { $set: { createdBy: user._id } }
+        );
+
+        res.json({ success: true, message: 'Batches successfully assigned' });
+    } catch (err) {
+        next(err);
+    }
+};

@@ -49,13 +49,14 @@ app.get('/', (req, res) => {
 });
 
 // ─── API Routes ────────────────────────────────────────────────────────────────
-app.use('/api/auth',     require('./routes/auth'));
-app.use('/api/admin',    require('./routes/admin'));
-app.use('/api/teacher',  require('./routes/teacher'));
-app.use('/api/student',  require('./routes/student'));
-app.use('/api/academic', require('./routes/academic'));
-app.use('/api/request',  require('./routes/request'));
-app.use('/api/sync',     require('./routes/sync'));
+app.use('/api/auth',             require('./routes/auth'));
+app.use('/api/admin',            require('./routes/admin'));
+app.use('/api/teacher',          require('./routes/teacher'));
+app.use('/api/student',          require('./routes/student'));
+app.use('/api/academic',         require('./routes/academic'));
+app.use('/api/request',          require('./routes/request'));
+app.use('/api/sync',             require('./routes/sync'));
+app.use('/api/activity-points',  require('./routes/activityPoints'));
 
 // ─── 404 + Global Error Handler ───────────────────────────────────────────────
 // Order matters: notFound must come before errorHandler

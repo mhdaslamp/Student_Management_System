@@ -9,10 +9,11 @@ const {
 } = require('../src/config/constants');
 
 // ─── Batch Management ─────────────────────────────────────────────────────────
-router.post('/batch',                 auth('teacher'),                        teacherController.createBatch);
-router.get('/batch',                  auth(BATCH_VIEWER_ROLES),               teacherController.getBatches);
-router.get('/batch/:batchId',         auth(BATCH_VIEWER_ROLES),               teacherController.getBatchDetails);
-router.post('/batch/:batchId/upload', auth(['teacher', 'admin']),              excelOnly.single('file'), teacherController.uploadStudents);
+router.post('/batch',                        auth('teacher'),              teacherController.createBatch);
+router.get('/batch',                         auth(BATCH_VIEWER_ROLES),     teacherController.getBatches);
+router.get('/batch/:batchId',                auth(BATCH_VIEWER_ROLES),     teacherController.getBatchDetails);
+router.post('/batch/:batchId/upload',        auth(['teacher', 'admin']),   excelOnly.single('file'), teacherController.uploadStudents);
+router.post('/batch/:batchId/student',       auth('teacher'),              teacherController.addStudent);
 
 // ─── Internal Marks ───────────────────────────────────────────────────────────
 router.get('/internal/template/:batchId', auth('teacher'),                    teacherController.downloadInternalTemplate);
@@ -21,5 +22,11 @@ router.post('/internal/upload/:batchId',  auth('teacher'),                    ex
 // ─── Student Management ───────────────────────────────────────────────────────
 router.put('/student/:studentId',    auth('teacher'),                         teacherController.updateStudent);
 router.delete('/student/:studentId', auth('teacher'),                         teacherController.deleteStudent);
+
+// ─── Activity Points (Verification) ───────────────────────────────────────────
+const teacherActivityPoints = require('../controllers/teacherActivityPoints');
+router.get('/activities',            auth('teacher'),                         teacherActivityPoints.getActivities);
+router.put('/activities/:id/verify', auth('teacher'),                         teacherActivityPoints.verifyActivity);
+router.post('/activities/:id/retry-ai', auth('teacher'),                      teacherActivityPoints.retryAiAnalysis);
 
 module.exports = router;

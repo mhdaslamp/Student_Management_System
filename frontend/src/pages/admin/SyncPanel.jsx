@@ -172,11 +172,11 @@ export default function SyncPanel() {
         setMessage("");
         try {
             const res = await axios.post(
-                "/sync/automate-browser",
-                { mode: "balance", year: String(selectedYear) },
+                "/sync/fresh",
+                { year: String(selectedYear) },
                 { timeout: 360000 }
             );
-            setMessage(res.data.message || "✅ Directory sync completed!");
+            setMessage(res.data.message || `✅ Sync complete for ${selectedYear}.`);
             await loadData();
         } catch (err) {
             setMessage(err.response?.data?.message || "Sync failed.");

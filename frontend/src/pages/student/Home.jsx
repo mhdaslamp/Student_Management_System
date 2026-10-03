@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, User, Book, CreditCard, Bell, ChevronRight, GraduationCap, Trophy, FileText, ClipboardList, CheckCircle } from 'lucide-react';
+import { LogOut, User, Book, CreditCard, Bell, ChevronRight, GraduationCap, Trophy, FileText, ClipboardList, CheckCircle, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
 
@@ -10,6 +10,7 @@ const StudentHome = () => {
     const [profile, setProfile] = useState(null);
     const navigate = useNavigate();
     const detailsRef = useRef(null);
+    const [error, setError] = useState(null);
 
     const scrollToDetails = () => {
         detailsRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -20,10 +21,27 @@ const StudentHome = () => {
             try {
                 const res = await axios.get('/student/me');
                 setProfile(res.data);
-            } catch (error) { console.error(error); }
+            } catch (err) { 
+                console.error(err); 
+                setError('Failed to load profile. Please make sure the backend server is running.');
+            }
         };
         fetchProfile();
     }, []);
+
+    if (error) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-red-50 text-red-600 p-6">
+                <p className="font-bold mb-4">{error}</p>
+                <button 
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                    Log Out & Return to Login
+                </button>
+            </div>
+        );
+    }
 
     if (!profile) return <div className="h-screen flex items-center justify-center bg-violet-50 text-primary-600 font-bold animate-pulse">Loading Profile...</div>;
 
@@ -80,9 +98,10 @@ const StudentHome = () => {
                 <h3 className="text-lg font-bold text-gray-800 mb-4 px-1">Quick Access</h3>
                 <div className="grid grid-cols-2 gap-4">
                     {[
-                        { icon: Trophy, label: 'Results', color: 'text-emerald-600', bg: 'bg-emerald-50', path: '/student/results' },
-                        { icon: ClipboardList, label: 'Requests', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/requests' },
-                        { icon: CheckCircle, label: 'Internals', color: 'text-blue-600', bg: 'bg-blue-50', path: '/student/internals' },
+                        { icon: Trophy,       label: 'Results',         color: 'text-emerald-600', bg: 'bg-emerald-50',  path: '/student/results' },
+                        { icon: ClipboardList, label: 'Requests',        color: 'text-blue-600',    bg: 'bg-blue-50',     path: '/student/requests' },
+                        { icon: CheckCircle,   label: 'Internals',       color: 'text-blue-600',    bg: 'bg-blue-50',     path: '/student/internals' },
+                        { icon: Star,          label: 'Activity Points', color: 'text-violet-600',  bg: 'bg-violet-50',   path: '/student/activity-points' },
                     ].map((item, idx) => (
                         <div key={idx} onClick={() => navigate(item.path)} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center aspect-square active:scale-95 transition-transform cursor-pointer">
                             <div className={`h-14 w-14 ${item.bg} ${item.color} rounded-full flex items-center justify-center mb-3`}>

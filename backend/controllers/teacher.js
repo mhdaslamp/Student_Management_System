@@ -380,4 +380,53 @@ exports.uploadInternalmarks = async (req, res, next) => {
     }
 };
 
+/**
+ * POST /api/teacher/batch/:batchId/student
+ * Manually add a single student to a batch.
+ * Teacher must own (createdBy) the batch.
+ */
+exports.addStudent = async (req, res, next) => {
+    try {
+        const { batchId } = req.params;
+        const { name, email, admissionNo, registerId } = req.body;
+
+        if (!name || !email) {
+            return res.status(400).json({ message: 'Name and email are required.' });
+        }
+
+        // Verify teacher owns this batch
+        const batch = await Batch.findOne({ _id: batchId, createdBy: req.user.userId });
+        if (!batch) {
+            return res.status(403).json({ message: 'Batch not found or not authorised.' });
+        }
+
+        // Check for duplicate email
+        const existing = await User.findOne({ email });
+        if (existing) {
+            return res.status(400).json({ message: `A user with email "${email}" already exists.` });
+        }
+
+        const newStudent = await User.create({
+            name,
+            email,
+            role:        'student',
+            admissionNo: admissionNo || undefined,
+            registerId:  registerId  || undefined,
+            department:  batch.branch,
+            batch:       batch._id,
+        });
+
+        // Link student to batch
+        if (!batch.students.includes(newStudent._id)) {
+            batch.students.push(newStudent._id);
+            await batch.save();
+        }
+
+        res.status(201).json({ message: 'Student added successfully.', student: newStudent });
+    } catch (err) {
+        next(err);
+    }
+};
+
+
 

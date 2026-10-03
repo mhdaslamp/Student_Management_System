@@ -150,6 +150,32 @@ const TeacherDashboard = () => {
                 <main className="flex-1 overflow-y-auto px-6 pb-28 md:px-10 md:py-8 bg-white md:pb-8">
                     {renderContent()}
                 </main>
+
+                {/* Floating Bottom Nav (Mobile Only) */}
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+                    <div className="bg-[#2c2c2c] rounded-full p-1.5 flex items-center gap-1 shadow-2xl border border-[#3c3c3c]">
+                        {visibleNav.map((item) => 
+                            activeTab === item.id ? (
+                                <button 
+                                    key={item.id}
+                                    className="bg-black text-white h-[51px] px-5 rounded-[56px] flex items-center gap-2 font-medium text-[13px] transition-all shadow-sm"
+                                >
+                                    <item.icon size={20} />
+                                    <span className="whitespace-nowrap">{item.label.split(' ')[0]}</span>
+                                </button>
+                            ) : (
+                                <button 
+                                    key={item.id}
+                                    onClick={() => setActiveTab(item.id)} 
+                                    className="bg-white text-black size-[51px] rounded-[56px] flex items-center justify-center transition-all hover:bg-gray-100 shadow-sm shrink-0"
+                                >
+                                    <item.icon size={20} />
+                                </button>
+                            )
+                        )}
+                    </div>
+                </div>
+
             </div>
         </div>
     );

@@ -116,8 +116,8 @@ async function extractEvidenceData(filePath, mimetype) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // Use gemini-1.5-flash for speed and cost efficiency
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
+    // Use gemini-3.5-flash to bypass the Pro quota limits while retaining high accuracy
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
     let result;
 

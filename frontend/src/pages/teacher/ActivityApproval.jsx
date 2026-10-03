@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import { 
     CheckCircle2, XCircle, Clock, AlertTriangle, 
-    FileText, Award, Calendar, ExternalLink, ChevronDown, Check, X
+    FileText, Award, Calendar, ExternalLink, ChevronDown, Check, X, RefreshCw
 } from 'lucide-react';
 import { ACTIVITY_STATUSES } from '../../config/constants';
 
@@ -164,6 +164,20 @@ const ActivityReviewPanel = ({ activity, onVerify }) => {
         }
     };
 
+    const handleRetryAi = async () => {
+        try {
+            setSubmitting(true);
+            const res = await axios.post(`/teacher/activities/${activity._id}/retry-ai`);
+            alert(res.data.message);
+            onVerify(); // Refresh the list
+        } catch (error) {
+            console.error('Retry AI failed', error);
+            alert(error.response?.data?.message || 'Failed to trigger AI retry.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const isMismatch = Number(pointsOverride) !== (activity.calculatedPoints || 0);
 
     return (
@@ -203,9 +217,19 @@ const ActivityReviewPanel = ({ activity, onVerify }) => {
                 {/* AI Verification Box */}
                 {activity.extractedData ? (
                     <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-2xl p-5 border border-violet-100">
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="bg-violet-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">AI Verified</span>
-                            <h3 className="font-bold text-violet-900">Gemini Extraction Results</h3>
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="bg-violet-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">AI Verified</span>
+                                <h3 className="font-bold text-violet-900">Gemini Extraction Results</h3>
+                            </div>
+                            <button 
+                                onClick={handleRetryAi}
+                                disabled={submitting || activity.status === 'PROCESSING'}
+                                className="text-violet-600 hover:text-violet-800 p-1.5 hover:bg-violet-100 rounded-full transition-colors"
+                                title="Retry AI Analysis"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${submitting ? 'animate-spin' : ''}`} />
+                            </button>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm mb-4">
@@ -227,12 +251,22 @@ const ActivityReviewPanel = ({ activity, onVerify }) => {
                         )}
                     </div>
                 ) : (
-                    <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100 flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                        <div>
-                            <h3 className="font-bold text-amber-800">No AI Data</h3>
-                            <p className="text-sm text-amber-700/80 mt-1">This activity hasn't been processed by the AI verification pipeline yet.</p>
+                    <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100 flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="font-bold text-amber-800">No AI Data</h3>
+                                <p className="text-sm text-amber-700/80 mt-1">This activity hasn't been processed by the AI verification pipeline yet.</p>
+                            </div>
                         </div>
+                        <button 
+                            onClick={handleRetryAi}
+                            disabled={submitting || activity.status === 'PROCESSING'}
+                            className="text-amber-700 hover:text-amber-900 px-3 py-1.5 hover:bg-amber-100 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 border border-amber-200"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${submitting ? 'animate-spin' : ''}`} />
+                            Retry AI
+                        </button>
                     </div>
                 )}
 

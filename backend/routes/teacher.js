@@ -27,5 +27,6 @@ router.delete('/student/:studentId', auth('teacher'),                         te
 const teacherActivityPoints = require('../controllers/teacherActivityPoints');
 router.get('/activities',            auth('teacher'),                         teacherActivityPoints.getActivities);
 router.put('/activities/:id/verify', auth('teacher'),                         teacherActivityPoints.verifyActivity);
+router.post('/activities/:id/retry-ai', auth('teacher'),                      teacherActivityPoints.retryAiAnalysis);
 
 module.exports = router;

@@ -3,6 +3,7 @@
 const Activity = require('../models/Activity');
 const Batch = require('../models/Batch');
 const { ACTIVITY_STATUSES } = require('../src/config/constants');
+const { processActivityAsync } = require('../src/services/activityQueue');
 
 /**
  * GET /api/teacher/activities
@@ -98,6 +99,40 @@ exports.verifyActivity = async (req, res, next) => {
             success: true,
             message: `Activity successfully marked as ${status}.`,
             activity
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * POST /api/teacher/activities/:id/retry-ai
+ * Retriggers the background AI extraction queue for a specific activity.
+ */
+exports.retryAiAnalysis = async (req, res, next) => {
+    try {
+        const activity = await Activity.findById(req.params.id);
+        
+        if (!activity) {
+            return res.status(404).json({ success: false, message: 'Activity not found.' });
+        }
+        
+        if (activity.status === ACTIVITY_STATUSES.PROCESSING) {
+            return res.status(400).json({ success: false, message: 'Activity is already being processed.' });
+        }
+        
+        // Reset old data to prevent stale UI during retry
+        activity.extractedData = null;
+        activity.ktuRule = null;
+        activity.status = ACTIVITY_STATUSES.PROCESSING;
+        await activity.save();
+        
+        // Fire and forget
+        processActivityAsync(activity._id).catch(console.error);
+        
+        return res.json({ 
+            success: true, 
+            message: 'AI analysis has been queued successfully. It may take up to 30 seconds.' 
         });
     } catch (err) {
         next(err);

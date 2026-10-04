@@ -14,6 +14,7 @@ const ActivityApproval = ({ batches }) => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedBatch, setSelectedBatch] = useState('all');
+    const [studentFilter, setStudentFilter] = useState('all');
     
     // Drill-down states
     const [selectedStudent, setSelectedStudent] = useState(null);
@@ -93,12 +94,20 @@ const ActivityApproval = ({ batches }) => {
         setView('REVIEW');
     };
 
+    const filteredStudents = students.filter(student => {
+        if (studentFilter === 'all') return true;
+        if (studentFilter === 'pending') return student.pendingCount > 0;
+        if (studentFilter === 'incomplete') return (student.totalPoints || 0) < 120;
+        if (studentFilter === 'completed') return (student.totalPoints || 0) >= 120;
+        return true;
+    });
+
     // ---- View 1: Student List ----
     if (view === 'STUDENTS') {
         return (
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
+                <div className="flex flex-col md:flex-row justify-between lg:justify-end items-start md:items-center mb-8 gap-4">
+                    <div className="lg:hidden">
                         <h1 className="text-2xl font-bold text-gray-900">Activity Points Dashboard</h1>
                         <p className="text-gray-500 text-sm mt-1">Review student progress across KTU Slabs</p>
                     </div>
@@ -113,55 +122,74 @@ const ActivityApproval = ({ batches }) => {
                                 <option key={b._id} value={b._id}>{b.name} ({b.scheme})</option>
                             ))}
                         </select>
+                        <select
+                            className="bg-white border border-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm font-medium outline-none shadow-sm"
+                            value={studentFilter}
+                            onChange={(e) => setStudentFilter(e.target.value)}
+                        >
+                            <option value="all">All Students</option>
+                            <option value="pending">Pending Verification</option>
+                            <option value="incomplete">Incomplete Points</option>
+                            <option value="completed">120+ Completed</option>
+                        </select>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>
-                ) : students.length === 0 ? (
+                    <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" /></div>
+                ) : filteredStudents.length === 0 ? (
                     <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center">
                         <User className="h-12 w-12 text-gray-300 mb-4" />
                         <h3 className="text-lg font-bold text-gray-900">No students found</h3>
                         <p className="text-gray-500 mt-2 max-w-sm">No students are currently enrolled in the selected batches.</p>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
-                        {students.map(student => (
+                    <div className="border border-[#d0d3d9] rounded-[16px] overflow-hidden bg-white">
+                        <div className="hidden md:grid grid-cols-[minmax(0,1fr)_90px_90px_90px_90px] items-center px-5 py-3 border-b border-[#d0d3d9] bg-gray-50/60" style={{ fontFamily: "Inter, sans-serif" }}>
+                            <div className="text-xs font-semibold text-[#616161] uppercase tracking-wide">Student</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Slab 1</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Slab 2</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Slab 3</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Total</div>
+                        </div>
+
+                        {filteredStudents.map((student, idx) => (
                             <div 
                                 key={student._id}
                                 onClick={() => handleStudentClick(student)}
-                                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200 cursor-pointer transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                                className={`flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_90px_90px_90px_90px] items-start md:items-center px-5 py-4 hover:bg-gray-50/60 transition-colors cursor-pointer gap-4 md:gap-0 ${idx < filteredStudents.length - 1 ? "border-b border-[#d0d3d9]" : ""}`}
+                                style={{ fontFamily: "Inter, sans-serif" }}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-700 font-black text-lg border border-indigo-200">
+                                <div className="flex items-center gap-4 min-w-0 pr-4">
+                                    <div className="h-10 w-10 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-gray-900 font-bold text-sm border border-[#d0d3d9]">
                                         {student.name.charAt(0)}
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 text-lg">{student.name}</h3>
-                                        <div className="text-sm text-gray-500 font-medium">{student.rollNo || 'N/A'} • {student.email}</div>
+                                    <div className="min-w-0">
+                                        <h3 className="font-semibold text-black text-sm truncate">{student.name}</h3>
+                                        <div className="text-[#9c9c9c] text-xs mt-0.5 truncate">{student.rollNo || 'N/A'} • {student.email}</div>
                                         {student.pendingCount > 0 && (
-                                            <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-700 uppercase tracking-wider border border-orange-200">
-                                                {student.pendingCount} Pending Verification
+                                            <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-orange-50 text-orange-700 uppercase tracking-wider border border-orange-200">
+                                                {student.pendingCount} Pending
                                             </span>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-4 md:gap-6 w-full md:w-auto mt-4 md:mt-0 justify-between md:justify-end">
-                                    <div className="flex flex-col items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Slab 1 (40)</span>
-                                        <span className="text-lg font-black text-gray-800">{student.slabs?.slab1 || 0}</span>
+                                <div className="flex flex-row items-center justify-between w-full md:contents gap-2 mt-2 md:mt-0">
+                                    <div className="flex flex-col md:flex-row md:justify-center items-center text-sm font-semibold text-[#616161] bg-gray-50 md:bg-transparent px-3 py-2 md:p-0 rounded-xl border border-gray-100 md:border-none flex-1 md:flex-auto mr-2 md:mr-0">
+                                        <span className="md:hidden text-[10px] text-[#9c9c9c] font-bold uppercase tracking-wide block">Slab 1</span>
+                                        <span className="text-lg md:text-sm">{student.slabs?.slab1 || 0}</span>
                                     </div>
-                                    <div className="flex flex-col items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Slab 2 (40)</span>
-                                        <span className="text-lg font-black text-gray-800">{student.slabs?.slab2 || 0}</span>
+                                    <div className="flex flex-col md:flex-row md:justify-center items-center text-sm font-semibold text-[#616161] bg-gray-50 md:bg-transparent px-3 py-2 md:p-0 rounded-xl border border-gray-100 md:border-none flex-1 md:flex-auto mr-2 md:mr-0">
+                                        <span className="md:hidden text-[10px] text-[#9c9c9c] font-bold uppercase tracking-wide block">Slab 2</span>
+                                        <span className="text-lg md:text-sm">{student.slabs?.slab2 || 0}</span>
                                     </div>
-                                    <div className="flex flex-col items-center bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Slab 3 (40)</span>
-                                        <span className="text-lg font-black text-gray-800">{student.slabs?.slab3 || 0}</span>
+                                    <div className="flex flex-col md:flex-row md:justify-center items-center text-sm font-semibold text-[#616161] bg-gray-50 md:bg-transparent px-3 py-2 md:p-0 rounded-xl border border-gray-100 md:border-none flex-1 md:flex-auto mr-2 md:mr-0">
+                                        <span className="md:hidden text-[10px] text-[#9c9c9c] font-bold uppercase tracking-wide block">Slab 3</span>
+                                        <span className="text-lg md:text-sm">{student.slabs?.slab3 || 0}</span>
                                     </div>
-                                    <div className="flex flex-col items-center ml-2 pl-4 md:ml-4 md:pl-6 border-l border-gray-200 justify-center">
-                                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">Total</span>
-                                        <span className="text-2xl font-black text-indigo-700">{student.totalPoints || 0}</span>
+                                    <div className="flex flex-col md:flex-row md:justify-center items-center text-sm font-bold text-black border-l md:border-none border-gray-200 pl-4 md:pl-0 flex-1 md:flex-auto">
+                                        <span className="md:hidden text-[10px] text-black font-bold uppercase tracking-wide block">Total</span>
+                                        <span className="text-2xl md:text-sm">{student.totalPoints || 0}</span>
                                     </div>
                                 </div>
                             </div>
@@ -184,7 +212,7 @@ const ActivityApproval = ({ batches }) => {
                 </button>
 
                 <div className="flex items-center gap-4 mb-8">
-                    <div className="h-16 w-16 shrink-0 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-700 font-black text-2xl border border-indigo-200">
+                    <div className="h-16 w-16 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-black font-black text-2xl border border-gray-300">
                         {selectedStudent.name.charAt(0)}
                     </div>
                     <div>
@@ -209,7 +237,7 @@ const ActivityApproval = ({ batches }) => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" /></div>
+                    <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" /></div>
                 ) : filteredActivities.length === 0 ? (
                     <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center">
                         <FileText className="h-12 w-12 text-gray-300 mb-4" />
@@ -217,40 +245,56 @@ const ActivityApproval = ({ batches }) => {
                         <p className="text-gray-500 mt-2 max-w-sm">Try changing the filter or the student has not uploaded anything.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredActivities.map(activity => (
+                    <div className="border border-[#d0d3d9] rounded-[16px] overflow-hidden bg-white">
+                        <div className="hidden md:grid grid-cols-[minmax(0,1fr)_120px_100px_150px_120px_80px] items-center px-5 py-3 border-b border-[#d0d3d9] bg-gray-50/60" style={{ fontFamily: "Inter, sans-serif" }}>
+                            <div className="text-xs font-semibold text-[#616161] uppercase tracking-wide">Activity</div>
+                            <div className="text-xs font-semibold text-[#616161] uppercase tracking-wide">Level</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Points</div>
+                            <div className="text-center text-xs font-semibold text-[#616161] uppercase tracking-wide">Status</div>
+                            <div className="text-right text-xs font-semibold text-[#616161] uppercase tracking-wide">Date</div>
+                            <div className="text-right text-xs font-semibold text-[#616161] uppercase tracking-wide">Action</div>
+                        </div>
+
+                        {filteredActivities.map((activity, idx) => (
                             <div 
                                 key={activity._id}
                                 onClick={() => handleActivityClick(activity)}
-                                className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200 cursor-pointer transition-all flex flex-col"
+                                className={`flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_120px_100px_150px_120px_80px] items-start md:items-center px-5 py-4 hover:bg-gray-50/60 transition-colors cursor-pointer gap-3 md:gap-0 ${idx < filteredActivities.length - 1 ? "border-b border-[#d0d3d9]" : ""}`}
+                                style={{ fontFamily: "Inter, sans-serif" }}
                             >
-                                <div className="flex justify-between items-start mb-3">
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                                <div className="min-w-0 pr-4 w-full">
+                                    <h3 className="font-semibold text-black text-sm truncate" title={activity.activityName || activity.activityLabel || `Activity - Rule ${activity.ktuRuleId}`}>
+                                        {activity.activityName || activity.activityLabel || `Activity - Rule ${activity.ktuRuleId}`}
+                                    </h3>
+                                    <div className="text-[#9c9c9c] text-xs mt-0.5 truncate">Rule {activity.ktuRuleId} • {activity.achievementType || 'N/A'}</div>
+                                </div>
+                                <div className="w-full text-sm font-medium text-[#616161]">
+                                    <span className="md:hidden text-xs text-[#9c9c9c] mr-2">Level:</span>
+                                    {activity.eventLevel || 'N/A'}
+                                </div>
+                                <div className="w-full md:text-center text-sm font-bold text-black">
+                                    <span className="md:hidden text-xs font-semibold text-[#616161] mr-2">Points:</span>
+                                    {activity.calculatedPoints || 0}
+                                </div>
+                                <div className="w-full md:flex md:justify-center">
+                                    <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                                         activity.status === ACTIVITY_STATUSES.VERIFIED ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                         activity.status === ACTIVITY_STATUSES.REJECTED ? 'bg-red-50 text-red-700 border-red-200' :
                                         activity.status === ACTIVITY_STATUSES.REVIEW_REQUIRED ? 'bg-orange-50 text-orange-700 border-orange-200' :
                                         'bg-blue-50 text-blue-700 border-blue-200'
                                     }`}>
-                                        {activity.status.replace('_', ' ')}
+                                        {activity.status === ACTIVITY_STATUSES.PENDING_VERIFICATION ? 'PENDING' : activity.status.replace('_', ' ')}
                                     </span>
-                                    <span className="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">Rule {activity.ktuRuleId}</span>
                                 </div>
-                                <h3 className="font-bold text-gray-900 mb-1">{activity.activityName || activity.activityLabel || `Activity - Rule ${activity.ktuRuleId}`}</h3>
-                                <div className="text-sm text-gray-500 mb-4 flex-1">
-                                    {activity.eventLevel && <p>Level: <span className="font-semibold text-gray-700">{activity.eventLevel}</span></p>}
-                                    {activity.achievementType && <p>Type: <span className="font-semibold text-gray-700">{activity.achievementType}</span></p>}
-                                    {activity.stageOrPhase && <p>Stage: <span className="font-semibold text-gray-700">{activity.stageOrPhase}</span></p>}
-                                    {activity.calculatedPoints !== undefined && <p>System Points: <span className="font-semibold text-gray-700">{activity.calculatedPoints}</span></p>}
+                                <div className="w-full md:text-right text-sm font-medium text-[#616161]">
+                                    <span className="md:hidden text-xs text-[#9c9c9c] mr-2">Date:</span>
+                                    {new Date(activity.createdAt).toLocaleDateString()}
                                 </div>
-                                
-                                <div className="flex items-center justify-between text-xs text-gray-500 font-medium mt-auto bg-gray-50 p-2 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar className="h-3.5 w-3.5" />
-                                        {new Date(activity.createdAt).toLocaleDateString()}
-                                    </div>
-                                    <span className="font-bold text-indigo-600 flex items-center gap-1">
-                                        Review <ChevronLeft className="h-3 w-3 rotate-180" />
-                                    </span>
+                                <div className="hidden md:flex justify-end text-black font-bold items-center gap-1 text-sm">
+                                    Review <ChevronLeft className="h-3 w-3 rotate-180" />
+                                </div>
+                                <div className="md:hidden w-full pt-2 border-t border-gray-100 flex justify-end text-black font-bold items-center gap-1 text-sm">
+                                    Review <ChevronLeft className="h-3 w-3 rotate-180" />
                                 </div>
                             </div>
                         ))}
@@ -279,13 +323,13 @@ const ActivityApproval = ({ batches }) => {
                     <div className="lg:w-1/2 border-b lg:border-b-0 lg:border-r border-gray-100 bg-gray-50 p-4 flex flex-col min-h-[300px] lg:min-h-0">
                         <div className="flex items-center justify-between mb-4 shrink-0">
                             <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-indigo-500" /> Evidence Certificate
+                                <FileText className="h-5 w-5 text-black" /> Evidence Certificate
                             </h3>
                             <a 
                                 href={selectedActivity.evidence?.filePath} 
                                 target="_blank" 
                                 rel="noreferrer"
-                                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                                className="text-sm text-black hover:text-gray-900 font-medium flex items-center gap-1 bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
                             >
                                 <ExternalLink className="h-4 w-4" /> View Full
                             </a>
@@ -337,6 +381,7 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
     const [submitting, setSubmitting] = useState(false);
     const [note, setNote] = useState('');
     const [pointsOverride, setPointsOverride] = useState(activity.awardedPoints ?? (activity.calculatedPoints || 0));
+    const [showRejectModal, setShowRejectModal] = useState(false);
 
     // Reset state when activity changes
     useEffect(() => {
@@ -345,6 +390,10 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
     }, [activity]);
 
     const handleVerify = async (status) => {
+        if (status === 'REJECTED' && !note.trim()) {
+            alert('Please provide a verification note explaining why this activity is being rejected.');
+            return;
+        }
         try {
             setSubmitting(true);
             await axios.put(`/teacher/activities/${activity._id}/verify`, {
@@ -392,7 +441,7 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                         activity.status === ACTIVITY_STATUSES.REVIEW_REQUIRED ? 'bg-orange-50 text-orange-700 border-orange-200' :
                         'bg-blue-50 text-blue-700 border-blue-200'
                     }`}>
-                        {activity.status.replace('_', ' ')}
+                        {activity.status === ACTIVITY_STATUSES.PENDING_VERIFICATION ? 'PENDING' : activity.status.replace('_', ' ')}
                     </span>
                 </div>
                 
@@ -445,23 +494,22 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
             <div className="p-4 lg:p-6 flex-1 lg:overflow-y-auto custom-scrollbar space-y-6">
                 
                 {/* AI Verification Box */}
-                {/* AI Verification Box */}
                 {activity.status === 'PROCESSING' ? (
-                    <div className="flex items-center gap-3 text-indigo-600 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                    <div className="flex items-center gap-3 text-black bg-gray-100 p-4 rounded-xl border border-gray-300">
                         <RefreshCw className="h-5 w-5 animate-spin" />
                         <span className="font-semibold text-sm">AI is analyzing this certificate...</span>
                     </div>
                 ) : activity.extractedData ? (
-                    <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-2xl p-5 border border-violet-100">
+                    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-2">
-                                <span className="bg-violet-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">AI Verified</span>
-                                <h3 className="font-bold text-violet-900">Gemini Extraction Results</h3>
+                                <span className="bg-black text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest">AI Verified</span>
+                                <h3 className="font-bold text-black">Gemini Extraction Results</h3>
                             </div>
                             <button 
                                 onClick={handleRetryAi}
                                 disabled={submitting}
-                                className="text-violet-600 hover:text-violet-800 p-1.5 hover:bg-violet-100 rounded-full transition-colors"
+                                className="text-black hover:text-gray-900 p-1.5 hover:bg-gray-200 rounded-full transition-colors"
                                 title="Run AI Analysis Again"
                             >
                                 <RefreshCw className={`h-4 w-4 ${submitting ? 'animate-spin' : ''}`} />
@@ -470,17 +518,17 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                         
                         <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                             <div>
-                                <span className="text-violet-600/70 text-xs font-semibold block mb-1">Extracted Name</span>
-                                <span className="font-medium text-violet-900">{activity.extractedData.extracted?.studentName || 'N/A'}</span>
+                                <span className="text-gray-500 text-xs font-semibold block mb-1">Extracted Name</span>
+                                <span className="font-medium text-black">{activity.extractedData.extracted?.studentName || 'N/A'}</span>
                             </div>
                             <div>
-                                <span className="text-violet-600/70 text-xs font-semibold block mb-1">Confidence Score</span>
-                                <span className="font-medium text-violet-900">{activity.ktuRule?.verification?.confidence ?? '-'}%</span>
+                                <span className="text-gray-500 text-xs font-semibold block mb-1">Confidence Score</span>
+                                <span className="font-medium text-black">{activity.ktuRule?.verification?.confidence ?? '-'}%</span>
                             </div>
                         </div>
 
                         {activity.ktuRule?.verification?.aiSummary && (
-                            <p className="text-sm text-violet-800 bg-white/50 p-3 rounded-xl border border-white mt-4">
+                            <p className="text-sm text-gray-700 bg-white/50 p-3 rounded-xl border border-white mt-4">
                                 <span className="font-semibold mr-1">AI Summary:</span>
                                 {activity.ktuRule.verification.aiSummary}
                             </p>
@@ -490,7 +538,7 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                     <button 
                         onClick={handleRetryAi}
                         disabled={submitting}
-                        className="w-full py-3 rounded-xl border border-dashed border-gray-300 text-gray-500 font-semibold hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-300 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl border border-dashed border-gray-300 text-gray-500 font-semibold hover:bg-gray-50 hover:text-black hover:border-black transition-colors flex items-center justify-center gap-2"
                     >
                         <RefreshCw className={`h-4 w-4 ${submitting ? 'animate-spin' : ''}`} />
                         {submitting ? 'Triggering AI...' : 'Run AI Analysis'}
@@ -500,7 +548,7 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                 {/* Score Editing Section */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Award className="h-5 w-5 text-indigo-500" /> Points Verification
+                        <Award className="h-5 w-5 text-black" /> Points Verification
                     </h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -508,14 +556,14 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                             <span className="text-xs font-bold text-gray-500 block mb-1">System Calculated</span>
                             <span className="text-2xl font-black text-gray-900">{activity.calculatedPoints || 0}</span>
                         </div>
-                        <div className={`rounded-xl p-3 border ${isMismatch ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500' : 'bg-indigo-50 border-indigo-200'}`}>
-                            <span className={`text-xs font-bold block mb-1 ${isMismatch ? 'text-amber-700' : 'text-indigo-700'}`}>Final Awarded</span>
+                        <div className={`rounded-xl p-3 border ${isMismatch ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-500' : 'bg-gray-100 border-gray-300'}`}>
+                            <span className={`text-xs font-bold block mb-1 ${isMismatch ? 'text-amber-700' : 'text-black'}`}>Final Awarded</span>
                             <input 
                                 type="number" 
                                 value={pointsOverride}
                                 onChange={(e) => setPointsOverride(e.target.value)}
                                 className={`w-full bg-white text-xl font-black rounded-lg px-2 py-1 border outline-none ${
-                                    isMismatch ? 'text-amber-900 border-amber-300 focus:border-amber-500' : 'text-indigo-900 border-indigo-200 focus:border-indigo-500'
+                                    isMismatch ? 'text-amber-900 border-amber-300 focus:border-amber-500' : 'text-black border-gray-300 focus:border-black'
                                 }`}
                             />
                         </div>
@@ -532,7 +580,7 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                             placeholder="Add remarks for the student..."
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all resize-none h-24"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-black focus:bg-white outline-none transition-all resize-none h-20"
                         />
                     </div>
                 </div>
@@ -540,10 +588,10 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
             </div>
 
             {/* Actions */}
-            {activity.status !== ACTIVITY_STATUSES.VERIFIED && (
+            {activity.status !== ACTIVITY_STATUSES.VERIFIED && activity.status !== ACTIVITY_STATUSES.REJECTED && (
                 <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
                     <button
-                        onClick={() => handleVerify('REJECTED')}
+                        onClick={() => setShowRejectModal(true)}
                         disabled={submitting}
                         className="flex-1 py-3 px-4 rounded-xl bg-white border border-red-200 text-red-600 font-bold hover:bg-red-50 hover:border-red-300 transition-all flex items-center justify-center gap-2"
                     >
@@ -556,6 +604,40 @@ const ActivityReviewPanel = ({ activity, onVerify, onRetryAi }) => {
                     >
                         <Check className="h-5 w-5" /> {submitting ? 'Processing...' : 'Approve & Confirm'}
                     </button>
+                </div>
+            )}
+
+            {/* Reject Modal */}
+            {showRejectModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Reject Activity</h3>
+                        <p className="text-sm text-gray-500 mb-4">Please provide a reason for rejecting this activity. This note will be visible to the student.</p>
+                        <textarea
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            placeholder="Reason for rejection..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-black focus:bg-white outline-none transition-all resize-none h-32 mb-4"
+                            autoFocus
+                        />
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowRejectModal(false)}
+                                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowRejectModal(false);
+                                    handleVerify('REJECTED');
+                                }}
+                                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-md shadow-red-500/20"
+                            >
+                                Confirm Reject
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../api/axios";
 import {
@@ -211,11 +211,47 @@ const ActivityDetail = () => {
                     </a>
                 </div>
 
-                {/* Future sections placeholder */}
-                <div className="bg-gray-50 border border-dashed border-gray-200 rounded-3xl p-4 text-center">
-                    <p className="text-xs text-gray-400 font-medium">AI extraction & point calculation</p>
-                    <p className="text-xs text-gray-300 mt-0.5">Coming in a future update</p>
-                </div>
+                {/* Status/Points/Notes Info */}
+                {(activity.awardedPoints !== undefined || activity.calculatedPoints !== undefined || activity.verificationNote || activity.status === 'REJECTED') && (
+                    <div className={`rounded-3xl p-5 shadow-sm border ${
+                        activity.status === 'REJECTED' ? 'bg-red-50 border-red-200' :
+                        activity.status === 'VERIFIED' ? 'bg-emerald-50 border-emerald-200' :
+                        'bg-white border-gray-100'
+                    }`}>
+                        <h2 className={`font-bold text-sm mb-3 flex items-center gap-2 ${
+                            activity.status === 'REJECTED' ? 'text-red-700' :
+                            activity.status === 'VERIFIED' ? 'text-emerald-700' :
+                            'text-gray-700'
+                        }`}>
+                            {activity.status === 'REJECTED' ? <AlertCircle className="h-4 w-4" /> : <Award className="h-4 w-4" />}
+                            {activity.status === 'REJECTED' ? 'Rejection Details' : 'Verification Details'}
+                        </h2>
+                        
+                        {(activity.calculatedPoints !== undefined || activity.awardedPoints !== undefined) && activity.status !== 'REJECTED' && (
+                            <div className="flex gap-4 mb-4">
+                                <div>
+                                    <span className="text-[10px] uppercase font-bold text-gray-500 block mb-0.5">Points Awarded</span>
+                                    <span className="text-2xl font-black text-gray-900">{activity.awardedPoints ?? activity.calculatedPoints ?? 0}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {activity.verificationNote && (
+                            <div>
+                                <span className={`text-[10px] uppercase font-bold block mb-1 ${
+                                    activity.status === 'REJECTED' ? 'text-red-500' : 'text-gray-500'
+                                }`}>
+                                    Teacher Note
+                                </span>
+                                <p className={`text-sm p-3 rounded-xl bg-white/50 border font-medium ${
+                                    activity.status === 'REJECTED' ? 'text-red-800 border-red-100' : 'text-gray-700 border-white'
+                                }`}>
+                                    {activity.verificationNote}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {error && (
                     <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center gap-3 text-red-700">

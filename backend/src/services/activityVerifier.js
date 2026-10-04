@@ -93,7 +93,20 @@ function verifyActivity(activity, extracted) {
         const submitted  = activity[check.field];
         const extractedV = ext[check.extractedKey];
 
-        if (!extractedV) continue; // AI couldn't find it — skip
+        if (!submitted) continue;
+
+        if (!extractedV) {
+            const deduction = check.severity === 'high' ? 30 : check.severity === 'medium' ? 20 : 10;
+            score -= deduction;
+            flags.push({
+                field:     check.field,
+                submitted,
+                extracted: 'Not found in evidence',
+                severity:  check.severity,
+                message:   `Could not find "${check.field}" in the uploaded evidence.`,
+            });
+            continue;
+        }
 
         const match = check.fuzzy
             ? fuzzyMatch(submitted, extractedV)
@@ -117,7 +130,19 @@ function verifyActivity(activity, extracted) {
         const submitted  = normalizeDate(activity[dc.formKey]);
         const extractedV = normalizeDate(ext[dc.extractedKey]);
 
-        if (!submitted || !extractedV) continue;
+        if (!submitted) continue;
+
+        if (!extractedV) {
+            score -= 15;
+            flags.push({
+                field:     dc.formKey,
+                submitted,
+                extracted: 'Not found',
+                severity:  'medium',
+                message:   `Could not find date "${dc.formKey}" in the evidence.`,
+            });
+            continue;
+        }
 
         if (!datesCloseEnough(submitted, extractedV)) {
             score -= 20;
@@ -127,20 +152,6 @@ function verifyActivity(activity, extracted) {
                 extracted: extractedV,
                 severity:  'medium',
                 message:   `Date mismatch in "${dc.formKey}": submitted "${submitted}", evidence says "${extractedV}"`,
-            });
-        }
-    }
-
-    // ── 3. Check event level if extracted ───────────────────────────────────
-    if (ext.eventLevel && activity.eventLevel) {
-        if (ext.eventLevel !== activity.eventLevel) {
-            score -= 30;
-            flags.push({
-                field:     'eventLevel',
-                submitted:  activity.eventLevel,
-                extracted:  ext.eventLevel,
-                severity:   'high',
-                message:    `Event level mismatch: student claimed "${activity.eventLevel}", evidence suggests "${ext.eventLevel}"`,
             });
         }
     }

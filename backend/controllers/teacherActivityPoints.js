@@ -19,9 +19,16 @@ exports.getActivities = async (req, res, next) => {
         // Find batches managed by this teacher
         let batchQuery = { createdBy: req.user.userId };
         
-        // Admin/HOD logic if applicable (assuming admins can see all)
+        // Admin/HOD logic if applicable
         if (['admin', 'principal', 'exam_controller'].includes(req.user.role)) {
             batchQuery = {};
+        } else if (req.user.role === 'hod') {
+            const user = await User.findById(req.user.userId);
+            if (user && user.department) {
+                batchQuery = { branch: new RegExp(`^${user.department}$`, 'i') };
+            } else {
+                batchQuery = { _id: null };
+            }
         }
 
         if (batchId) {
@@ -157,6 +164,13 @@ exports.getStudentSummary = async (req, res, next) => {
         
         if (['admin', 'principal', 'exam_controller'].includes(req.user.role)) {
             batchQuery = {};
+        } else if (req.user.role === 'hod') {
+            const user = await User.findById(req.user.userId);
+            if (user && user.department) {
+                batchQuery = { branch: new RegExp(`^${user.department}$`, 'i') };
+            } else {
+                batchQuery = { _id: null };
+            }
         }
         if (batchId && batchId !== 'all') {
             batchQuery._id = batchId;
